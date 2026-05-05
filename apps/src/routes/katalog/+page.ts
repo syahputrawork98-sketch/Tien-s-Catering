@@ -1,5 +1,4 @@
 import { mockMenus } from '$lib/mock/menu';
-import { mockPackages } from '$lib/mock/packages';
 import type { PageLoad } from './$types';
 
 export const load: PageLoad = ({ url }) => {
@@ -21,7 +20,6 @@ export const load: PageLoad = ({ url }) => {
 
     return {
         menus: mockMenus,
-        packages: mockPackages,
         selectedDate,
         dateItems
     };
