@@ -47,23 +47,4 @@ export const mockMenus: MockMenuItem[] = [
   }
 ];
 
-export const mockPackages = [
-  {
-    id: 'pkg-1',
-    name: "Tien's Wedding Package",
-    description: 'Layanan katering pernikahan lengkap dengan dekorasi dan pramusaji profesional.',
-    basePrice: 12500000
-  },
-  {
-    id: 'pkg-2',
-    name: 'Corporate Lunch Buffet',
-    description: 'Menu makan siang prasmanan harian untuk kantor dan instansi.',
-    basePrice: 45000
-  },
-  {
-    id: 'pkg-3',
-    name: 'Custom Event Catering',
-    description: 'Sesuaikan menu untuk acara spesial Anda dengan kurasi chef terbaik.',
-    basePrice: 50000
-  }
-];
+
