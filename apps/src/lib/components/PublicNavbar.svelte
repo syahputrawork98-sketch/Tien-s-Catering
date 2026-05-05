@@ -53,6 +53,7 @@
     <div class="flex items-center gap-4">
       <button 
         onclick={() => cart.toggleDrawer()}
+        aria-label="Buka Keranjang"
         class="relative p-2 rounded-xl transition-all {scrolled ? 'text-brand-charcoal hover:bg-zinc-100' : 'text-white hover:bg-white/10'}"
       >
         <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -83,7 +84,7 @@
       </a>
       
       <!-- Mobile Menu Button (Icon Placeholder) -->
-      <button class="md:hidden p-2 {scrolled ? 'text-brand-charcoal' : 'text-white'}">
+      <button aria-label="Menu Mobile" class="md:hidden p-2 {scrolled ? 'text-brand-charcoal' : 'text-white'}">
         <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
         </svg>

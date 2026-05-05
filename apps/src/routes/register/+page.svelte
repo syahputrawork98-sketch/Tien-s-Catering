@@ -48,9 +48,10 @@
 
 				<div class="space-y-4">
 					<div>
-						<label class="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1">Nama Lengkap</label>
+						<label for="reg-name" class="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1">Nama Lengkap</label>
 						<div class="relative">
 							<input 
+								id="reg-name"
 								type="text" 
 								name="name" 
 								bind:value={name}
@@ -65,9 +66,10 @@
 					</div>
 
 					<div>
-						<label class="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1">Nomor Telepon</label>
+						<label for="reg-phone" class="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1">Nomor Telepon</label>
 						<div class="relative">
 							<input 
+								id="reg-phone"
 								type="text" 
 								name="phone" 
 								bind:value={phone}
@@ -82,9 +84,10 @@
 					</div>
 
 					<div>
-						<label class="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1">Kata Sandi</label>
+						<label for="reg-password" class="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1">Kata Sandi</label>
 						<div class="relative">
 							<input 
+								id="reg-password"
 								type="password" 
 								name="password" 
 								bind:value={password}

@@ -252,9 +252,9 @@
 					</div>
 				</div>
 				<div class="flex gap-12">
-					<a href="#" class="text-xs font-black text-zinc-400 hover:text-brand-primary uppercase tracking-[0.2em] transition-all">Instagram</a>
-					<a href="#" class="text-xs font-black text-zinc-400 hover:text-brand-primary uppercase tracking-[0.2em] transition-all">Sitemap</a>
-					<a href="#" class="text-xs font-black text-zinc-400 hover:text-brand-primary uppercase tracking-[0.2em] transition-all">Privacy</a>
+					<button onclick={() => alert("Follow us on Instagram: @tienscatering")} class="text-xs font-black text-zinc-400 hover:text-brand-primary uppercase tracking-[0.2em] transition-all">Instagram</button>
+					<button onclick={() => alert("Sitemap coming soon")} class="text-xs font-black text-zinc-400 hover:text-brand-primary uppercase tracking-[0.2em] transition-all">Sitemap</button>
+					<button onclick={() => alert("Privacy Policy")} class="text-xs font-black text-zinc-400 hover:text-brand-primary uppercase tracking-[0.2em] transition-all">Privacy</button>
 				</div>
 			</div>
 			

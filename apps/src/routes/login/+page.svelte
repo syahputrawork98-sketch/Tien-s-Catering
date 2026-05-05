@@ -1,4 +1,8 @@
 <script lang="ts">
+	import { mockSession } from '$lib/stores/mockSession.svelte';
+	import { goto } from '$app/navigation';
+	import type { MockRole } from '$lib/mock/session';
+
 	let loading = $state(false);
 	let phone = $state('');
 	let password = $state('');
@@ -7,13 +11,17 @@
 		e.preventDefault();
 		loading = true;
 		setTimeout(() => {
-			alert("Auth backend belum tersedia. Login UI berhasil disimulasikan.");
+			mockSession.setRole('USER');
+			goto('/dashboard');
 			loading = false;
 		}, 1000);
 	}
 
-	function quickLogin(role: string) {
-		alert(`Quick login untuk ${role} terpilih. Backend auth belum terhubung.`);
+	function quickLogin(role: MockRole) {
+		mockSession.setRole(role);
+		if (role === 'ADMIN') goto('/dashboard/admin');
+		else if (role === 'CUSTOMER_SERVICE') goto('/dashboard/cs');
+		else goto('/dashboard');
 	}
 </script>
 
@@ -73,7 +81,7 @@
 				</div>
 
 				<div class="text-sm">
-					<a href="/forgot-password" class="font-medium text-brand-primary hover:text-brand-primary/80">Lupa kata sandi?</a>
+					<button type="button" onclick={() => alert("Fitur lupa kata sandi belum tersedia.")} class="font-medium text-brand-primary hover:text-brand-primary/80">Lupa kata sandi?</button>
 				</div>
 			</div>
 
@@ -103,7 +111,7 @@
 			<div class="grid grid-cols-3 gap-3">
 				<button 
 					type="button"
-					onclick={() => quickLogin('admin')}
+					onclick={() => quickLogin('ADMIN')}
 					class="flex flex-col items-center gap-2 p-3 rounded-xl bg-zinc-50 dark:bg-white/5 border border-zinc-100 dark:border-white/5 hover:border-brand-primary transition-all group"
 				>
 					<div class="w-8 h-8 bg-brand-primary/10 text-brand-primary rounded-lg flex items-center justify-center font-bold text-xs group-hover:bg-brand-primary group-hover:text-white transition-colors">A</div>
@@ -112,7 +120,7 @@
 
 				<button 
 					type="button"
-					onclick={() => quickLogin('cs')}
+					onclick={() => quickLogin('CUSTOMER_SERVICE')}
 					class="flex flex-col items-center gap-2 p-3 rounded-xl bg-zinc-50 dark:bg-white/5 border border-zinc-100 dark:border-white/5 hover:border-blue-500 transition-all group"
 				>
 					<div class="w-8 h-8 bg-blue-500/10 text-blue-500 rounded-lg flex items-center justify-center font-bold text-xs group-hover:bg-blue-500 group-hover:text-white transition-colors">CS</div>
@@ -121,7 +129,7 @@
 
 				<button 
 					type="button"
-					onclick={() => quickLogin('user')}
+					onclick={() => quickLogin('USER')}
 					class="flex flex-col items-center gap-2 p-3 rounded-xl bg-zinc-50 dark:bg-white/5 border border-zinc-100 dark:border-white/5 hover:border-green-500 transition-all group"
 				>
 					<div class="w-8 h-8 bg-green-500/10 text-green-500 rounded-lg flex items-center justify-center font-bold text-xs group-hover:bg-green-500 group-hover:text-white transition-colors">U</div>
