@@ -6,7 +6,7 @@ Daftar hak akses dan fitur utama berdasarkan role pengguna.
 
 | Role | Allowed Routes | Main Features | Current Data Mode | Backend Required |
 | :--- | :--- | :--- | :--- | :--- |
-| **PUBLIC** | `/`, `/login`, `/register`, `/checkout`, `/order-success` | Browse menu, Cart, Checkout | `menu.ts`, `cartStore` | Auth & Order DB |
+| **PUBLIC** | `/`, `/katalog`, `/paket-catering`, `/tentang-kami`, `/kontak`, `/login`, `/register`, `/checkout`, `/order-success` | Browse menu, Cart, Checkout | `menu.ts`, `cartStore` | Auth & Order DB |
 | **USER** (Customer) | `/dashboard/*` | View orders, Profile, Manage Address | `user.ts` | Customer Profile DB |
 | **CS** | `/dashboard/cs/*` | Manage orders, Update menu stock, View customers | `cs.ts` | Order Operations DB |
 | **ADMIN** | `/dashboard/admin/*` | View reports, User management, System settings | `admin.ts` | Financial & User DB |

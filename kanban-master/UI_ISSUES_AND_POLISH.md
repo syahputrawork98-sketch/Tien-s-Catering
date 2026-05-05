@@ -38,3 +38,11 @@ Daftar hal yang perlu dirapikan untuk meningkatkan kualitas User Experience (UX)
 ## Future UX Improvements
 - [ ] Fitur "Pesan Lagi" (Re-order) satu klik dari riwayat pesanan.
 - [ ] Dark Mode support yang lebih merata di seluruh komponen dashboard (Beberapa border masih terlalu kontras di dark mode).
+## Brand Consistency Check (Phase 2K/2L)
+- [x] Public: `/`, `/katalog`, `/paket-catering`, `/tentang-kami`, `/kontak` (Tien's Catering)
+- [x] Navbar: Login button contrast fix (Solid mode visibility)
+- [x] Auth: `/login`, `/register` (Letter logo 'T')
+- [x] Dashboard: Layout & Mobile Header (Letter logo 'T')
+- [x] PDF Struk: Header "TIEN'S CATERING" & Alamat update
+- [x] Mock Data: Order prefix `#TC` & Wedding package name
+- [x] Metadata: Title tags & Meta descriptions on all public pages

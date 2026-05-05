@@ -6,9 +6,9 @@ Daftar seluruh komponen Svelte yang tersedia di `apps/src/lib/components/`.
 | :--- | :--- | :--- | :--- | :--- |
 | `PublicNavbar` | `src/lib/components/PublicNavbar.svelte` | Root Layout, Landing Page | **Active** | Global navigation header |
 | `CartDrawer` | `src/lib/components/CartDrawer.svelte` | Root Layout | **Active** | Shopping cart UI & Logic |
-| `MenuCard` | `src/lib/components/MenuCard.svelte` | Landing Page | **Active** | Display item menu |
-| `CategoryFilter` | `src/lib/components/CategoryFilter.svelte` | Landing Page | **Active** | UI filter kategori |
-| `ModalMenuDetail` | `src/lib/components/ModalMenuDetail.svelte` | Landing Page | **Needs Review**| Digantikan link login/direct buy? |
+| `MenuCard` | `src/lib/components/MenuCard.svelte` | Katalog Page | **Active** | Ditambah tombol Lihat Detail |
+| `ModalMenuDetail` | `src/lib/components/ModalMenuDetail.svelte` | Katalog Page | **Active** | Detail menu & Quantity selector |
+| `PackageDetailModal`| `src/lib/components/PackageDetailModal.svelte`| Paket Catering | **Active** | Detail paket & Layanan premium |
 | `OrderStatusBadge` | `src/lib/components/OrderStatusBadge.svelte`| CS/User Dashboard | **Active** | Status colors (New, Processing, etc) |
 | `StatusStepper` | `src/lib/components/StatusStepper.svelte` | Order Detail (Mock) | **Active** | Visual progress pesanan |
 | `ThemeToggle` | `src/lib/components/ThemeToggle.svelte` | Navbar / Sidebar | **Active** | Dark/Light mode switcher |

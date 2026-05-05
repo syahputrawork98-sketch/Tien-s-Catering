@@ -4,7 +4,11 @@ Peta rute aplikasi Tien's Catering beserta status implementasi saat ini.
 
 | Route | Area | Role | Status | Data Source | Storage | Backend Required | Notes |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| `/` | Public | ALL | Done | `mockMenus` | none | Yes | Landing page & Menu Catalog |
+| `/` | Public | ALL | Done | none | none | Yes | Hero Sederhana & 2 CTA |
+| `/katalog` | Public | ALL | Done | `mockMenus` | none | Yes | Katalog Menu Live |
+| `/paket-catering` | Public | ALL | Done | `mockPackages` | none | Yes | Daftar Paket Layanan |
+| `/tentang-kami` | Public | ALL | Done | none | none | No | Profil & Nilai Brand |
+| `/kontak` | Public | ALL | Done | none | none | No | Info Kontak & Lokasi |
 | `/login` | Public | ALL | Done | none | none | Yes | Quick login for testing roles |
 | `/register` | Public | ALL | Done | none | none | Yes | UI-only registration |
 | `/checkout` | Public | ALL | Done | `cart` store | none | Yes | Cart to Order flow |

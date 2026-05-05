@@ -2,17 +2,34 @@
 
 ## Public Area
 
-### `/` (Landing Page)
-- [x] Route fungsional
-- [x] Hero section dengan background image premium
-- [x] Date scroller fungsional (Filter menu per tanggal)
+### `/` (Home Ringkas)
+- [x] Full-screen Hero section dengan background image premium
+- [x] Branding "Tien's Catering" dominan
+- [x] CTA Utama: Paket Catering & Lihat Menu
+- [x] Minimal Footer (Home-specific)
+- [x] Navbar: Dinamis (Transparent on Home, Solid after scroll)
+
+### `/katalog` (Menu Live)
+- [x] Date scroller fungsional
 - [x] Katalog menu menampilkan `MenuCard`
-- [x] Badge "Live Stock" pada katalog
-- [x] Integrasi `CartDrawer` via tombol beli
-- [x] Section Paket Catering (Event/Corporate)
-- [x] Section Tentang Kami (Values & Stats)
-- [x] Footer dengan link social & kontak (Mock)
-- [x] Dead links (`#`) telah dibersihkan/dialihkan
+- [x] Badge stok & integrasi `CartDrawer`
+- [x] **Detail Modal**: Muncul saat klik Lihat Detail / Pesan Sekarang dengan quantity selector
+
+### `/paket-catering`
+- [x] Daftar paket (Nasi Box, Snack, dll)
+- [x] Detail fitur tiap paket
+- [x] **Detail Modal**: Muncul saat klik Detail dengan info benefit lengkap
+- [x] CTA Konsultasi / Login
+
+### `/tentang-kami`
+- [x] Story & Values
+- [x] Statistik pencapaian brand
+- [x] Area layanan informasi
+
+### `/kontak`
+- [x] Informasi kontak (WA/Email)
+- [x] Form Konsultasi (UI-only)
+- [x] Google Maps Placeholder UI
 
 ### `/login`
 - [x] Route fungsional
@@ -114,7 +131,7 @@
 ## Shared UI & Logic
 
 ### Global
-- [x] **Public Navbar**: Sticky, scroll effect, cart integration.
+- [x] **Public Navbar**: Kontras dinamis (Solid pada halaman selain Home, Login button diperbaiki).
 - [x] **Cart Drawer**: Global access, quantity update, item removal.
 - [x] **Unified Dashboard Layout**: Responsive sidebar, role-based menu.
 - [x] **Role Switcher**: Dev tool untuk pindah role instan.

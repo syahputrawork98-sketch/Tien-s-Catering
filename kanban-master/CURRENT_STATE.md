@@ -13,9 +13,11 @@ Project **Tien's Catering** telah berhasil bermigrasi ke arsitektur repositori b
 - **Interactivity**: Hampir seluruh fitur UI sudah interaktif (Cart, Role Switching, Form Simulation).
 
 ## Public Area Status
-- **Landing Page**: Sudah lengkap dengan katalog menu live.
-- **Cart & Checkout**: Flow lengkap mulai dari tambah ke keranjang hingga halaman sukses.
-- **Auth UI**: Halaman Login dan Register sudah tersedia secara UI-only.
+- **Structure**: Multi-page Refactor (Home, Katalog, Paket, Tentang Kami, Kontak).
+- **Home**: Sederhana (Full-screen Hero + 2 CTA Utama).
+- **Navbar**: Dinamis dengan deteksi route untuk kontras optimal.
+- **Cart & Checkout**: Flow lengkap terintegrasi secara global di seluruh halaman publik.
+- **Auth UI**: Halaman Login dan Register tersedia secara UI-only.
 
 ## Customer/User Dashboard Status
 - **Overview**: Ringkasan akun.
