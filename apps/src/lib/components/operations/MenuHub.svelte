@@ -66,7 +66,7 @@
           <ChevronLeft size={14} /> Kembali ke Dashboard
         </a>
         <h1 class="text-4xl font-black text-brand-charcoal dark:text-white tracking-tight">Master Menu Hub</h1>
-        <p class="text-zinc-400 font-medium mt-1">Kelola dan telusuri seluruh aset hidangan Gourmet Hub.</p>
+        <p class="text-zinc-400 font-medium mt-1">Kelola dan telusuri seluruh aset hidangan Tien's Catering.</p>
       </div>
 
       <!-- Search & Filters -->
@@ -276,7 +276,7 @@
     </div>
   {/if}
 
-  <!-- Gourmet Modal (Detail & Edit) -->
+  <!-- Catering Modal (Detail & Edit) -->
   {#if selectedMenu}
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->

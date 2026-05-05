@@ -50,7 +50,7 @@ export const mockMenus: MockMenuItem[] = [
 export const mockPackages = [
   {
     id: 'pkg-1',
-    name: 'Gourmet Wedding Package',
+    name: "Tien's Wedding Package",
     description: 'Layanan katering pernikahan lengkap dengan dekorasi dan pramusaji profesional.',
     basePrice: 12500000
   },

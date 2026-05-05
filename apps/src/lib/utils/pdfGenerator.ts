@@ -56,11 +56,11 @@ export function generateThermalReceipt(order: OrderData) {
 
 	let currY = 12;
 
-	// 1. Header (Gourmet Branded)
+	// 1. Header (Branded)
 	doc.setFontSize(18);
 	doc.setFont('Helvetica', 'bold');
 	doc.setTextColor(40, 40, 40);
-	doc.text('GOURMET HUB', width / 2, currY, { align: 'center' });
+	doc.text("TIEN'S CATERING", width / 2, currY, { align: 'center' });
 	
 	currY += 5;
 	doc.setFontSize(7);
@@ -71,7 +71,7 @@ export function generateThermalReceipt(order: OrderData) {
 	currY += 6;
 	doc.setFontSize(8);
 	doc.setTextColor(60, 60, 60);
-	doc.text('Jl. Raya Hub No. 123, Kawasan Industri', width / 2, currY, { align: 'center' });
+	doc.text('Jl. Raya Tien No. 123, Kawasan Industri', width / 2, currY, { align: 'center' });
 	doc.text('WhatsApp: 0812-3456-7890', width / 2, currY + 4, { align: 'center' });
 
 	currY += 10;
