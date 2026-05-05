@@ -30,7 +30,7 @@ export const dashboardNavigation: Record<MockRole, DashboardNavItem[]> = {
     },
     {
       label: 'Katalog',
-      href: '/',
+      href: '/katalog',
       description: 'Lihat menu catering'
     }
   ],
