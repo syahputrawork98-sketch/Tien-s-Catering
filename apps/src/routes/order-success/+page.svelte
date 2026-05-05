@@ -24,7 +24,7 @@
 </script>
 
 <svelte:head>
-    <title>Pesanan Berhasil | Gourmet Hub</title>
+    <title>Pesanan Berhasil | Tien's Catering</title>
 </svelte:head>
 
 <div class="min-h-screen bg-zinc-50 flex items-center justify-center p-6 dark:bg-zinc-950">

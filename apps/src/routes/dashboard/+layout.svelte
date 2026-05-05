@@ -28,7 +28,7 @@
     <!-- Mobile Header -->
     <header class="lg:hidden bg-white dark:bg-zinc-900 border-b border-zinc-100 dark:border-zinc-800 p-4 flex items-center justify-between sticky top-0 z-50">
         <div class="flex items-center gap-3">
-            <div class="w-8 h-8 bg-brand-primary rounded-lg flex items-center justify-center text-white font-black text-sm shadow-lg">G</div>
+            <div class="w-8 h-8 bg-brand-primary rounded-lg flex items-center justify-center text-white font-black text-sm shadow-lg">T</div>
             <span class="font-black text-brand-charcoal dark:text-white tracking-tighter">Dashboard</span>
         </div>
         <button aria-label="Buka Sidebar" onclick={() => isSidebarOpen = !isSidebarOpen} class="p-2 text-zinc-500">
@@ -59,8 +59,8 @@
             <!-- Logo Area -->
             <div class="p-8 hidden lg:block">
                 <a href="/" class="flex items-center gap-3 group">
-                    <div class="w-10 h-10 bg-brand-primary rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-brand-primary/20 group-hover:rotate-12 transition-transform">G</div>
-                    <span class="text-xl font-black text-brand-charcoal dark:text-white tracking-tighter">Gourmet<span class="text-brand-primary">Hub</span></span>
+                    <div class="w-10 h-10 bg-brand-primary rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-brand-primary/20 group-hover:rotate-12 transition-transform">T</div>
+                    <span class="text-xl font-black text-brand-charcoal dark:text-white tracking-tighter">Tien's<span class="text-brand-primary"> Catering</span></span>
                 </a>
             </div>
 

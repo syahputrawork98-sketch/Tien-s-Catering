@@ -73,7 +73,7 @@
                     </div>
                     <div class="border-l-2 border-white/20 pl-4 py-1">
                         <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">1h ago</p>
-                        <p class="text-xs font-bold text-zinc-300">Payment #GH229 confirmed</p>
+                        <p class="text-xs font-bold text-zinc-300">Payment #TC229 confirmed</p>
                     </div>
                 </div>
             </div>

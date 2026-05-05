@@ -31,7 +31,7 @@
         <div class="p-8">
             <div class="flex items-center justify-between p-6 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-zinc-100 dark:border-zinc-800">
                 <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 bg-green-100 text-green-600 rounded-xl flex items-center justify-center font-black">#GH</div>
+                    <div class="w-12 h-12 bg-green-100 text-green-600 rounded-xl flex items-center justify-center font-black">#TC</div>
                     <div>
                         <p class="font-black text-brand-charcoal dark:text-white">Pesanan Nasi Box Ayam</p>
                         <p class="text-xs text-zinc-400 font-bold uppercase tracking-widest">Status: Selesai</p>

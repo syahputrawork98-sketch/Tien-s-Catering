@@ -44,14 +44,14 @@
 </script>
 
 <svelte:head>
-	<title>Checkout | Gourmet Hub</title>
+	<title>Checkout | Tien's Catering</title>
 </svelte:head>
 
 <div class="px-6 py-12 max-w-6xl mx-auto min-h-screen">
 	<div class="mb-12">
 		<a href="/" class="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] hover:text-brand-primary transition-colors">← Kembali Belanja</a>
 		<h1 class="text-4xl font-black text-brand-charcoal tracking-tight mt-2">Finalisasi Pesanan</h1>
-		<p class="text-zinc-500 font-medium mt-1">Lengkapi detail pengiriman untuk hidangan gourmet Anda.</p>
+		<p class="text-zinc-500 font-medium mt-1">Lengkapi detail pengiriman untuk hidangan katering Anda.</p>
 	</div>
 
 	{#if cart.items.length === 0}
