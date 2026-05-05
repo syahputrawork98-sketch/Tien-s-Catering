@@ -9,8 +9,8 @@
 </script>
 
 <svelte:head>
-	<title>Gourmet Hub | Solusi Katering Profesional & Berkualitas</title>
-	<meta name="description" content="Layanan katering terbaik untuk instansi, kantor, dan acara personal dengan cita rasa gourmet." />
+	<title>Tien's Catering | Solusi Katering Profesional & Berkualitas</title>
+	<meta name="description" content="Layanan katering terbaik untuk instansi, kantor, dan acara personal dengan cita rasa autentik." />
 </svelte:head>
 
 <!-- Global Navbar -->
@@ -35,7 +35,7 @@
 					#1 Catering Solution Jakarta
 				</span>
 				<h1 class="text-5xl lg:text-8xl font-black text-white leading-tight mb-6 tracking-tighter">
-					Sajian <span class="text-brand-primary italic">Gourmet</span><br>Tanpa Batas.
+					Sajian <span class="text-brand-primary italic">Autentik</span><br>Tanpa Batas.
 				</h1>
 				<p class="text-xl text-zinc-200 mb-10 max-w-2xl mx-auto font-medium">
 					Standar kebersihan hotel bintang 5 dalam genggaman digital Anda. Solusi terbaik untuk instansi, korporat, dan acara spesial.
@@ -204,7 +204,7 @@
 					</div>
 					
 					<p class="text-zinc-500 text-lg leading-relaxed font-medium">
-						Gourmet Hub lahir dari visi untuk mendemokratisasi kualitas masakan hotel bintang 5 ke lingkungan kerja harian. Kami percaya bahwa makanan yang baik adalah bahan bakar bagi produktivitas dan kebahagiaan di kantor.
+						Tien's Catering lahir dari visi untuk mendemokratisasi kualitas masakan hotel bintang 5 ke lingkungan kerja harian. Kami percaya bahwa makanan yang baik adalah bahan bakar bagi produktivitas dan kebahagiaan di kantor.
 					</p>
 
 					<div class="grid grid-cols-2 gap-8">
@@ -247,7 +247,7 @@
 				<div class="flex items-center gap-4">
 					<div class="w-16 h-16 bg-brand-charcoal rounded-[1.5rem] flex items-center justify-center text-white font-black text-3xl shadow-2xl">G</div>
 					<div>
-						<span class="text-3xl font-black text-brand-charcoal tracking-tighter">Gourmet<span class="text-brand-primary">Hub</span></span>
+						<span class="text-3xl font-black text-brand-charcoal tracking-tighter">Tien's<span class="text-brand-primary"> Catering</span></span>
 						<p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mt-1">Premium Catering Excellence</p>
 					</div>
 				</div>
@@ -259,7 +259,7 @@
 			</div>
 			
 			<div class="pt-10 border-t border-zinc-100 flex flex-col md:flex-row justify-between items-center text-[10px] font-bold text-zinc-400 uppercase tracking-[0.3em] gap-6 text-center md:text-left">
-				<p>© 2026 Gourmet Hub | PT Kuliner Antariksa Nusantara.</p>
+				<p>© 2026 Tien's Catering | PT Kuliner Antariksa Nusantara.</p>
 				<div class="flex items-center gap-6">
 					<span>Banjarmasin, Indonesia</span>
 					<span class="bg-zinc-50 px-3 py-1 rounded-full border border-zinc-100">Ver 2.1.0</span>

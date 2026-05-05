@@ -17,7 +17,7 @@
 </script>
 
 <svelte:head>
-	<title>Daftar User | Gourmet Hub Premium Catering</title>
+	<title>Daftar User | Tien's Catering Premium</title>
 </svelte:head>
 
 <div class="min-h-screen bg-zinc-50 flex items-center justify-center p-6 relative overflow-hidden dark:bg-zinc-950">
@@ -29,11 +29,11 @@
 		<!-- Logo & Title -->
 		<div class="text-center mb-10">
 			<a href="/" class="inline-flex items-center gap-3 mb-6 group">
-				<div class="w-12 h-12 bg-brand-primary rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-xl shadow-brand-primary/20 group-hover:rotate-12 transition-transform">G</div>
-				<span class="text-3xl font-black text-brand-charcoal tracking-tighter dark:text-white">Gourmet<span class="text-brand-primary font-black">Hub</span></span>
+				<div class="w-12 h-12 bg-brand-primary rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-xl shadow-brand-primary/20 group-hover:rotate-12 transition-transform">T</div>
+				<span class="text-3xl font-black text-brand-charcoal tracking-tighter dark:text-white">Tien's<span class="text-brand-primary font-black"> Catering</span></span>
 			</a>
 			<h1 class="text-2xl font-black text-brand-charcoal dark:text-white">Bergabung dengan Kami</h1>
-			<p class="text-zinc-500 text-sm mt-2">Daftar sekarang untuk menikmati sajian gourmet harian.</p>
+			<p class="text-zinc-500 text-sm mt-2">Daftar sekarang untuk menikmati sajian katering harian.</p>
 		</div>
 
 		<!-- Registration Card -->

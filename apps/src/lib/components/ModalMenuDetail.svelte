@@ -35,7 +35,7 @@
 				</div>
 				<h2 class="text-2xl font-extrabold text-brand-charcoal mb-4">{item.name}</h2>
 				<p class="text-zinc-500 text-sm leading-relaxed mb-8">
-					Nikmati perpaduan rasa autentik dari bahan-bahan pilihan berkualitas tinggi. Dimasak segar setiap hari untuk menjaga cita rasa gourmet yang maksimal.
+					Nikmati perpaduan rasa autentik dari bahan-bahan pilihan berkualitas tinggi. Dimasak segar setiap hari untuk menjaga cita rasa katering yang maksimal.
 				</p>
 
 				<div class="flex items-center justify-between pt-6 border-t border-zinc-100">

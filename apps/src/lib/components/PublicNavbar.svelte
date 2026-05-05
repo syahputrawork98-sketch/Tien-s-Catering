@@ -30,9 +30,9 @@
   <div class="container mx-auto px-6 flex items-center justify-between">
     <!-- Logo -->
     <a href="/" class="flex items-center gap-3 group">
-      <div class="w-10 h-10 bg-brand-primary rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-brand-primary/20 group-hover:rotate-12 transition-transform duration-300">G</div>
+      <div class="w-10 h-10 bg-brand-primary rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-brand-primary/20 group-hover:rotate-12 transition-transform duration-300">T</div>
       <span class="text-xl font-black tracking-tighter {scrolled ? 'text-brand-charcoal' : 'text-white'} transition-colors">
-        Gourmet<span class="text-brand-primary">Hub</span>
+        Tien's<span class="text-brand-primary"> Catering</span>
       </span>
     </a>
 
