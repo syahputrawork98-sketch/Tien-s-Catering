@@ -1,0 +1,54 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-brand-primary: #FF6B35;
+  --color-brand-charcoal: #1A1A1A;
+  --color-brand-bg: #FCFAFA;
+  --color-brand-accent: #FF9F1C;
+}
+
+@layer base {
+  :root {
+    --brand-primary: #FF6B35;
+    --brand-charcoal: #1A1A1A;
+    --brand-bg: #FCFAFA;
+    --brand-accent: #FF9F1C;
+    
+    --bg-app: var(--brand-bg);
+    --text-app: #18181b; /* zinc-900 */
+    --border-app: #e4e4e7; /* zinc-200 */
+    color-scheme: light;
+  }
+
+  .dark {
+    --bg-app: #09090b; /* zinc-950 */
+    --text-app: #f4f4f5; /* zinc-100 */
+    --border-app: #27272a; /* zinc-800 or white/5 */
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: var(--bg-app);
+    color: var(--text-app);
+    transition: background-color 0.3s, color 0.3s;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    scroll-behavior: smooth;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-brand-charcoal font-bold tracking-tight;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-brand-primary text-white font-semibold py-3 px-6 rounded-xl 
+           transition-all duration-300 hover:bg-brand-accent hover:shadow-lg 
+           hover:-translate-y-0.5 active:translate-y-0 active:shadow-md;
+  }
+
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-xl rounded-2xl;
+  }
+}
