@@ -1,6 +1,6 @@
 # Backend Not Started
 
-Dokumen ini menyatakan secara tegas bahwa pengembangan sisi server untuk versi baru Gourmet Hub (Tien's Catering) **belum dimulai**. Seluruh fungsionalitas saat ini murni berbasis frontend.
+Dokumen ini menyatakan secara tegas bahwa pengembangan sisi server untuk versi baru Tien's Catering **belum dimulai**. Seluruh fungsionalitas saat ini murni berbasis frontend.
 
 ## Current Rule (ATURAN KERAS)
 - **NO MIGRATION**: Jangan pindahkan kode backend, controller, atau database schema dari repositori lama secara mentah-mentah.

@@ -1,6 +1,6 @@
 # Route Map
 
-Peta rute aplikasi Gourmet Hub (Tien's Catering) beserta status implementasi saat ini.
+Peta rute aplikasi Tien's Catering beserta status implementasi saat ini.
 
 | Route | Area | Role | Status | Data Source | Storage | Backend Required | Notes |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |

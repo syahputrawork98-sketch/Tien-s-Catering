@@ -25,7 +25,7 @@ Daftar hal yang perlu dirapikan untuk meningkatkan kualitas User Experience (UX)
 - [ ] Tombol "Ubah Password" masih berupa placeholder fungsional.
 
 ## Copywriting
-- [ ] Review seluruh teks "Gourmet Hub" vs "Tien's Catering" untuk konsistensi brand.
+- [ ] Review seluruh teks brand lama vs "Tien's Catering" untuk konsistensi.
 - [ ] Perbaikan pesan error pada form (Misal: "Format WhatsApp tidak valid").
 
 ## Visual Consistency

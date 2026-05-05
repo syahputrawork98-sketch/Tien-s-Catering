@@ -9,7 +9,7 @@ Project **Tien's Catering** telah berhasil bermigrasi ke arsitektur repositori b
 
 ## Frontend Status
 - **Framework**: SvelteKit (Svelte 5 Runes).
-- **Styling**: TailwindCSS dengan kustomisasi brand Gourmet Hub.
+- **Styling**: TailwindCSS dengan kustomisasi brand Tien's Catering.
 - **Interactivity**: Hampir seluruh fitur UI sudah interaktif (Cart, Role Switching, Form Simulation).
 
 ## Public Area Status
