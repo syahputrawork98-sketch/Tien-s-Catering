@@ -18,7 +18,7 @@
 		role="button"
 		tabindex="0"
 		aria-label="Tutup laci keranjang"
-		class="fixed inset-0 bg-brand-charcoal/20 backdrop-blur-sm z-[60]" 
+		class="fixed inset-0 bg-brand-charcoal/20 backdrop-blur-sm z-[120]" 
 		transition:fade 
 		onclick={() => cart.toggleDrawer()}
 		onkeydown={(e) => e.key === 'Enter' && cart.toggleDrawer()}
@@ -26,7 +26,7 @@
 
 	<!-- Drawer -->
 	<div 
-		class="fixed top-0 right-0 h-full w-full max-w-sm bg-white shadow-2xl z-[70] flex flex-col"
+		class="fixed top-0 right-0 h-full w-full max-w-sm bg-white shadow-2xl z-[130] flex flex-col"
 		transition:fly={{ x: 400, duration: 400 }}
 	>
 		<!-- Header -->

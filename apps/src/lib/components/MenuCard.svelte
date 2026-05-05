@@ -7,7 +7,8 @@
 		category = "Umum", 
 		image = "", 
 		stock = 0, 
-		deliveryDate = "" 
+		deliveryDate = "",
+		onDetail = undefined
 	} = $props<{
 		id?: string;
 		name?: string;
@@ -16,6 +17,7 @@
 		image?: string | null;
 		stock?: number;
 		deliveryDate?: string;
+		onDetail?: (item: any) => void;
 	}>();
 
 	function formatPrice(val: number | string) {
@@ -84,8 +86,16 @@
 		</div>
 
 		<div class="flex items-center justify-between mt-auto pt-2">
-			<div class="text-brand-primary font-extrabold text-xl">
-				{formatPrice(price)}
+			<div class="flex flex-col">
+				<div class="text-brand-primary font-extrabold text-xl">
+					{formatPrice(price)}
+				</div>
+				<button 
+					onclick={() => onDetail && onDetail({ id, name, price, image, category, stock })}
+					class="text-[10px] font-black text-zinc-400 uppercase tracking-widest hover:text-brand-primary text-left mt-1"
+				>
+					Lihat Detail
+				</button>
 			</div>
 			
 			<button 
