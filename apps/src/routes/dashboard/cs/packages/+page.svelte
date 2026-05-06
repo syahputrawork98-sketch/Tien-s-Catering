@@ -238,28 +238,32 @@
 
     <!-- Navigation & Tabs -->
     <div class="space-y-8" in:fade={{ delay: 300 }}>
-        <div class="flex overflow-x-auto pb-4 scrollbar-hide no-scrollbar -mx-4 px-4">
-            <div class="flex gap-3 min-w-max">
-                {#each tabs as tab}
-                    <button 
-                        onclick={() => activeTab = tab.id}
-                        class="px-8 py-4 rounded-full text-xs font-black uppercase tracking-widest transition-all flex items-center gap-4
-                        {activeTab === tab.id 
-                            ? 'bg-brand-charcoal dark:bg-white text-white dark:text-brand-charcoal shadow-xl scale-105' 
-                            : 'bg-white dark:bg-zinc-900 text-zinc-400 border border-zinc-100 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-600'}"
-                    >
-                        {tab.label}
-                        {#if getCount(tab.id) > 0}
-                            <span class="px-2 py-0.5 rounded-md text-[9px] 
-                                {activeTab === tab.id 
-                                    ? 'bg-white/20 text-white dark:bg-brand-charcoal/10 dark:text-brand-charcoal' 
-                                    : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500'}">
-                                {getCount(tab.id)}
-                            </span>
-                        {/if}
-                    </button>
-                {/each}
+        <div class="relative group/tabs">
+            <div class="flex overflow-x-auto pb-6 no-scrollbar -mx-4 px-4">
+                <div class="flex gap-4 min-w-max">
+                    {#each tabs as tab}
+                        <button 
+                            onclick={() => activeTab = tab.id}
+                            class="shrink-0 px-8 py-4 rounded-full text-xs font-black uppercase tracking-widest transition-all flex items-center gap-4
+                            {activeTab === tab.id 
+                                ? 'bg-brand-charcoal dark:bg-white text-white dark:text-brand-charcoal shadow-xl scale-105' 
+                                : 'bg-white dark:bg-zinc-900 text-zinc-400 border border-zinc-100 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-600'}"
+                        >
+                            {tab.label}
+                            {#if getCount(tab.id) > 0}
+                                <span class="px-2 py-0.5 rounded-md text-[9px] 
+                                    {activeTab === tab.id 
+                                        ? 'bg-white/20 text-white dark:bg-brand-charcoal/10 dark:text-brand-charcoal' 
+                                        : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500'}">
+                                    {getCount(tab.id)}
+                                </span>
+                            {/if}
+                        </button>
+                    {/each}
+                </div>
             </div>
+            <!-- Scroll Hint Gradient -->
+            <div class="absolute right-0 top-0 bottom-6 w-20 pointer-events-none bg-gradient-to-l from-zinc-50 dark:from-zinc-950 to-transparent z-10 opacity-0 group-hover/tabs:opacity-100 transition-opacity md:opacity-100"></div>
         </div>
 
         <!-- Package Grid -->
@@ -305,7 +309,11 @@
                                     <div class="flex justify-between items-start mb-2">
                                         <h3 class="text-xl font-black text-brand-charcoal dark:text-white leading-tight">{pkg.name}</h3>
                                         <div class="flex flex-col items-end gap-2">
-                                            <button onclick={() => toggleActive(pkg.id)} class="w-10 h-5 rounded-full relative transition-all {pkg.isActive ? 'bg-emerald-500' : 'bg-zinc-200 dark:bg-zinc-800'}">
+                                            <button 
+                                                onclick={() => toggleActive(pkg.id)} 
+                                                aria-label="Toggle status paket"
+                                                class="w-10 h-5 rounded-full relative transition-all {pkg.isActive ? 'bg-emerald-500' : 'bg-zinc-200 dark:bg-zinc-800'}"
+                                            >
                                                 <div class="absolute top-1 w-3 h-3 bg-white rounded-full transition-all {pkg.isActive ? 'left-6' : 'left-1'} shadow-sm"></div>
                                             </button>
                                         </div>
@@ -375,33 +383,33 @@
     <div class="space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="space-y-2">
-                <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Nama Paket *</label>
-                <input type="text" bind:value={packageForm.name} class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary" />
+                <label for="pkgName" class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Nama Paket *</label>
+                <input id="pkgName" type="text" bind:value={packageForm.name} class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary" />
                 {#if formErrors.name}<p class="text-[9px] font-bold text-red-500 uppercase tracking-wider">{formErrors.name}</p>{/if}
             </div>
             <div class="space-y-2">
-                <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Kategori Paket *</label>
-                <select bind:value={packageForm.category} class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary appearance-none">
+                <label for="pkgCat" class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Kategori Paket *</label>
+                <select id="pkgCat" bind:value={packageForm.category} class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary appearance-none">
                     {#each categories as cat}<option value={cat.name}>{cat.name}</option>{/each}
                 </select>
                 {#if formErrors.category}<p class="text-[9px] font-bold text-red-500 uppercase tracking-wider">{formErrors.category}</p>{/if}
             </div>
             <div class="space-y-2">
-                <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Harga Mulai Dari *</label>
-                <input type="number" bind:value={packageForm.price} class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary" />
+                <label for="pkgPrice" class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Harga Mulai Dari *</label>
+                <input id="pkgPrice" type="number" bind:value={packageForm.price} class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary" />
                 {#if formErrors.price}<p class="text-[9px] font-bold text-red-500 uppercase tracking-wider">{formErrors.price}</p>{/if}
             </div>
             <div class="space-y-2">
-                <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Minimal Pax *</label>
-                <input type="number" bind:value={packageForm.minPax} class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary" />
+                <label for="pkgPax" class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Minimal Pax *</label>
+                <input id="pkgPax" type="number" bind:value={packageForm.minPax} class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary" />
             </div>
             <div class="space-y-2 col-span-2">
-                <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Deskripsi</label>
-                <textarea bind:value={packageForm.description} rows="3" class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary resize-none"></textarea>
+                <label for="pkgDesc" class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Deskripsi</label>
+                <textarea id="pkgDesc" bind:value={packageForm.description} rows="3" class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary resize-none"></textarea>
             </div>
             <div class="space-y-2 col-span-2">
-                <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">URL Gambar</label>
-                <input type="text" bind:value={packageForm.image} class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary" />
+                <label for="pkgImg" class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">URL Gambar</label>
+                <input id="pkgImg" type="text" bind:value={packageForm.image} class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary" />
             </div>
         </div>
         <div class="flex gap-4 pt-4">

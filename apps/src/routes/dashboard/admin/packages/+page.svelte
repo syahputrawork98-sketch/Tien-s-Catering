@@ -32,7 +32,7 @@
         features: '', packageItems: '', adminNote: ''
     });
     let catForm = $state({
-        name: '', description: '', status: 'active' as const, adminNote: ''
+        name: '', description: '', status: 'active' as import('$lib/mock/packageCategories').MockPackageCategoryStatus, adminNote: ''
     });
     let formError = $state('');
 
@@ -141,7 +141,7 @@
         const data = {
             name: catForm.name, slug: slugifyCategoryName(catForm.name),
             description: catForm.description, status: catForm.status,
-            updatedBy: 'admin', updatedAt: new Date().toISOString().slice(0, 10),
+            updatedBy: 'admin' as const, updatedAt: new Date().toISOString().slice(0, 10),
             adminNote: catForm.adminNote
         };
 
@@ -154,8 +154,8 @@
             }
         } else {
             const newCat: MockPackageCategory = {
-                id: `cat-${Date.now()}`, createdBy: 'admin', createdAt: new Date().toISOString().slice(0, 10),
-                ...data as any
+                id: `cat-${Date.now()}`, createdBy: 'admin' as const, createdAt: new Date().toISOString().slice(0, 10),
+                ...data
             };
             categories = [...categories, newCat];
         }
@@ -281,7 +281,11 @@
                                 <h3 class="text-lg font-black italic tracking-tighter uppercase">{cat.name}</h3>
                                 <p class="text-[10px] font-mono text-zinc-400">/{cat.slug}</p>
                             </div>
-                            <button onclick={() => toggleCatStatus(cat)} class="px-3 py-1 rounded-full text-[9px] font-black uppercase transition-all {cat.status === 'active' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-zinc-100 text-zinc-400 border border-zinc-200'}">
+                            <button 
+                                onclick={() => toggleCatStatus(cat)} 
+                                aria-label="Toggle status kategori"
+                                class="px-3 py-1 rounded-full text-[9px] font-black uppercase transition-all {cat.status === 'active' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-zinc-100 text-zinc-400 border border-zinc-200'}"
+                            >
                                 {cat.status === 'active' ? 'Aktif' : 'Nonaktif'}
                             </button>
                         </div>
