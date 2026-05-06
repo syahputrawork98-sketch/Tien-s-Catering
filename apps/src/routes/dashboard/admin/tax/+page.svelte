@@ -4,6 +4,20 @@
     import Modal from '$lib/components/ui/Modal.svelte';
 
     type TabType = 'ALL' | CustomerTaxType;
+    
+    type PaymentAccount = {
+      id: string;
+      bankName: string;
+      accountNumber: string;
+      accountHolder: string;
+      type: 'bank_transfer' | 'qris' | 'ewallet';
+      isPrimary: boolean;
+      isActive: boolean;
+      qrImageUrl?: string;
+      note?: string;
+      createdAt: string;
+      updatedAt: string;
+    };
 
     let rules = $state<MockTaxRule[]>(mockTaxRules.map(r => ({ ...r })));
     let activeTab = $state<TabType>('ALL');
@@ -39,6 +53,59 @@
         adminNote: ''
     });
     let editError = $state('');
+
+    // Payment Accounts State
+    let paymentAccounts = $state<PaymentAccount[]>([
+        {
+            id: 'pay-001',
+            bankName: 'BCA',
+            accountNumber: '1234567890',
+            accountHolder: "Tien's Catering",
+            type: 'bank_transfer',
+            isPrimary: true,
+            isActive: true,
+            createdAt: '2026-05-01',
+            updatedAt: '2026-05-01'
+        },
+        {
+            id: 'pay-002',
+            bankName: 'Mandiri',
+            accountNumber: '0987654321',
+            accountHolder: "Tien's Catering",
+            type: 'bank_transfer',
+            isPrimary: false,
+            isActive: true,
+            createdAt: '2026-05-01',
+            updatedAt: '2026-05-01'
+        },
+        {
+            id: 'pay-003',
+            bankName: 'QRIS',
+            accountNumber: 'TIENSCAT',
+            accountHolder: "Tien's Catering",
+            type: 'qris',
+            isPrimary: false,
+            isActive: true,
+            qrImageUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=TIENSCAT',
+            createdAt: '2026-05-01',
+            updatedAt: '2026-05-01'
+        }
+    ]);
+
+    let showPaymentModal = $state(false);
+    let isEditingPayment = $state(false);
+    let selectedPayment = $state<PaymentAccount | null>(null);
+    let paymentForm = $state({
+        bankName: '',
+        accountNumber: '',
+        accountHolder: '',
+        type: 'bank_transfer' as PaymentAccount['type'],
+        isPrimary: false,
+        isActive: true,
+        qrImageUrl: '',
+        note: ''
+    });
+    let paymentError = $state('');
 
     // Simulation
     let simSubtotal = $state(1000000);
@@ -90,6 +157,89 @@
         } : r);
 
         showEditModal = false;
+    }
+
+    // Payment Handlers
+    function openAddPayment() {
+        isEditingPayment = false;
+        paymentForm = {
+            bankName: '',
+            accountNumber: '',
+            accountHolder: "Tien's Catering",
+            type: 'bank_transfer',
+            isPrimary: false,
+            isActive: true,
+            qrImageUrl: '',
+            note: ''
+        };
+        paymentError = '';
+        showPaymentModal = true;
+    }
+
+    function openEditPayment(pay: PaymentAccount) {
+        selectedPayment = pay;
+        isEditingPayment = true;
+        paymentForm = {
+            bankName: pay.bankName,
+            accountNumber: pay.accountNumber,
+            accountHolder: pay.accountHolder,
+            type: pay.type,
+            isPrimary: pay.isPrimary,
+            isActive: pay.isActive,
+            qrImageUrl: pay.qrImageUrl || '',
+            note: pay.note || ''
+        };
+        paymentError = '';
+        showPaymentModal = true;
+    }
+
+    function savePayment() {
+        if (!paymentForm.bankName.trim()) { paymentError = 'Nama Bank/Provider wajib diisi.'; return; }
+        if (!paymentForm.accountNumber.trim()) { paymentError = 'Nomor rekening wajib diisi.'; return; }
+        if (!paymentForm.accountHolder.trim()) { paymentError = 'Nama pemilik rekening wajib diisi.'; return; }
+
+        if (isEditingPayment && selectedPayment) {
+            paymentAccounts = paymentAccounts.map(p => {
+                if (p.id === selectedPayment!.id) {
+                    return {
+                        ...p,
+                        ...paymentForm,
+                        updatedAt: new Date().toISOString().slice(0, 10)
+                    };
+                }
+                // If this is set as primary, unset others
+                if (paymentForm.isPrimary && p.id !== selectedPayment!.id) {
+                    return { ...p, isPrimary: false };
+                }
+                return p;
+            });
+        } else {
+            const newPay: PaymentAccount = {
+                id: `pay-${Date.now()}`,
+                ...paymentForm,
+                createdAt: new Date().toISOString().slice(0, 10),
+                updatedAt: new Date().toISOString().slice(0, 10)
+            };
+            
+            if (newPay.isPrimary) {
+                paymentAccounts = paymentAccounts.map(p => ({ ...p, isPrimary: false }));
+            }
+            
+            paymentAccounts = [...paymentAccounts, newPay];
+        }
+
+        showPaymentModal = false;
+    }
+
+    function togglePaymentActive(id: string) {
+        paymentAccounts = paymentAccounts.map(p => p.id === id ? { ...p, isActive: !p.isActive } : p);
+    }
+
+    function setPrimaryPayment(id: string) {
+        paymentAccounts = paymentAccounts.map(p => ({
+            ...p,
+            isPrimary: p.id === id
+        }));
     }
 
     const tabs: { id: TabType; label: string }[] = [
@@ -258,6 +408,77 @@
             </div>
         </div>
     </div>
+
+    <!-- Payment Accounts Section -->
+    <div class="space-y-8 pt-10 border-t border-zinc-100 dark:border-zinc-800" in:fade={{ delay: 450 }}>
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-2xl flex items-center justify-center text-2xl">💳</div>
+                <div>
+                    <h2 class="text-2xl font-black text-brand-charcoal dark:text-white tracking-tighter italic uppercase">Rekening Pembayaran</h2>
+                    <p class="text-xs text-zinc-500 font-medium">Kelola rekening bank dan QRIS untuk metode pembayaran customer.</p>
+                </div>
+            </div>
+            <button 
+                onclick={openAddPayment}
+                class="px-6 py-4 bg-emerald-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
+            >
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Tambah Rekening
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {#each paymentAccounts as pay (pay.id)}
+                <div class="bg-white dark:bg-zinc-900 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm p-6 hover:shadow-md transition-all relative overflow-hidden group">
+                    {#if pay.isPrimary}
+                        <div class="absolute top-0 right-0">
+                            <div class="bg-emerald-500 text-white text-[8px] font-black uppercase tracking-widest px-6 py-1 rotate-45 translate-x-4 translate-y-2 shadow-sm">Utama</div>
+                        </div>
+                    {/if}
+
+                    <div class="space-y-6">
+                        <div class="flex items-start justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-zinc-50 dark:bg-zinc-800 rounded-xl flex items-center justify-center text-xl shadow-inner">
+                                    {pay.type === 'qris' ? '📱' : '🏦'}
+                                </div>
+                                <div>
+                                    <h3 class="text-sm font-black text-brand-charcoal dark:text-white uppercase tracking-tighter">{pay.bankName}</h3>
+                                    <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest">{pay.type.replace('_', ' ')}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button onclick={() => togglePaymentActive(pay.id)} class="w-8 h-4 rounded-full relative transition-all {pay.isActive ? 'bg-emerald-500' : 'bg-zinc-200 dark:bg-zinc-800'}">
+                                    <div class="absolute top-0.5 w-3 h-3 bg-white rounded-full transition-all {pay.isActive ? 'left-4.5' : 'left-0.5'} shadow-sm"></div>
+                                </button>
+                            </div>
+                        </div>
+
+                        {#if pay.type === 'qris' && pay.qrImageUrl}
+                            <div class="aspect-square w-32 mx-auto bg-white p-2 rounded-2xl border border-zinc-100 shadow-sm group-hover:scale-105 transition-transform duration-500">
+                                <img src={pay.qrImageUrl} alt="QRIS" class="w-full h-full object-contain" />
+                            </div>
+                        {:else}
+                            <div class="py-4 space-y-2">
+                                <p class="text-lg font-black text-brand-charcoal dark:text-white tracking-widest text-center italic">{pay.accountNumber}</p>
+                                <p class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest text-center">a.n. {pay.accountHolder}</p>
+                            </div>
+                        {/if}
+
+                        <div class="flex gap-2 pt-4 border-t border-zinc-50 dark:border-zinc-800">
+                            <button onclick={() => openEditPayment(pay)} class="flex-1 py-2 bg-zinc-50 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-zinc-100 transition-all">Edit</button>
+                            {#if !pay.isPrimary}
+                                <button onclick={() => setPrimaryPayment(pay.id)} class="flex-1 py-2 bg-brand-charcoal dark:bg-white text-white dark:text-brand-charcoal text-[9px] font-black uppercase tracking-widest rounded-xl hover:scale-105 transition-all">Set Utama</button>
+                            {/if}
+                        </div>
+                    </div>
+                </div>
+            {/each}
+        </div>
+    </div>
 </div>
 
 <!-- Modal Detail -->
@@ -418,6 +639,76 @@
         <div class="flex gap-3 pt-6">
             <button onclick={() => showEditModal = false} class="flex-1 py-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 text-[10px] font-black uppercase tracking-widest rounded-2xl">Batal</button>
             <button onclick={saveEdit} class="flex-1 py-4 bg-brand-charcoal dark:bg-white text-white dark:text-brand-charcoal text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl hover:scale-105 active:scale-95 transition-all">Simpan Aturan</button>
+        </div>
+    </div>
+</Modal>
+
+<!-- Modal Payment Account -->
+<Modal show={showPaymentModal} title={isEditingPayment ? "Edit Rekening Pembayaran ✏️" : "Tambah Rekening Baru 💳"} onClose={() => showPaymentModal = false} maxWidth="max-w-2xl">
+    <div class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-1">
+                <label for="pBank" class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Bank / Provider *</label>
+                <input id="pBank" type="text" bind:value={paymentForm.bankName} placeholder="Contoh: BCA, Mandiri, QRIS" class="w-full px-5 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary" />
+            </div>
+            
+            <div class="space-y-1">
+                <label for="pType" class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Tipe Pembayaran</label>
+                <select id="pType" bind:value={paymentForm.type} class="w-full px-5 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary appearance-none">
+                    <option value="bank_transfer">Bank Transfer</option>
+                    <option value="qris">QRIS</option>
+                    <option value="ewallet">E-Wallet</option>
+                </select>
+            </div>
+
+            <div class="space-y-1">
+                <label for="pNumber" class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Nomor Rekening / ID *</label>
+                <input id="pNumber" type="text" bind:value={paymentForm.accountNumber} class="w-full px-5 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary" />
+            </div>
+
+            <div class="space-y-1">
+                <label for="pName" class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Atas Nama *</label>
+                <input id="pName" type="text" bind:value={paymentForm.accountHolder} class="w-full px-5 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary" />
+            </div>
+
+            {#if paymentForm.type === 'qris'}
+                <div class="space-y-1 col-span-2">
+                    <label for="pQr" class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">URL Gambar QRIS</label>
+                    <input id="pQr" type="text" bind:value={paymentForm.qrImageUrl} placeholder="https://..." class="w-full px-5 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary" />
+                    {#if paymentForm.qrImageUrl}
+                        <div class="mt-4 p-4 bg-white rounded-2xl border border-zinc-100 flex justify-center">
+                            <img src={paymentForm.qrImageUrl} alt="Preview QRIS" class="h-32 object-contain" />
+                        </div>
+                    {/if}
+                </div>
+            {/if}
+
+            <div class="space-y-1 col-span-2">
+                <label for="pNote" class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Catatan (Opsional)</label>
+                <textarea id="pNote" bind:value={paymentForm.note} rows="2" class="w-full px-5 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary resize-none"></textarea>
+            </div>
+
+            <div class="col-span-2 flex flex-col md:flex-row gap-4">
+                <label class="flex-1 flex items-center gap-3 p-4 bg-zinc-50 dark:bg-zinc-800 rounded-2xl cursor-pointer hover:bg-zinc-100 transition-all">
+                    <input type="checkbox" bind:checked={paymentForm.isActive} class="w-5 h-5 rounded-lg border-zinc-200 text-brand-primary focus:ring-brand-primary" />
+                    <span class="text-xs font-black uppercase tracking-widest text-zinc-600 dark:text-zinc-300">Status Aktif</span>
+                </label>
+                <label class="flex-1 flex items-center gap-3 p-4 bg-zinc-50 dark:bg-zinc-800 rounded-2xl cursor-pointer hover:bg-zinc-100 transition-all">
+                    <input type="checkbox" bind:checked={paymentForm.isPrimary} class="w-5 h-5 rounded-lg border-zinc-200 text-emerald-500 focus:ring-emerald-500" />
+                    <span class="text-xs font-black uppercase tracking-widest text-zinc-600 dark:text-zinc-300">Jadikan Utama</span>
+                </label>
+            </div>
+
+            {#if paymentError}
+                <div class="col-span-2 p-4 bg-red-50 text-red-600 rounded-xl text-xs font-bold text-center">
+                    {paymentError}
+                </div>
+            {/if}
+        </div>
+
+        <div class="flex gap-3 pt-6">
+            <button onclick={() => showPaymentModal = false} class="flex-1 py-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 text-[10px] font-black uppercase tracking-widest rounded-2xl">Batal</button>
+            <button onclick={savePayment} class="flex-1 py-4 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl hover:scale-105 active:scale-95 transition-all">Simpan Rekening</button>
         </div>
     </div>
 </Modal>

@@ -239,19 +239,19 @@
     <!-- Navigation & Tabs -->
     <div class="space-y-8" in:fade={{ delay: 300 }}>
         <div class="relative group/tabs">
-            <div class="flex overflow-x-auto pb-6 no-scrollbar -mx-4 px-4">
-                <div class="flex gap-4 min-w-max">
+            <div class="overflow-x-auto no-scrollbar scroll-smooth pb-2">
+                <div class="flex w-max gap-2 px-1">
                     {#each tabs as tab}
                         <button 
                             onclick={() => activeTab = tab.id}
-                            class="shrink-0 px-8 py-4 rounded-full text-xs font-black uppercase tracking-widest transition-all flex items-center gap-4
+                            class="shrink-0 whitespace-nowrap rounded-full px-5 py-3 text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-2
                             {activeTab === tab.id 
-                                ? 'bg-brand-charcoal dark:bg-white text-white dark:text-brand-charcoal shadow-xl scale-105' 
+                                ? 'bg-brand-charcoal dark:bg-white text-white dark:text-brand-charcoal shadow-lg' 
                                 : 'bg-white dark:bg-zinc-900 text-zinc-400 border border-zinc-100 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-600'}"
                         >
                             {tab.label}
                             {#if getCount(tab.id) > 0}
-                                <span class="px-2 py-0.5 rounded-md text-[9px] 
+                                <span class="px-1.5 py-0.5 rounded-md text-[8px] 
                                     {activeTab === tab.id 
                                         ? 'bg-white/20 text-white dark:bg-brand-charcoal/10 dark:text-brand-charcoal' 
                                         : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500'}">
@@ -262,8 +262,9 @@
                     {/each}
                 </div>
             </div>
-            <!-- Scroll Hint Gradient -->
-            <div class="absolute right-0 top-0 bottom-6 w-20 pointer-events-none bg-gradient-to-l from-zinc-50 dark:from-zinc-950 to-transparent z-10 opacity-0 group-hover/tabs:opacity-100 transition-opacity md:opacity-100"></div>
+            <!-- Scroll Hint Gradients -->
+            <div class="pointer-events-none absolute left-0 top-0 h-full w-6 bg-gradient-to-r from-zinc-50/50 dark:from-zinc-950/50 to-transparent z-10"></div>
+            <div class="pointer-events-none absolute right-0 top-0 h-full w-12 bg-gradient-to-l from-zinc-50 dark:from-zinc-950 to-transparent z-10"></div>
         </div>
 
         <!-- Package Grid -->
