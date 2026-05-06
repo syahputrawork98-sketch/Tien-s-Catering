@@ -6,6 +6,7 @@ _Updated: 2026-05-06 — Single Source of Truth Refactor_
 ```
 apps/src/lib/mock/
 ├── catalog.ts          ← SUMBER UTAMA: Menu & Paket
+├── packageCategories.ts ← SUMBER UTAMA: Kategori Paket
 ├── accounts.ts         ← SUMBER UTAMA: Semua akun (user, CS, admin)
 ├── orders.ts           ← SUMBER UTAMA: Semua pesanan
 ├── reports.ts          ← DERIVED: Laporan admin (dihitung dari orders & accounts)
@@ -164,6 +165,7 @@ Saat backend dibuat, mapping ke tabel database:
 | `orders.ts` | `orders`, `order_items` |
 | `orders.ts` (payment fields) | `payments` |
 | `reports.ts` | Views / aggregates / `reports` |
+| `packageCategories.ts` | `package_categories` |
 | `tax.ts` | `tax_rules`, `invoice_settings` |
 | `session.ts` | `auth_sessions` |
 | `user.ts` (addresses) | `addresses` |

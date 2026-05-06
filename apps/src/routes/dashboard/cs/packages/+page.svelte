@@ -1,5 +1,6 @@
 <script lang="ts">
     import { mockCatalogPackages, type CatalogItem } from '$lib/mock/catalog';
+    import { mockPackageCategories, getActivePackageCategories } from '$lib/mock/packageCategories';
     import { fade, fly, scale } from 'svelte/transition';
     import Modal from '$lib/components/ui/Modal.svelte';
 
@@ -12,11 +13,12 @@
 	}
 
     const TODAY = '2026-05-06';
-    type TabType = 'SEMUA' | 'NASI_BOX' | 'SNACK_BOX' | 'PRASMANAN' | 'CORPORATE' | 'WEDDING' | 'CUSTOM';
     
-    // Local state for simulated edits
+    // Local state
     let packages = $state<CatalogItem[]>([...mockCatalogPackages]);
-    let activeTab = $state<TabType>('SEMUA');
+    let categories = $state(mockPackageCategories.filter(c => c.status === 'active'));
+    
+    let activeTab = $state('SEMUA');
 
     // Modal state
     let showAddModal = $state(false);
@@ -39,35 +41,29 @@
     });
     let formErrors = $state<Record<string, string>>({});
 
-    const tabs = [
-        { id: 'SEMUA', label: 'Semua Paket', category: null },
-        { id: 'NASI_BOX', label: 'Nasi Box', category: 'Nasi Box' },
-        { id: 'SNACK_BOX', label: 'Snack Box', category: 'Snack Box' },
-        { id: 'PRASMANAN', label: 'Prasmanan', category: 'Prasmanan' },
-        { id: 'CORPORATE', label: 'Corporate', category: 'Meeting/Corporate' },
-        { id: 'WEDDING', label: 'Wedding', category: 'Event/Wedding' },
-        { id: 'CUSTOM', label: 'Custom', category: 'Custom' }
-    ];
+    // Dynamic tabs from active categories
+    const tabs = $derived([
+        { id: 'SEMUA', label: 'Semua Paket' },
+        ...categories.map(c => ({ id: c.name, label: c.name }))
+    ]);
 
     const stats = $derived({
         total: packages.length,
         active: packages.filter(p => p.isActive).length,
         inactive: packages.filter(p => !p.isActive).length,
-        categories: new Set(packages.map(p => p.packageCategory)).size
+        categoriesCount: categories.length
     });
 
     const filteredPackages = $derived(
         packages.filter(p => {
-            const currentTab = tabs.find(t => t.id === activeTab);
-            if (!currentTab || currentTab.id === 'SEMUA') return true;
-            return p.packageCategory === currentTab.category;
+            if (activeTab === 'SEMUA') return true;
+            return (p.packageCategory ?? p.category) === activeTab;
         })
     );
 
-    function getCount(tabId: TabType) {
-        const tab = tabs.find(t => t.id === tabId);
-        if (!tab || tab.id === 'SEMUA') return packages.length;
-        return packages.filter(p => p.packageCategory === tab.category).length;
+    function getCount(tabId: string) {
+        if (tabId === 'SEMUA') return packages.length;
+        return packages.filter(p => (p.packageCategory ?? p.category) === tabId).length;
     }
 
     function toggleActive(id: string) {
@@ -85,10 +81,14 @@
     }
 
     function openAddModal() {
+        if (categories.length === 0) {
+            alert('Belum ada kategori paket aktif. Hubungi Admin.');
+            return;
+        }
         packageForm = {
             id: '',
             name: '',
-            category: '',
+            category: categories[0].name,
             price: 0,
             minPax: 1,
             status: 'active',
@@ -112,7 +112,7 @@
         packageForm = {
             id: pkg.id,
             name: pkg.name,
-            category: pkg.packageCategory || '',
+            category: pkg.packageCategory || pkg.category || '',
             price: pkg.basePrice,
             minPax: pkg.minPax || 1,
             status: pkg.status as string,
@@ -124,7 +124,7 @@
         };
         formErrors = {};
         showEditModal = true;
-        showDetailModal = false; // If coming from detail
+        showDetailModal = false;
     }
 
     function validateForm() {
@@ -164,7 +164,6 @@
 
         packages = [newItem, ...packages];
         showAddModal = false;
-        alert('Paket berhasil dibuat!');
     }
 
     function handleUpdatePackage() {
@@ -194,7 +193,6 @@
         });
 
         showEditModal = false;
-        alert('Paket berhasil diperbarui!');
     }
 </script>
 
@@ -203,7 +201,7 @@
     <header class="flex flex-col md:flex-row md:items-center justify-between gap-8">
         <div in:fly={{ y: -20, duration: 500 }}>
             <h1 class="text-4xl lg:text-5xl font-black text-brand-charcoal dark:text-white tracking-tighter italic">Kelola Paket Catering 🎁</h1>
-            <p class="text-zinc-500 font-medium mt-2">Atur paket catering berdasarkan kategori dan kebutuhan acara pelanggan.</p>
+            <p class="text-zinc-500 font-medium mt-2">Atur paket catering berdasarkan kategori aktif yang ditetapkan Admin.</p>
         </div>
         <div class="flex gap-4" in:fly={{ x: 20, duration: 500 }}>
             <button 
@@ -220,21 +218,21 @@
 
     <!-- Stats Summary -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-6" in:fade={{ delay: 200 }}>
-        <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm hover:shadow-md transition-shadow group">
-            <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-3 group-hover:text-brand-primary transition-colors">Total Paket</p>
+        <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm">
+            <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-3">Total Paket</p>
             <p class="text-4xl font-black text-brand-charcoal dark:text-white italic">{stats.total}</p>
         </div>
-        <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm hover:shadow-md transition-shadow group">
-            <p class="text-[9px] font-black text-emerald-400 uppercase tracking-widest mb-3 group-hover:text-emerald-500 transition-colors">Paket Aktif</p>
+        <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm">
+            <p class="text-[9px] font-black text-emerald-400 uppercase tracking-widest mb-3">Paket Aktif</p>
             <p class="text-4xl font-black text-emerald-600 italic">{stats.active}</p>
         </div>
-        <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm hover:shadow-md transition-shadow group">
-            <p class="text-[9px] font-black text-red-400 uppercase tracking-widest mb-3 group-hover:text-red-500 transition-colors">Nonaktif</p>
+        <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm">
+            <p class="text-[9px] font-black text-red-400 uppercase tracking-widest mb-3">Nonaktif</p>
             <p class="text-4xl font-black text-red-600 italic">{stats.inactive}</p>
         </div>
-        <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm hover:shadow-md transition-shadow group">
-            <p class="text-[9px] font-black text-blue-400 uppercase tracking-widest mb-3 group-hover:text-blue-500 transition-colors">Kategori</p>
-            <p class="text-4xl font-black text-blue-600 italic">{stats.categories}</p>
+        <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm">
+            <p class="text-[9px] font-black text-blue-400 uppercase tracking-widest mb-3">Kategori Aktif</p>
+            <p class="text-4xl font-black text-blue-600 italic">{stats.categoriesCount}</p>
         </div>
     </div>
 
@@ -244,19 +242,19 @@
             <div class="flex gap-3 min-w-max">
                 {#each tabs as tab}
                     <button 
-                        onclick={() => activeTab = tab.id as TabType}
+                        onclick={() => activeTab = tab.id}
                         class="px-8 py-4 rounded-full text-xs font-black uppercase tracking-widest transition-all flex items-center gap-4
                         {activeTab === tab.id 
                             ? 'bg-brand-charcoal dark:bg-white text-white dark:text-brand-charcoal shadow-xl scale-105' 
                             : 'bg-white dark:bg-zinc-900 text-zinc-400 border border-zinc-100 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-600'}"
                     >
                         {tab.label}
-                        {#if getCount(tab.id as TabType) > 0}
+                        {#if getCount(tab.id) > 0}
                             <span class="px-2 py-0.5 rounded-md text-[9px] 
                                 {activeTab === tab.id 
                                     ? 'bg-white/20 text-white dark:bg-brand-charcoal/10 dark:text-brand-charcoal' 
                                     : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500'}">
-                                {getCount(tab.id as TabType)}
+                                {getCount(tab.id)}
                             </span>
                         {/if}
                     </button>
@@ -266,7 +264,19 @@
 
         <!-- Package Grid -->
         <div class="min-h-[500px]">
-            {#if filteredPackages.length > 0}
+            {#if categories.length === 0}
+                <div class="flex flex-col items-center justify-center py-32 px-8 bg-white dark:bg-zinc-900 rounded-[3.5rem] border border-dashed border-red-200 dark:border-red-900/30 text-center" in:fade>
+                    <div class="w-24 h-24 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center mb-8">
+                        <span class="text-5xl">⚠️</span>
+                    </div>
+                    <h3 class="text-2xl font-black text-brand-charcoal dark:text-white">
+                        Belum ada kategori paket aktif.
+                    </h3>
+                    <p class="text-zinc-400 font-medium mt-3 max-w-md mx-auto">
+                        Hubungi Admin untuk membuat atau mengaktifkan kategori paket terlebih dahulu sebelum mengelola paket.
+                    </p>
+                </div>
+            {:else if filteredPackages.length > 0}
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {#each filteredPackages as pkg (pkg.id)}
                         <div 
@@ -277,25 +287,15 @@
                                 {#if pkg.image}
                                     <img src={pkg.image} alt={pkg.name} class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
                                 {:else}
-                                    <div class="w-full h-full bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center">
-                                        <svg class="w-12 h-12 text-zinc-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                                        </svg>
-                                    </div>
+                                    <div class="w-full h-full bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center text-5xl">🎁</div>
                                 {/if}
                                 <div class="absolute top-6 left-6 flex flex-col gap-2">
                                     <span class="px-4 py-1.5 bg-white/90 backdrop-blur-md dark:bg-zinc-900/90 rounded-full text-[9px] font-black uppercase tracking-widest text-brand-charcoal dark:text-white shadow-lg border border-white/20">
-                                        {pkg.packageCategory}
+                                        {pkg.packageCategory ?? pkg.category}
                                     </span>
-                                    {#if pkg.minPax}
-                                        <span class="px-4 py-1.5 bg-brand-charcoal/80 backdrop-blur-md text-white rounded-full text-[9px] font-black uppercase tracking-widest shadow-lg">
-                                            Min. {pkg.minPax} Pax
-                                        </span>
-                                    {/if}
                                 </div>
                                 <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60"></div>
                                 <div class="absolute bottom-6 left-8">
-                                    <span class="text-xs font-black text-white/70 uppercase tracking-widest block mb-1">Mulai Dari</span>
                                     <span class="text-3xl font-black text-white italic tracking-tighter drop-shadow-lg">{formatPrice(pkg.basePrice)}<span class="text-sm not-italic opacity-60">/pax</span></span>
                                 </div>
                             </div>
@@ -305,13 +305,7 @@
                                     <div class="flex justify-between items-start mb-2">
                                         <h3 class="text-xl font-black text-brand-charcoal dark:text-white leading-tight">{pkg.name}</h3>
                                         <div class="flex flex-col items-end gap-2">
-                                            <span class="text-[9px] font-black uppercase tracking-widest {pkg.isActive ? 'text-emerald-500' : 'text-red-500'}">
-                                                {pkg.isActive ? 'Aktif' : 'Nonaktif'}
-                                            </span>
-                                            <button 
-                                                onclick={() => toggleActive(pkg.id)}
-                                                class="w-10 h-5 rounded-full relative transition-all cursor-pointer {pkg.isActive ? 'bg-emerald-500' : 'bg-zinc-200 dark:bg-zinc-800'}"
-                                            >
+                                            <button onclick={() => toggleActive(pkg.id)} class="w-10 h-5 rounded-full relative transition-all {pkg.isActive ? 'bg-emerald-500' : 'bg-zinc-200 dark:bg-zinc-800'}">
                                                 <div class="absolute top-1 w-3 h-3 bg-white rounded-full transition-all {pkg.isActive ? 'left-6' : 'left-1'} shadow-sm"></div>
                                             </button>
                                         </div>
@@ -319,44 +313,9 @@
                                     <p class="text-xs font-medium text-zinc-500 dark:text-zinc-400 line-clamp-2 leading-relaxed">{pkg.description}</p>
                                 </div>
 
-                                <div class="space-y-4 mb-8 flex-1">
-                                    {#if pkg.suitableFor}
-                                        <div class="flex flex-wrap gap-2">
-                                            {#each pkg.suitableFor as tag}
-                                                <span class="px-3 py-1 bg-zinc-50 dark:bg-zinc-800 text-[10px] font-bold text-zinc-400 rounded-lg uppercase tracking-wider">#{tag}</span>
-                                            {/each}
-                                        </div>
-                                    {/if}
-                                    
-                                    <div class="space-y-2">
-                                        <p class="text-[9px] font-black text-zinc-300 uppercase tracking-widest">Key Features:</p>
-                                        <div class="grid grid-cols-1 gap-1.5">
-                                            {#each (pkg.features || []).slice(0, 3) as feat}
-                                                <div class="flex items-center gap-2 text-[10px] font-bold text-zinc-500">
-                                                    <svg class="w-3 h-3 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                                                    {feat}
-                                                </div>
-                                            {/each}
-                                            {#if (pkg.features?.length || 0) > 3}
-                                                <p class="text-[9px] font-bold text-zinc-400 italic">+{pkg.features!.length - 3} fitur lainnya...</p>
-                                            {/if}
-                                        </div>
-                                    </div>
-                                </div>
-
                                 <div class="grid grid-cols-2 gap-4 mt-auto">
-                                    <button 
-                                        onclick={() => handleDetail(pkg)}
-                                        class="py-4 bg-zinc-50 dark:bg-zinc-800 text-zinc-500 text-[10px] font-black uppercase tracking-widest rounded-[1.5rem] hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-all border border-zinc-100 dark:border-zinc-800"
-                                    >
-                                        Detail
-                                    </button>
-                                    <button 
-                                        onclick={() => handleEdit(pkg)}
-                                        class="py-4 bg-brand-charcoal dark:bg-white text-white dark:text-brand-charcoal text-[10px] font-black uppercase tracking-widest rounded-[1.5rem] shadow-xl hover:scale-105 active:scale-95 transition-all"
-                                    >
-                                        Edit Paket
-                                    </button>
+                                    <button onclick={() => handleDetail(pkg)} class="py-4 bg-zinc-50 dark:bg-zinc-800 text-zinc-500 text-[10px] font-black uppercase tracking-widest rounded-[1.5rem] hover:bg-zinc-100 transition-all border border-zinc-100 dark:border-zinc-800">Detail</button>
+                                    <button onclick={() => handleEdit(pkg)} class="py-4 bg-brand-charcoal dark:bg-white text-white dark:text-brand-charcoal text-[10px] font-black uppercase tracking-widest rounded-[1.5rem] shadow-xl hover:scale-105 active:scale-95 transition-all">Edit Paket</button>
                                 </div>
                             </div>
                         </div>
@@ -365,30 +324,23 @@
             {:else}
                 <div class="flex flex-col items-center justify-center py-32 px-8 bg-white dark:bg-zinc-900 rounded-[3.5rem] border border-dashed border-zinc-200 dark:border-zinc-800 text-center" in:fade>
                     <div class="w-24 h-24 bg-zinc-50 dark:bg-zinc-800 rounded-full flex items-center justify-center mb-8">
-                        <svg class="w-12 h-12 text-zinc-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                        </svg>
+                        <span class="text-5xl">📦</span>
                     </div>
                     <h3 class="text-2xl font-black text-brand-charcoal dark:text-white">
                         Belum ada paket di kategori ini.
                     </h3>
                     <p class="text-zinc-400 font-medium mt-3 max-w-md mx-auto">
-                        Coba pilih kategori lain atau tambahkan paket baru untuk kategori ini.
+                        Paket akan muncul ketika dibuat menggunakan kategori aktif ini.
                     </p>
-                    <button onclick={() => activeTab = 'SEMUA'} class="mt-10 px-10 py-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-zinc-200 transition-all">Lihat Semua Paket</button>
+                    <button onclick={() => activeTab = 'SEMUA'} class="mt-10 px-10 py-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 text-[10px] font-black uppercase tracking-widest rounded-2xl">Lihat Semua Paket</button>
                 </div>
             {/if}
         </div>
     </div>
 </div>
 
-<!-- Modal Detail Paket -->
-<Modal 
-    show={showDetailModal} 
-    title="Detail Paket Catering 🎁" 
-    onClose={() => showDetailModal = false}
-    maxWidth="max-w-4xl"
->
+<!-- Modal Detail -->
+<Modal show={showDetailModal} title="Detail Paket Catering 🎁" onClose={() => showDetailModal = false} maxWidth="max-w-4xl">
     {#if selectedPackage}
         <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
             <div class="space-y-6">
@@ -398,228 +350,68 @@
                 <div>
                     <h2 class="text-3xl font-black text-brand-charcoal dark:text-white italic tracking-tighter">{selectedPackage.name}</h2>
                     <span class="px-4 py-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-full text-[10px] font-black uppercase tracking-widest text-zinc-500 mt-2 inline-block">
-                        {selectedPackage.packageCategory}
+                        {selectedPackage.packageCategory ?? selectedPackage.category}
                     </span>
                 </div>
                 <p class="text-sm font-medium text-zinc-500 leading-relaxed">{selectedPackage.description}</p>
             </div>
-
-            <div class="space-y-8">
-                <div class="grid grid-cols-2 gap-6">
-                    <div class="p-6 bg-zinc-50 dark:bg-zinc-800/50 rounded-3xl border border-zinc-100 dark:border-zinc-800">
-                        <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">Mulai Dari</p>
-                        <p class="text-xl font-black text-brand-charcoal dark:text-white italic">{formatPrice(selectedPackage.basePrice)}</p>
-                    </div>
-                    <div class="p-6 bg-zinc-50 dark:bg-zinc-800/50 rounded-3xl border border-zinc-100 dark:border-zinc-800">
-                        <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">Minimal Pax</p>
-                        <p class="text-xl font-black text-brand-charcoal dark:text-white italic">{selectedPackage.minPax} Pax</p>
-                    </div>
+            <div class="space-y-6">
+                <div class="p-6 bg-zinc-50 dark:bg-zinc-800/50 rounded-3xl border border-zinc-100 dark:border-zinc-800">
+                    <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">Mulai Dari</p>
+                    <p class="text-2xl font-black text-brand-charcoal dark:text-white italic">{formatPrice(selectedPackage.basePrice)}</p>
                 </div>
-
-                <div class="space-y-4">
-                    <p class="text-[11px] font-black text-brand-charcoal dark:text-white uppercase tracking-widest border-b border-zinc-100 dark:border-zinc-800 pb-2">Fitur & Layanan</p>
-                    <div class="grid grid-cols-1 gap-3">
-                        {#each selectedPackage.features || [] as feat}
-                            <div class="flex items-center gap-3 text-xs font-bold text-zinc-500">
-                                <div class="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-500 flex-shrink-0">
-                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                                </div>
-                                {feat}
-                            </div>
-                        {/each}
-                    </div>
+                <div class="p-6 bg-zinc-50 dark:bg-zinc-800/50 rounded-3xl border border-zinc-100 dark:border-zinc-800">
+                    <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">Minimal Pax</p>
+                    <p class="text-2xl font-black text-brand-charcoal dark:text-white italic">{selectedPackage.minPax} Pax</p>
                 </div>
-
-                <div class="space-y-4">
-                    <p class="text-[11px] font-black text-brand-charcoal dark:text-white uppercase tracking-widest border-b border-zinc-100 dark:border-zinc-800 pb-2">Isi Paket</p>
-                    <div class="grid grid-cols-1 gap-3">
-                        {#each selectedPackage.packageItems || [] as item}
-                            <div class="flex items-center gap-3 text-xs font-bold text-zinc-500">
-                                <div class="w-2 h-2 rounded-full bg-brand-primary flex-shrink-0"></div>
-                                {item}
-                            </div>
-                        {/each}
-                    </div>
-                </div>
+                <button onclick={() => handleEdit(selectedPackage!)} class="w-full py-5 bg-brand-charcoal dark:bg-brand-primary text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl">Edit Paket Ini</button>
             </div>
         </div>
     {/if}
-
-    {#snippet footer()}
-        <div class="flex items-center justify-end gap-4">
-            <button 
-                onclick={() => showDetailModal = false}
-                class="px-8 py-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-zinc-200 transition-all"
-            >
-                Tutup
-            </button>
-            <button 
-                onclick={() => handleEdit(selectedPackage!)}
-                class="px-10 py-4 bg-brand-charcoal dark:bg-brand-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 transition-all"
-            >
-                Edit Paket
-            </button>
-        </div>
-    {/snippet}
 </Modal>
 
-<!-- Modal Add/Edit Form -->
-<Modal 
-    show={showAddModal || showEditModal} 
-    title={showAddModal ? "Buat Paket Catering Baru 🎁" : "Edit Paket Catering ✏️"} 
-    onClose={() => { showAddModal = false; showEditModal = false; }}
-    maxWidth="max-w-3xl"
->
+<!-- Modal Add/Edit -->
+<Modal show={showAddModal || showEditModal} title={showAddModal ? "Buat Paket Catering Baru 🎁" : "Edit Paket Catering ✏️"} onClose={() => { showAddModal = false; showEditModal = false; }} maxWidth="max-w-3xl">
     <div class="space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="space-y-2">
                 <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Nama Paket *</label>
-                <input 
-                    type="text" 
-                    bind:value={packageForm.name}
-                    placeholder="Contoh: Paket Meeting Kantor"
-                    class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary transition-all"
-                />
-                {#if formErrors.name}
-                    <p class="text-[10px] font-bold text-red-500 uppercase tracking-wider">{formErrors.name}</p>
-                {/if}
+                <input type="text" bind:value={packageForm.name} class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary" />
+                {#if formErrors.name}<p class="text-[9px] font-bold text-red-500 uppercase tracking-wider">{formErrors.name}</p>{/if}
             </div>
             <div class="space-y-2">
                 <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Kategori Paket *</label>
-                <select 
-                    bind:value={packageForm.category}
-                    class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary transition-all appearance-none"
-                >
-                    <option value="">Pilih Kategori</option>
-                    <option value="Nasi Box">Nasi Box</option>
-                    <option value="Snack Box">Snack Box</option>
-                    <option value="Prasmanan">Prasmanan</option>
-                    <option value="Meeting/Corporate">Meeting/Corporate</option>
-                    <option value="Event/Wedding">Event/Wedding</option>
-                    <option value="Custom">Custom</option>
+                <select bind:value={packageForm.category} class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary appearance-none">
+                    {#each categories as cat}<option value={cat.name}>{cat.name}</option>{/each}
                 </select>
-                {#if formErrors.category}
-                    <p class="text-[10px] font-bold text-red-500 uppercase tracking-wider">{formErrors.category}</p>
-                {/if}
+                {#if formErrors.category}<p class="text-[9px] font-bold text-red-500 uppercase tracking-wider">{formErrors.category}</p>{/if}
             </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="space-y-2">
                 <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Harga Mulai Dari *</label>
-                <input 
-                    type="number" 
-                    bind:value={packageForm.price}
-                    placeholder="45000"
-                    class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary transition-all"
-                />
-                {#if formErrors.price}
-                    <p class="text-[10px] font-bold text-red-500 uppercase tracking-wider">{formErrors.price}</p>
-                {/if}
+                <input type="number" bind:value={packageForm.price} class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary" />
+                {#if formErrors.price}<p class="text-[9px] font-bold text-red-500 uppercase tracking-wider">{formErrors.price}</p>{/if}
             </div>
             <div class="space-y-2">
                 <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Minimal Pax *</label>
-                <input 
-                    type="number" 
-                    bind:value={packageForm.minPax}
-                    placeholder="20"
-                    class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary transition-all"
-                />
-                {#if formErrors.minPax}
-                    <p class="text-[10px] font-bold text-red-500 uppercase tracking-wider">{formErrors.minPax}</p>
-                {/if}
+                <input type="number" bind:value={packageForm.minPax} class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary" />
+            </div>
+            <div class="space-y-2 col-span-2">
+                <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Deskripsi</label>
+                <textarea bind:value={packageForm.description} rows="3" class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary resize-none"></textarea>
+            </div>
+            <div class="space-y-2 col-span-2">
+                <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">URL Gambar</label>
+                <input type="text" bind:value={packageForm.image} class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary" />
             </div>
         </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="space-y-2">
-                <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Status Paket</label>
-                <select 
-                    bind:value={packageForm.status}
-                    class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary transition-all appearance-none"
-                >
-                    <option value="active">Aktif</option>
-                    <option value="inactive">Nonaktif</option>
-                    <option value="draft">Draft</option>
-                </select>
-            </div>
-            <div class="space-y-2">
-                <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Cocok Untuk (Pisahkan Koma)</label>
-                <input 
-                    type="text" 
-                    bind:value={packageForm.suitableFor}
-                    placeholder="Contoh: Meeting, Seminar, Training"
-                    class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary transition-all"
-                />
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="space-y-2">
-                <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Fitur Paket (Per Baris)</label>
-                <textarea 
-                    bind:value={packageForm.features}
-                    rows="3"
-                    placeholder="Contoh:&#10;Makan siang box&#10;Coffee break"
-                    class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary transition-all resize-none"
-                ></textarea>
-            </div>
-            <div class="space-y-2">
-                <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Isi Paket (Per Baris)</label>
-                <textarea 
-                    bind:value={packageForm.packageItems}
-                    rows="3"
-                    placeholder="Contoh:&#10;Nasi putih&#10;Ayam bakar"
-                    class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary transition-all resize-none"
-                ></textarea>
-            </div>
-        </div>
-
-        <div class="space-y-2">
-            <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Deskripsi Paket</label>
-            <textarea 
-                bind:value={packageForm.description}
-                rows="3"
-                placeholder="Tuliskan deskripsi singkat paket..."
-                class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary transition-all resize-none"
-            ></textarea>
-        </div>
-
-        <div class="space-y-2">
-            <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Gambar Paket (URL)</label>
-            <input 
-                type="text" 
-                bind:value={packageForm.image}
-                placeholder="Masukkan URL gambar paket"
-                class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary transition-all"
-            />
+        <div class="flex gap-4 pt-4">
+            <button onclick={() => { showAddModal = false; showEditModal = false; }} class="flex-1 py-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 rounded-2xl text-[10px] font-black uppercase">Batal</button>
+            <button onclick={showAddModal ? handleSavePackage : handleUpdatePackage} class="flex-1 py-4 bg-brand-charcoal dark:bg-white text-white dark:text-brand-charcoal rounded-2xl text-[10px] font-black uppercase shadow-xl">Simpan Paket</button>
         </div>
     </div>
-
-    {#snippet footer()}
-        <div class="flex items-center justify-end gap-4">
-            <button 
-                onclick={() => { showAddModal = false; showEditModal = false; }}
-                class="px-8 py-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-zinc-200 transition-all"
-            >
-                Batal
-            </button>
-            <button 
-                onclick={showAddModal ? handleSavePackage : handleUpdatePackage}
-                class="px-10 py-4 bg-brand-charcoal dark:bg-brand-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 transition-all"
-            >
-                {showAddModal ? "Simpan Paket" : "Update Paket"}
-            </button>
-        </div>
-    {/snippet}
 </Modal>
 
 <style>
-    .no-scrollbar::-webkit-scrollbar {
-        display: none;
-    }
-    .no-scrollbar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 </style>

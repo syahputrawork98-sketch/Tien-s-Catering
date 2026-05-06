@@ -21,7 +21,12 @@ Peta rute aplikasi Tien's Catering beserta status implementasi saat ini.
 | `/dashboard/cs/orders` | Dashboard | CS | Done | `mockCsOrders` | none | Yes | Validasi & update status order |
 | `/dashboard/cs/menu` | Dashboard | CS | Done | `mockCsMenus` | none | Yes | Update stok menu harian |
 | `/dashboard/cs/customers`| Dashboard | CS | Done | `mockCsCustomers`| none | Yes | Database pelanggan |
+| `/dashboard/cs/packages` | Dashboard | CS | Done | `mockCatalogPackages` | none | Yes | Manajemen paket dari kategori aktif |
 | `/dashboard/admin` | Dashboard | ADMIN | Done | `mockAdminMetrics`| `localStorage` | Yes | Overview bisnis & performa |
+| `/dashboard/admin/orders` | Dashboard | ADMIN | Done | orders.ts | Local State | Yes | Manajemen pesanan & override |
+| `/dashboard/admin/menu` | Dashboard | ADMIN | Done | catalog.ts | Local State | Yes | Master menu & ketersediaan |
+| `/dashboard/admin/packages` | Dashboard | ADMIN | Done | catalog.ts | Local State | Yes | Master paket & kategori |
+| `/dashboard/admin/customers` | Dashboard | ADMIN | Done | accounts.ts | Local State | Yes | Manajemen & approval customer |
 | `/dashboard/admin/reports` | Dashboard | ADMIN | Done | reports.ts | Local State | Yes | Rekap penjualan & performa |
 | `/dashboard/admin/tax` | Dashboard | ADMIN | Done | tax.ts | Local State | Yes | Pengaturan pajak & invoice |
 | `/dashboard/admin/audit` | Dashboard | ADMIN | Done | audit.ts | Local State | Yes | Riwayat aktivitas sistem |
