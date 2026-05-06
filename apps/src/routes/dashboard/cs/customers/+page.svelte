@@ -8,11 +8,24 @@
     let customers = $state<MockCsCustomer[]>([...mockCsCustomers]);
     let activeTab = $state<TabType>('KONFIRMASI');
     
-    // Modal State
+    // Modal State - Detail / Approval
     let selectedCustomer = $state<MockCsCustomer | null>(null);
     let showModal = $state(false);
     let isRejecting = $state(false);
     let rejectReason = $state('');
+    let selectedFinalType = $state<'personal' | 'company' | 'institution' | ''>('');
+
+    // Modal State - Add Account
+    let showAddModal = $state(false);
+    let addAccountForm = $state({
+        name: '',
+        whatsapp: '',
+        address: '',
+        accountType: 'personal' as 'personal' | 'company' | 'institution',
+        status: 'approved' as 'approved' | 'pending',
+        internalNote: '',
+        companyName: ''
+    });
 
     const tabs = [
         { id: 'KONFIRMASI', label: 'Konfirmasi User' },
@@ -22,11 +35,11 @@
     ];
 
     const stats = $derived({
+        totalActive: customers.filter(c => c.registrationStatus === 'approved').length,
         pending: customers.filter(c => c.registrationStatus === 'pending').length,
-        personal: customers.filter(c => c.registrationStatus === 'approved' && c.type === 'personal').length,
-        company: customers.filter(c => c.registrationStatus === 'approved' && c.type === 'company').length,
-        institution: customers.filter(c => c.registrationStatus === 'approved' && c.type === 'institution').length,
-        totalActive: customers.filter(c => c.registrationStatus === 'approved').length
+        personal: customers.filter(c => c.registrationStatus === 'approved' && c.accountType === 'personal').length,
+        company: customers.filter(c => c.registrationStatus === 'approved' && c.accountType === 'company').length,
+        institution: customers.filter(c => c.registrationStatus === 'approved' && c.accountType === 'institution').length,
     });
 
     const filteredCustomers = $derived(
@@ -35,11 +48,11 @@
                 case 'KONFIRMASI': 
                     return c.registrationStatus === 'pending' || c.registrationStatus === 'rejected';
                 case 'PERSONAL': 
-                    return c.registrationStatus === 'approved' && c.type === 'personal';
+                    return c.registrationStatus === 'approved' && c.accountType === 'personal';
                 case 'COMPANY': 
-                    return c.registrationStatus === 'approved' && c.type === 'company';
+                    return c.registrationStatus === 'approved' && c.accountType === 'company';
                 case 'INSTITUTION': 
-                    return c.registrationStatus === 'approved' && c.type === 'institution';
+                    return c.registrationStatus === 'approved' && c.accountType === 'institution';
                 default: 
                     return true;
             }
@@ -58,6 +71,7 @@
 
     function openDetail(customer: MockCsCustomer) {
         selectedCustomer = { ...customer };
+        selectedFinalType = customer.requestedType || customer.accountType || '';
         showModal = true;
         isRejecting = false;
         rejectReason = '';
@@ -68,21 +82,44 @@
         selectedCustomer = null;
     }
 
+    function openAddModal() {
+        addAccountForm = {
+            name: '',
+            whatsapp: '',
+            address: '',
+            accountType: 'personal',
+            status: 'approved',
+            internalNote: '',
+            companyName: ''
+        };
+        showAddModal = true;
+    }
+
+    function closeAddModal() {
+        showAddModal = false;
+    }
+
     function approveUser() {
         if (!selectedCustomer) return;
+        if (!selectedFinalType) {
+            alert('Silakan tentukan tipe akun final.');
+            return;
+        }
         
         customers = customers.map(c => 
             c.id === selectedCustomer!.id 
                 ? { 
                     ...c, 
                     registrationStatus: 'approved' as const,
+                    accountType: selectedFinalType as any,
+                    type: selectedFinalType as any,
                     approvedBy: 'cs' as const,
-                    approvedAt: new Date().toISOString().split('T')[0]
+                    approvedAt: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
                   } 
                 : c
         );
         
-        alert(`User ${selectedCustomer.name} telah disetujui.`);
+        alert(`User ${selectedCustomer.name} telah disetujui sebagai ${selectedFinalType}.`);
         closeModal();
     }
 
@@ -105,6 +142,39 @@
         alert(`User ${selectedCustomer.name} telah ditolak.`);
         closeModal();
     }
+
+    function saveAddAccount() {
+        if (!addAccountForm.name || !addAccountForm.whatsapp || !addAccountForm.address) {
+            alert('Harap isi semua field wajib (Nama, WhatsApp, Alamat).');
+            return;
+        }
+
+        const newCustomer: MockCsCustomer = {
+            id: `CUS-${Date.now()}`,
+            name: addAccountForm.name,
+            whatsapp: addAccountForm.whatsapp,
+            address: addAccountForm.address,
+            totalOrders: 0,
+            lastOrderDate: '-',
+            registrationStatus: addAccountForm.status as any,
+            createdBy: 'cs',
+            registeredAt: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
+            internalNote: addAccountForm.internalNote
+        };
+
+        if (addAccountForm.status === 'approved') {
+            newCustomer.accountType = addAccountForm.accountType;
+            newCustomer.type = addAccountForm.accountType;
+            newCustomer.approvedBy = 'cs';
+            newCustomer.approvedAt = newCustomer.registeredAt;
+        } else {
+            newCustomer.requestedType = addAccountForm.accountType;
+        }
+
+        customers = [newCustomer, ...customers];
+        alert(`Akun ${addAccountForm.name} berhasil ditambahkan.`);
+        closeAddModal();
+    }
 </script>
 
 <div class="space-y-12 pb-24 relative">
@@ -114,7 +184,12 @@
             <p class="text-zinc-500 font-medium mt-2">Kelola registrasi customer dan data pelanggan aktif berdasarkan tipe akun.</p>
         </div>
         <div class="flex gap-4" in:fly={{ x: 20, duration: 500 }}>
-            <button class="px-8 py-4 bg-brand-charcoal dark:bg-brand-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 transition-all">Daftarkan Akun Baru</button>
+            <button 
+                onclick={openAddModal}
+                class="px-8 py-4 bg-brand-charcoal dark:bg-brand-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 transition-all"
+            >
+                Tambah Akun
+            </button>
         </div>
     </header>
 
@@ -169,7 +244,7 @@
             {#if filteredCustomers.length > 0}
                 <div class="bg-white dark:bg-zinc-900 rounded-[3rem] border border-zinc-100 dark:border-zinc-800 shadow-sm overflow-hidden" in:fade>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse min-w-[1000px]">
+                        <table class="w-full text-left border-collapse min-w-[1100px]">
                             <thead>
                                 <tr class="bg-zinc-50/50 dark:bg-zinc-800/50">
                                     <th class="px-10 py-6 text-[11px] font-black text-zinc-400 uppercase tracking-widest">Nama & Tipe</th>
@@ -190,7 +265,14 @@
                                         <td class="px-10 py-8">
                                             <div class="flex flex-col">
                                                 <span class="text-base font-black text-brand-charcoal dark:text-white italic group-hover:text-brand-primary transition-colors">{customer.name}</span>
-                                                <span class="text-[9px] font-black px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-500 w-fit mt-1.5 uppercase tracking-widest border border-zinc-200 dark:border-zinc-700">{customer.type}</span>
+                                                <div class="flex items-center gap-2 mt-1.5">
+                                                    <span class="text-[9px] font-black px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-500 uppercase tracking-widest border border-zinc-200 dark:border-zinc-700">
+                                                        {customer.accountType || customer.requestedType || 'Unknown'}
+                                                    </span>
+                                                    {#if customer.createdBy}
+                                                        <span class="text-[8px] font-bold text-zinc-400 italic">via {customer.createdBy}</span>
+                                                    {/if}
+                                                </div>
                                             </div>
                                         </td>
                                         <td class="px-10 py-8">
@@ -252,10 +334,10 @@
                         </svg>
                     </div>
                     <h3 class="text-2xl font-black text-brand-charcoal dark:text-white">
-                        Belum ada customer di kategori ini.
+                        {activeTab === 'KONFIRMASI' ? 'Tidak ada user yang menunggu konfirmasi.' : 'Belum ada customer di kategori ini.'}
                     </h3>
                     <p class="text-zinc-400 font-medium mt-3 max-w-md mx-auto">
-                        Customer akan muncul di sini setelah status registrasi sesuai dengan kategori tab yang dipilih.
+                        {activeTab === 'KONFIRMASI' ? 'Pendaftaran baru akan muncul di sini.' : 'Customer akan muncul setelah registrasi disetujui.'}
                     </p>
                     <button onclick={() => activeTab = 'KONFIRMASI'} class="mt-10 px-10 py-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-zinc-200 transition-all">Lihat Konfirmasi Pending</button>
                 </div>
@@ -264,7 +346,7 @@
     </div>
 </div>
 
-<!-- Customer Detail Modal -->
+<!-- Customer Detail / Approval Modal -->
 {#if showModal && selectedCustomer}
     <div class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-brand-charcoal/40 backdrop-blur-sm" in:fade out:fade>
         <div class="bg-white dark:bg-zinc-900 w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden border border-zinc-100 dark:border-zinc-800" in:scale={{ start: 0.9, duration: 400 }}>
@@ -290,12 +372,12 @@
                             <p class="text-xl font-black text-brand-charcoal dark:text-white italic">{selectedCustomer.name}</p>
                         </div>
                         <div>
-                            <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">Tipe Akun</p>
-                            <span class="px-3 py-1.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 text-[10px] font-black uppercase rounded-lg border border-zinc-200 dark:border-zinc-700 tracking-widest">{selectedCustomer.type}</span>
-                        </div>
-                        <div>
                             <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">WhatsApp</p>
                             <p class="text-sm font-black text-brand-primary">{selectedCustomer.whatsapp}</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">Daftar Via</p>
+                            <span class="px-3 py-1 bg-zinc-100 dark:bg-zinc-800 rounded text-[9px] font-black uppercase text-zinc-500">{selectedCustomer.createdBy || 'Unknown'}</span>
                         </div>
                     </div>
                     <div class="space-y-6">
@@ -303,21 +385,30 @@
                             <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">Alamat Pengiriman</p>
                             <p class="text-sm font-medium text-zinc-500 dark:text-zinc-400 leading-relaxed">{selectedCustomer.address}</p>
                         </div>
-                        <div>
-                            <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">Statistik Order</p>
-                            <div class="flex items-center gap-6">
-                                <div>
-                                    <p class="text-lg font-black text-brand-charcoal dark:text-white italic">{selectedCustomer.totalOrders}</p>
-                                    <p class="text-[9px] font-black text-zinc-400 uppercase">Total Order</p>
-                                </div>
-                                <div>
-                                    <p class="text-lg font-black text-brand-charcoal dark:text-white italic">{selectedCustomer.lastOrderDate}</p>
-                                    <p class="text-[9px] font-black text-zinc-400 uppercase">Last Order</p>
+                        {#if selectedCustomer.registrationStatus === 'approved'}
+                            <div>
+                                <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">Statistik Order</p>
+                                <div class="flex items-center gap-6">
+                                    <div>
+                                        <p class="text-lg font-black text-brand-charcoal dark:text-white italic">{selectedCustomer.totalOrders}</p>
+                                        <p class="text-[9px] font-black text-zinc-400 uppercase">Total Order</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-lg font-black text-brand-charcoal dark:text-white italic">{selectedCustomer.lastOrderDate}</p>
+                                        <p class="text-[9px] font-black text-zinc-400 uppercase">Last Order</p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        {/if}
                     </div>
                 </div>
+
+                {#if selectedCustomer.internalNote}
+                    <div class="mb-8 p-6 bg-blue-50 dark:bg-blue-900/10 rounded-2xl border border-blue-100 dark:border-blue-900/30">
+                        <p class="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-2">Catatan Internal</p>
+                        <p class="text-xs font-medium text-zinc-600 dark:text-zinc-400">"{selectedCustomer.internalNote}"</p>
+                    </div>
+                {/if}
 
                 <div class="p-8 bg-zinc-50 dark:bg-zinc-800/50 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800">
                     <div class="flex items-center justify-between mb-6">
@@ -335,7 +426,27 @@
                                 </div>
                                 <div>
                                     <p class="text-sm font-black text-brand-charcoal dark:text-white italic">Menunggu Approval</p>
-                                    <p class="text-[10px] font-medium text-zinc-400">Verifikasi data customer sebelum memberikan akses aktif.</p>
+                                    <p class="text-[10px] font-medium text-zinc-400">Tentukan tipe akun final sebelum menyetujui pendaftaran.</p>
+                                </div>
+                            </div>
+
+                            <div class="pt-6 border-t border-zinc-200 dark:border-zinc-700">
+                                <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-3 block">Tentukan Tipe Akun Final</label>
+                                <div class="grid grid-cols-3 gap-3">
+                                    {#each ['personal', 'company', 'institution'] as type}
+                                        <button 
+                                            onclick={() => selectedFinalType = type as any}
+                                            class="px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all
+                                            {selectedFinalType === type 
+                                                ? 'bg-brand-charcoal dark:bg-white text-white dark:text-brand-charcoal border-brand-charcoal dark:border-white shadow-lg' 
+                                                : 'bg-white dark:bg-zinc-800 text-zinc-400 border-zinc-200 dark:border-zinc-700 hover:border-brand-primary'}"
+                                        >
+                                            {type}
+                                            {#if selectedCustomer.requestedType === type}
+                                                <span class="block text-[7px] mt-1 text-brand-primary italic opacity-70">(Requested)</span>
+                                            {/if}
+                                        </button>
+                                    {/each}
                                 </div>
                             </div>
 
@@ -366,19 +477,25 @@
                             <p class="text-xs font-medium text-zinc-500 dark:text-zinc-400 italic bg-white dark:bg-zinc-900 p-4 rounded-xl border border-red-50 dark:border-red-900/20">"{selectedCustomer.rejectedReason}"</p>
                         </div>
                     {:else}
-                        <div class="flex items-center gap-8">
+                        <div class="grid grid-cols-2 gap-8">
                             <div>
-                                <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Disetujui Oleh</p>
-                                <div class="flex items-center gap-2">
-                                    <div class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
-                                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                                    </div>
-                                    <p class="text-xs font-black text-brand-charcoal dark:text-white uppercase">{selectedCustomer.approvedBy}</p>
-                                </div>
+                                <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-2">Tipe Akun Final</p>
+                                <span class="px-3 py-1 bg-emerald-500 text-white text-[10px] font-black uppercase rounded-lg tracking-widest">{selectedCustomer.accountType}</span>
                             </div>
-                            <div>
-                                <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Pada Tanggal</p>
-                                <p class="text-xs font-bold text-zinc-500 dark:text-zinc-300 italic">{selectedCustomer.approvedAt}</p>
+                            <div class="flex items-center gap-8">
+                                <div>
+                                    <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Disetujui Oleh</p>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                                        </div>
+                                        <p class="text-xs font-black text-brand-charcoal dark:text-white uppercase">{selectedCustomer.approvedBy}</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Pada Tanggal</p>
+                                    <p class="text-xs font-bold text-zinc-500 dark:text-zinc-300 italic">{selectedCustomer.approvedAt}</p>
+                                </div>
                             </div>
                         </div>
                     {/if}
@@ -408,6 +525,110 @@
                         Tutup
                     </button>
                 {/if}
+            </div>
+        </div>
+    </div>
+{/if}
+
+<!-- Modal Tambah Akun -->
+{#if showAddModal}
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-brand-charcoal/40 backdrop-blur-sm" in:fade out:fade>
+        <div class="bg-white dark:bg-zinc-900 w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden border border-zinc-100 dark:border-zinc-800" in:scale={{ start: 0.9, duration: 400 }}>
+            <!-- Modal Header -->
+            <div class="px-10 py-8 border-b border-zinc-50 dark:divide-zinc-800 flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-black text-brand-charcoal dark:text-white italic tracking-tighter">Tambah Akun Customer</h2>
+                    <p class="text-xs font-medium text-zinc-400 mt-1">Daftarkan customer baru secara manual.</p>
+                </div>
+                <button onclick={closeAddModal} class="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-2xl hover:text-red-500 transition-colors shadow-sm">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="px-10 py-8 max-h-[65vh] overflow-y-auto no-scrollbar space-y-6">
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Nama Lengkap / Instansi *</label>
+                        <input 
+                            bind:value={addAccountForm.name}
+                            type="text" 
+                            placeholder="Contoh: PT ABC atau Bpk. Budi"
+                            class="w-full bg-zinc-50 dark:bg-zinc-800 border-zinc-100 dark:border-zinc-700 rounded-2xl p-4 text-xs font-bold focus:ring-2 focus:ring-brand-primary transition-all"
+                        />
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">WhatsApp *</label>
+                        <input 
+                            bind:value={addAccountForm.whatsapp}
+                            type="text" 
+                            placeholder="0812..."
+                            class="w-full bg-zinc-50 dark:bg-zinc-800 border-zinc-100 dark:border-zinc-700 rounded-2xl p-4 text-xs font-bold focus:ring-2 focus:ring-brand-primary transition-all"
+                        />
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Alamat Pengiriman *</label>
+                    <textarea 
+                        bind:value={addAccountForm.address}
+                        placeholder="Alamat lengkap untuk pengiriman catering..."
+                        class="w-full bg-zinc-50 dark:bg-zinc-800 border-zinc-100 dark:border-zinc-700 rounded-2xl p-4 text-xs font-medium focus:ring-2 focus:ring-brand-primary transition-all"
+                        rows="3"
+                    ></textarea>
+                </div>
+
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Tipe Akun *</label>
+                        <select 
+                            bind:value={addAccountForm.accountType}
+                            class="w-full bg-zinc-50 dark:bg-zinc-800 border-zinc-100 dark:border-zinc-700 rounded-2xl p-4 text-xs font-bold focus:ring-2 focus:ring-brand-primary transition-all appearance-none"
+                        >
+                            <option value="personal">Personal</option>
+                            <option value="company">Company</option>
+                            <option value="institution">Institusi</option>
+                        </select>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Status Awal *</label>
+                        <select 
+                            bind:value={addAccountForm.status}
+                            class="w-full bg-zinc-50 dark:bg-zinc-800 border-zinc-100 dark:border-zinc-700 rounded-2xl p-4 text-xs font-bold focus:ring-2 focus:ring-brand-primary transition-all appearance-none"
+                        >
+                            <option value="approved">Langsung Aktif</option>
+                            <option value="pending">Menunggu Konfirmasi</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Catatan Internal (Opsional)</label>
+                    <textarea 
+                        bind:value={addAccountForm.internalNote}
+                        placeholder="Catatan untuk tim internal..."
+                        class="w-full bg-zinc-50 dark:bg-zinc-800 border-zinc-100 dark:border-zinc-700 rounded-2xl p-4 text-xs font-medium focus:ring-2 focus:ring-brand-primary transition-all"
+                        rows="2"
+                    ></textarea>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="px-10 py-8 bg-zinc-50 dark:bg-zinc-800/50 flex gap-4">
+                <button 
+                    onclick={closeAddModal}
+                    class="flex-1 py-4 text-[11px] font-black uppercase text-zinc-400 hover:text-zinc-600 transition-colors"
+                >
+                    Batal
+                </button>
+                <button 
+                    onclick={saveAddAccount}
+                    class="flex-[2] py-4 bg-brand-charcoal dark:bg-brand-primary text-white text-[11px] font-black uppercase tracking-widest rounded-2xl shadow-xl hover:scale-105 active:scale-95 transition-all"
+                >
+                    Simpan Akun
+                </button>
             </div>
         </div>
     </div>

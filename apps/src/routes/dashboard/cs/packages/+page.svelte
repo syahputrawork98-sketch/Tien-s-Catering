@@ -20,7 +20,12 @@
 
     // Modal state
     let showAddModal = $state(false);
-    let newPackage = $state({
+    let showDetailModal = $state(false);
+    let showEditModal = $state(false);
+    let selectedPackage = $state<CatalogItem | null>(null);
+
+    let packageForm = $state({
+        id: '',
         name: '',
         category: '',
         price: 0,
@@ -79,54 +84,9 @@
         });
     }
 
-    function handleDetail(name: string) {
-        alert(`Detail Paket: ${name}\n\nFitur ini akan menampilkan rincian menu, syarat & ketentuan, serta galeri dokumentasi acara.`);
-    }
-
-    function handleEdit(name: string) {
-        alert(`Edit Paket: ${name}\n\nBuka editor paket (Simulasi UI).`);
-    }
-
-    function validateForm() {
-        const errors: Record<string, string> = {};
-        if (!newPackage.name.trim()) errors.name = 'Nama paket wajib diisi';
-        if (!newPackage.category) errors.category = 'Kategori wajib dipilih';
-        if (newPackage.price <= 0) errors.price = 'Harga mulai dari wajib diisi';
-        if (newPackage.minPax <= 0) errors.minPax = 'Minimal pax wajib diisi';
-        
-        formErrors = errors;
-        return Object.keys(errors).length === 0;
-    }
-
-    function handleSavePackage() {
-        if (!validateForm()) return;
-
-        const newItem: CatalogItem = {
-            id: `PKG-${Date.now()}`,
-            type: 'package',
-            name: newPackage.name,
-            slug: newPackage.name.toLowerCase().replace(/\s+/g, '-'),
-            description: newPackage.description,
-            category: newPackage.category,
-            packageCategory: newPackage.category,
-            basePrice: newPackage.price,
-            minPax: newPackage.minPax,
-            isActive: newPackage.status === 'active',
-            isAvailable: true,
-            status: newPackage.status as any,
-            suitableFor: newPackage.suitableFor.split(',').map(s => s.trim()).filter(s => s !== ''),
-            features: newPackage.features.split('\n').map(s => s.trim()).filter(s => s !== ''),
-            packageItems: newPackage.packageItems.split('\n').map(s => s.trim()).filter(s => s !== ''),
-            image: newPackage.image || 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500&q=80',
-            createdAt: TODAY,
-            updatedAt: TODAY
-        };
-
-        packages = [newItem, ...packages];
-        showAddModal = false;
-        
-        // Reset form
-        newPackage = {
+    function openAddModal() {
+        packageForm = {
+            id: '',
             name: '',
             category: '',
             price: 0,
@@ -138,8 +98,103 @@
             description: '',
             image: ''
         };
+        formErrors = {};
+        showAddModal = true;
+    }
+
+    function handleDetail(pkg: CatalogItem) {
+        selectedPackage = { ...pkg };
+        showDetailModal = true;
+    }
+
+    function handleEdit(pkg: CatalogItem) {
+        selectedPackage = { ...pkg };
+        packageForm = {
+            id: pkg.id,
+            name: pkg.name,
+            category: pkg.packageCategory || '',
+            price: pkg.basePrice,
+            minPax: pkg.minPax || 1,
+            status: pkg.status as string,
+            suitableFor: (pkg.suitableFor || []).join(', '),
+            features: (pkg.features || []).join('\n'),
+            packageItems: (pkg.packageItems || []).join('\n'),
+            description: pkg.description || '',
+            image: pkg.image || ''
+        };
+        formErrors = {};
+        showEditModal = true;
+        showDetailModal = false; // If coming from detail
+    }
+
+    function validateForm() {
+        const errors: Record<string, string> = {};
+        if (!packageForm.name.trim()) errors.name = 'Nama paket wajib diisi';
+        if (!packageForm.category) errors.category = 'Kategori wajib dipilih';
+        if (packageForm.price <= 0) errors.price = 'Harga mulai dari wajib diisi';
+        if (packageForm.minPax <= 0) errors.minPax = 'Minimal pax wajib diisi';
         
-        alert('Paket berhasil dibuat! (Simulasi State Lokal)');
+        formErrors = errors;
+        return Object.keys(errors).length === 0;
+    }
+
+    function handleSavePackage() {
+        if (!validateForm()) return;
+
+        const newItem: CatalogItem = {
+            id: `PKG-${Date.now()}`,
+            type: 'package',
+            name: packageForm.name,
+            slug: packageForm.name.toLowerCase().replace(/\s+/g, '-'),
+            description: packageForm.description,
+            category: packageForm.category,
+            packageCategory: packageForm.category,
+            basePrice: packageForm.price,
+            minPax: packageForm.minPax,
+            isActive: packageForm.status === 'active',
+            isAvailable: true,
+            status: packageForm.status as any,
+            suitableFor: packageForm.suitableFor.split(',').map(s => s.trim()).filter(s => s !== ''),
+            features: packageForm.features.split('\n').map(s => s.trim()).filter(s => s !== ''),
+            packageItems: packageForm.packageItems.split('\n').map(s => s.trim()).filter(s => s !== ''),
+            image: packageForm.image || 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500&q=80',
+            createdAt: TODAY,
+            updatedAt: TODAY
+        };
+
+        packages = [newItem, ...packages];
+        showAddModal = false;
+        alert('Paket berhasil dibuat!');
+    }
+
+    function handleUpdatePackage() {
+        if (!validateForm() || !selectedPackage) return;
+
+        packages = packages.map(p => {
+            if (p.id === packageForm.id) {
+                return {
+                    ...p,
+                    name: packageForm.name,
+                    slug: packageForm.name.toLowerCase().replace(/\s+/g, '-'),
+                    description: packageForm.description,
+                    category: packageForm.category,
+                    packageCategory: packageForm.category,
+                    basePrice: packageForm.price,
+                    minPax: packageForm.minPax,
+                    isActive: packageForm.status === 'active',
+                    status: packageForm.status as any,
+                    suitableFor: packageForm.suitableFor.split(',').map(s => s.trim()).filter(s => s !== ''),
+                    features: packageForm.features.split('\n').map(s => s.trim()).filter(s => s !== ''),
+                    packageItems: packageForm.packageItems.split('\n').map(s => s.trim()).filter(s => s !== ''),
+                    image: packageForm.image || p.image,
+                    updatedAt: TODAY
+                };
+            }
+            return p;
+        });
+
+        showEditModal = false;
+        alert('Paket berhasil diperbarui!');
     }
 </script>
 
@@ -152,7 +207,7 @@
         </div>
         <div class="flex gap-4" in:fly={{ x: 20, duration: 500 }}>
             <button 
-                onclick={() => showAddModal = true}
+                onclick={openAddModal}
                 class="w-full md:w-auto px-8 py-4 bg-brand-charcoal dark:bg-brand-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2"
             >
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -291,13 +346,13 @@
 
                                 <div class="grid grid-cols-2 gap-4 mt-auto">
                                     <button 
-                                        onclick={() => handleDetail(pkg.name)}
+                                        onclick={() => handleDetail(pkg)}
                                         class="py-4 bg-zinc-50 dark:bg-zinc-800 text-zinc-500 text-[10px] font-black uppercase tracking-widest rounded-[1.5rem] hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-all border border-zinc-100 dark:border-zinc-800"
                                     >
                                         Detail
                                     </button>
                                     <button 
-                                        onclick={() => handleEdit(pkg.name)}
+                                        onclick={() => handleEdit(pkg)}
                                         class="py-4 bg-brand-charcoal dark:bg-white text-white dark:text-brand-charcoal text-[10px] font-black uppercase tracking-widest rounded-[1.5rem] shadow-xl hover:scale-105 active:scale-95 transition-all"
                                     >
                                         Edit Paket
@@ -327,11 +382,92 @@
     </div>
 </div>
 
-<!-- Add Package Modal -->
+<!-- Modal Detail Paket -->
 <Modal 
-    show={showAddModal} 
-    title="Buat Paket Catering Baru 🎁" 
-    onClose={() => showAddModal = false}
+    show={showDetailModal} 
+    title="Detail Paket Catering 🎁" 
+    onClose={() => showDetailModal = false}
+    maxWidth="max-w-4xl"
+>
+    {#if selectedPackage}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+            <div class="space-y-6">
+                <div class="aspect-video rounded-3xl overflow-hidden bg-zinc-100 dark:bg-zinc-800">
+                    <img src={selectedPackage.image} alt={selectedPackage.name} class="w-full h-full object-cover" />
+                </div>
+                <div>
+                    <h2 class="text-3xl font-black text-brand-charcoal dark:text-white italic tracking-tighter">{selectedPackage.name}</h2>
+                    <span class="px-4 py-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-full text-[10px] font-black uppercase tracking-widest text-zinc-500 mt-2 inline-block">
+                        {selectedPackage.packageCategory}
+                    </span>
+                </div>
+                <p class="text-sm font-medium text-zinc-500 leading-relaxed">{selectedPackage.description}</p>
+            </div>
+
+            <div class="space-y-8">
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="p-6 bg-zinc-50 dark:bg-zinc-800/50 rounded-3xl border border-zinc-100 dark:border-zinc-800">
+                        <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">Mulai Dari</p>
+                        <p class="text-xl font-black text-brand-charcoal dark:text-white italic">{formatPrice(selectedPackage.basePrice)}</p>
+                    </div>
+                    <div class="p-6 bg-zinc-50 dark:bg-zinc-800/50 rounded-3xl border border-zinc-100 dark:border-zinc-800">
+                        <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">Minimal Pax</p>
+                        <p class="text-xl font-black text-brand-charcoal dark:text-white italic">{selectedPackage.minPax} Pax</p>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <p class="text-[11px] font-black text-brand-charcoal dark:text-white uppercase tracking-widest border-b border-zinc-100 dark:border-zinc-800 pb-2">Fitur & Layanan</p>
+                    <div class="grid grid-cols-1 gap-3">
+                        {#each selectedPackage.features || [] as feat}
+                            <div class="flex items-center gap-3 text-xs font-bold text-zinc-500">
+                                <div class="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-500 flex-shrink-0">
+                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                                </div>
+                                {feat}
+                            </div>
+                        {/each}
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <p class="text-[11px] font-black text-brand-charcoal dark:text-white uppercase tracking-widest border-b border-zinc-100 dark:border-zinc-800 pb-2">Isi Paket</p>
+                    <div class="grid grid-cols-1 gap-3">
+                        {#each selectedPackage.packageItems || [] as item}
+                            <div class="flex items-center gap-3 text-xs font-bold text-zinc-500">
+                                <div class="w-2 h-2 rounded-full bg-brand-primary flex-shrink-0"></div>
+                                {item}
+                            </div>
+                        {/each}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {/if}
+
+    {#snippet footer()}
+        <div class="flex items-center justify-end gap-4">
+            <button 
+                onclick={() => showDetailModal = false}
+                class="px-8 py-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-zinc-200 transition-all"
+            >
+                Tutup
+            </button>
+            <button 
+                onclick={() => handleEdit(selectedPackage!)}
+                class="px-10 py-4 bg-brand-charcoal dark:bg-brand-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 transition-all"
+            >
+                Edit Paket
+            </button>
+        </div>
+    {/snippet}
+</Modal>
+
+<!-- Modal Add/Edit Form -->
+<Modal 
+    show={showAddModal || showEditModal} 
+    title={showAddModal ? "Buat Paket Catering Baru 🎁" : "Edit Paket Catering ✏️"} 
+    onClose={() => { showAddModal = false; showEditModal = false; }}
     maxWidth="max-w-3xl"
 >
     <div class="space-y-6">
@@ -340,7 +476,7 @@
                 <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Nama Paket *</label>
                 <input 
                     type="text" 
-                    bind:value={newPackage.name}
+                    bind:value={packageForm.name}
                     placeholder="Contoh: Paket Meeting Kantor"
                     class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary transition-all"
                 />
@@ -351,7 +487,7 @@
             <div class="space-y-2">
                 <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Kategori Paket *</label>
                 <select 
-                    bind:value={newPackage.category}
+                    bind:value={packageForm.category}
                     class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary transition-all appearance-none"
                 >
                     <option value="">Pilih Kategori</option>
@@ -373,7 +509,7 @@
                 <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Harga Mulai Dari *</label>
                 <input 
                     type="number" 
-                    bind:value={newPackage.price}
+                    bind:value={packageForm.price}
                     placeholder="45000"
                     class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary transition-all"
                 />
@@ -385,7 +521,7 @@
                 <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Minimal Pax *</label>
                 <input 
                     type="number" 
-                    bind:value={newPackage.minPax}
+                    bind:value={packageForm.minPax}
                     placeholder="20"
                     class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary transition-all"
                 />
@@ -399,7 +535,7 @@
             <div class="space-y-2">
                 <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Status Paket</label>
                 <select 
-                    bind:value={newPackage.status}
+                    bind:value={packageForm.status}
                     class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary transition-all appearance-none"
                 >
                     <option value="active">Aktif</option>
@@ -411,7 +547,7 @@
                 <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Cocok Untuk (Pisahkan Koma)</label>
                 <input 
                     type="text" 
-                    bind:value={newPackage.suitableFor}
+                    bind:value={packageForm.suitableFor}
                     placeholder="Contoh: Meeting, Seminar, Training"
                     class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary transition-all"
                 />
@@ -422,7 +558,7 @@
             <div class="space-y-2">
                 <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Fitur Paket (Per Baris)</label>
                 <textarea 
-                    bind:value={newPackage.features}
+                    bind:value={packageForm.features}
                     rows="3"
                     placeholder="Contoh:&#10;Makan siang box&#10;Coffee break"
                     class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary transition-all resize-none"
@@ -431,7 +567,7 @@
             <div class="space-y-2">
                 <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Isi Paket (Per Baris)</label>
                 <textarea 
-                    bind:value={newPackage.packageItems}
+                    bind:value={packageForm.packageItems}
                     rows="3"
                     placeholder="Contoh:&#10;Nasi putih&#10;Ayam bakar"
                     class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary transition-all resize-none"
@@ -442,7 +578,7 @@
         <div class="space-y-2">
             <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Deskripsi Paket</label>
             <textarea 
-                bind:value={newPackage.description}
+                bind:value={packageForm.description}
                 rows="3"
                 placeholder="Tuliskan deskripsi singkat paket..."
                 class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary transition-all resize-none"
@@ -453,7 +589,7 @@
             <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Gambar Paket (URL)</label>
             <input 
                 type="text" 
-                bind:value={newPackage.image}
+                bind:value={packageForm.image}
                 placeholder="Masukkan URL gambar paket"
                 class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary transition-all"
             />
@@ -463,16 +599,16 @@
     {#snippet footer()}
         <div class="flex items-center justify-end gap-4">
             <button 
-                onclick={() => showAddModal = false}
+                onclick={() => { showAddModal = false; showEditModal = false; }}
                 class="px-8 py-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-zinc-200 transition-all"
             >
                 Batal
             </button>
             <button 
-                onclick={handleSavePackage}
+                onclick={showAddModal ? handleSavePackage : handleUpdatePackage}
                 class="px-10 py-4 bg-brand-charcoal dark:bg-brand-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 transition-all"
             >
-                Simpan Paket
+                {showAddModal ? "Simpan Paket" : "Update Paket"}
             </button>
         </div>
     {/snippet}

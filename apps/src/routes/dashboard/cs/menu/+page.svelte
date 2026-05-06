@@ -22,7 +22,12 @@
     
     // Modal state
     let showAddModal = $state(false);
-    let newMenu = $state({
+    let showDetailModal = $state(false);
+    let showEditModal = $state(false);
+    let selectedMenu = $state<MockCsMenu | null>(null);
+
+    let menuForm = $state({
+        id: '',
         name: '',
         category: '',
         price: 0,
@@ -70,19 +75,50 @@
         historyDateFilter = '';
     }
 
-    function handleDetail(name: string) {
-        alert(`Detail Menu: ${name}\n\nFitur ini akan menampilkan informasi lengkap, deskripsi, dan bahan baku menu.`);
+    function openAddModal() {
+        menuForm = {
+            id: '',
+            name: '',
+            category: '',
+            price: 0,
+            activeDate: TODAY,
+            status: 'available',
+            stockLabel: 'Tersedia',
+            description: '',
+            image: ''
+        };
+        formErrors = {};
+        showAddModal = true;
     }
 
-    function handleEdit(name: string) {
-        alert(`Edit Menu: ${name}\n\nModal edit akan muncul di sini (Simulasi UI).`);
+    function handleDetail(menu: MockCsMenu) {
+        selectedMenu = { ...menu };
+        showDetailModal = true;
+    }
+
+    function handleEdit(menu: MockCsMenu) {
+        selectedMenu = { ...menu };
+        menuForm = {
+            id: menu.id,
+            name: menu.name,
+            category: menu.category,
+            price: menu.price,
+            activeDate: menu.activeDate,
+            status: menu.isAvailable ? 'available' : 'sold_out',
+            stockLabel: menu.stockLabel,
+            description: menu.description || '',
+            image: menu.image || ''
+        };
+        formErrors = {};
+        showEditModal = true;
+        showDetailModal = false;
     }
 
     function validateForm() {
         const errors: Record<string, string> = {};
-        if (!newMenu.name.trim()) errors.name = 'Nama menu wajib diisi';
-        if (!newMenu.category) errors.category = 'Kategori wajib dipilih';
-        if (newMenu.price <= 0) errors.price = 'Harga harus lebih dari 0';
+        if (!menuForm.name.trim()) errors.name = 'Nama menu wajib diisi';
+        if (!menuForm.category) errors.category = 'Kategori wajib dipilih';
+        if (menuForm.price <= 0) errors.price = 'Harga harus lebih dari 0';
         
         formErrors = errors;
         return Object.keys(errors).length === 0;
@@ -93,32 +129,45 @@
 
         const newItem: MockCsMenu = {
             id: `MENU-${Date.now()}`,
-            name: newMenu.name,
-            category: newMenu.category,
-            price: newMenu.price,
-            isAvailable: newMenu.status === 'available',
-            stockLabel: newMenu.stockLabel || (newMenu.status === 'available' ? 'Tersedia' : 'Habis'),
+            name: menuForm.name,
+            category: menuForm.category,
+            price: menuForm.price,
+            isAvailable: menuForm.status === 'available',
+            stockLabel: menuForm.stockLabel || (menuForm.status === 'available' ? 'Tersedia' : 'Habis'),
             updatedAt: TODAY,
-            activeDate: newMenu.activeDate,
-            image: newMenu.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=80'
+            activeDate: menuForm.activeDate,
+            image: menuForm.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=80',
+            description: menuForm.description
         };
 
         menus = [newItem, ...menus];
         showAddModal = false;
-        
-        // Reset form
-        newMenu = {
-            name: '',
-            category: '',
-            price: 0,
-            activeDate: TODAY,
-            status: 'available',
-            stockLabel: 'Tersedia',
-            description: '',
-            image: ''
-        };
-        
-        alert('Menu berhasil ditambahkan! (Simulasi State Lokal)');
+        alert('Menu berhasil ditambahkan!');
+    }
+
+    function handleUpdateMenu() {
+        if (!validateForm() || !selectedMenu) return;
+
+        menus = menus.map(m => {
+            if (m.id === menuForm.id) {
+                return {
+                    ...m,
+                    name: menuForm.name,
+                    category: menuForm.category,
+                    price: menuForm.price,
+                    isAvailable: menuForm.status === 'available',
+                    stockLabel: menuForm.stockLabel,
+                    activeDate: menuForm.activeDate,
+                    image: menuForm.image || m.image,
+                    description: menuForm.description,
+                    updatedAt: TODAY
+                };
+            }
+            return m;
+        });
+
+        showEditModal = false;
+        alert('Menu berhasil diperbarui!');
     }
 </script>
 
@@ -131,7 +180,7 @@
         </div>
         <div class="flex gap-4" in:fly={{ x: 20, duration: 500 }}>
             <button 
-                onclick={() => showAddModal = true}
+                onclick={openAddModal}
                 class="w-full md:w-auto px-8 py-4 bg-brand-charcoal dark:bg-brand-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2"
             >
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -162,10 +211,9 @@
         </div>
     </div>
 
-    <!-- Navigation & Tabs -->
     <div class="space-y-8" in:fade={{ delay: 300 }}>
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-            <div class="flex gap-4">
+            <div class="flex gap-4 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 scroll-smooth">
                 <button 
                     onclick={() => activeTab = 'TODAY'}
                     class="px-8 py-4 rounded-full text-xs font-black uppercase tracking-widest transition-all
@@ -245,6 +293,7 @@
                                         <button 
                                             onclick={() => toggleAvailability(menu.id)}
                                             class="w-12 h-6 rounded-full relative transition-all cursor-pointer {menu.isAvailable ? 'bg-emerald-500' : 'bg-zinc-200 dark:bg-zinc-800'}"
+                                            aria-label="Ubah ketersediaan menu"
                                         >
                                             <div class="absolute top-1 w-4 h-4 bg-white rounded-full transition-all {menu.isAvailable ? 'left-7' : 'left-1'} shadow-sm"></div>
                                         </button>
@@ -253,13 +302,13 @@
 
                                 <div class="grid grid-cols-2 gap-4">
                                     <button 
-                                        onclick={() => handleDetail(menu.name)}
+                                        onclick={() => handleDetail(menu)}
                                         class="py-4 bg-zinc-50 dark:bg-zinc-800 text-zinc-500 text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-all"
                                     >
                                         Detail
                                     </button>
                                     <button 
-                                        onclick={() => handleEdit(menu.name)}
+                                        onclick={() => handleEdit(menu)}
                                         class="py-4 bg-brand-charcoal dark:bg-white text-white dark:text-brand-charcoal text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl hover:scale-105 active:scale-95 transition-all"
                                     >
                                         Edit
@@ -293,19 +342,83 @@
     </div>
 </div>
 
-<!-- Add Menu Modal -->
+<!-- Modal Detail Menu -->
 <Modal 
-    show={showAddModal} 
-    title="Tambah Menu Baru 🍱" 
-    onClose={() => showAddModal = false}
+    show={showDetailModal} 
+    title="Detail Menu Harian 🍱" 
+    onClose={() => showDetailModal = false}
+>
+    {#if selectedMenu}
+        <div class="space-y-8">
+            <div class="aspect-video rounded-3xl overflow-hidden bg-zinc-100 dark:bg-zinc-800">
+                <img src={selectedMenu.image} alt={selectedMenu.name} class="w-full h-full object-cover" />
+            </div>
+            <div class="flex justify-between items-start">
+                <div>
+                    <h2 class="text-3xl font-black text-brand-charcoal dark:text-white italic tracking-tighter">{selectedMenu.name}</h2>
+                    <div class="flex items-center gap-3 mt-2">
+                        <span class="px-3 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-full text-[9px] font-black uppercase text-zinc-500 tracking-widest border border-zinc-200 dark:border-zinc-700">{selectedMenu.category}</span>
+                        <span class="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Update: {selectedMenu.updatedAt}</span>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">Harga Satuan</p>
+                    <p class="text-2xl font-black text-brand-primary italic tracking-tighter">{formatPrice(selectedMenu.price)}</p>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <p class="text-[10px] font-black text-brand-charcoal dark:text-white uppercase tracking-widest border-b border-zinc-100 dark:border-zinc-800 pb-2">Deskripsi Menu</p>
+                <p class="text-sm font-medium text-zinc-500 leading-relaxed">
+                    {selectedMenu.description || 'Tidak ada deskripsi untuk menu ini.'}
+                </p>
+            </div>
+
+            <div class="p-6 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
+                <div>
+                    <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Status Stok</p>
+                    <p class="text-sm font-black text-brand-charcoal dark:text-white italic">{selectedMenu.stockLabel}</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="text-[10px] font-black uppercase {selectedMenu.isAvailable ? 'text-emerald-500' : 'text-red-500'}">{selectedMenu.isAvailable ? 'Tersedia' : 'Habis'}</span>
+                    <div class="w-3 h-3 rounded-full {selectedMenu.isAvailable ? 'bg-emerald-500' : 'bg-red-500'} shadow-lg animate-pulse"></div>
+                </div>
+            </div>
+        </div>
+    {/if}
+
+    {#snippet footer()}
+        <div class="flex items-center justify-end gap-4">
+            <button 
+                onclick={() => showDetailModal = false}
+                class="px-8 py-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-zinc-200 transition-all"
+            >
+                Tutup
+            </button>
+            <button 
+                onclick={() => handleEdit(selectedMenu!)}
+                class="px-10 py-4 bg-brand-charcoal dark:bg-brand-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 transition-all"
+            >
+                Edit Menu
+            </button>
+        </div>
+    {/snippet}
+</Modal>
+
+<!-- Modal Add/Edit Menu Form -->
+<Modal 
+    show={showAddModal || showEditModal} 
+    title={showAddModal ? "Tambah Menu Baru 🍱" : "Edit Menu ✏️"} 
+    onClose={() => { showAddModal = false; showEditModal = false; }}
 >
     <div class="space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="space-y-2">
-                <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Nama Menu *</label>
+                <label for="menuName" class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Nama Menu *</label>
                 <input 
+                    id="menuName"
                     type="text" 
-                    bind:value={newMenu.name}
+                    bind:value={menuForm.name}
                     placeholder="Contoh: Nasi Box Ayam Bakar"
                     class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary transition-all"
                 />
@@ -314,9 +427,10 @@
                 {/if}
             </div>
             <div class="space-y-2">
-                <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Kategori *</label>
+                <label for="menuCategory" class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Kategori *</label>
                 <select 
-                    bind:value={newMenu.category}
+                    id="menuCategory"
+                    bind:value={menuForm.category}
                     class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary transition-all appearance-none"
                 >
                     <option value="">Pilih Kategori</option>
@@ -335,10 +449,11 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="space-y-2">
-                <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Harga (Rp) *</label>
+                <label for="menuPrice" class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Harga (Rp) *</label>
                 <input 
+                    id="menuPrice"
                     type="number" 
-                    bind:value={newMenu.price}
+                    bind:value={menuForm.price}
                     placeholder="25000"
                     class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary transition-all"
                 />
@@ -347,10 +462,11 @@
                 {/if}
             </div>
             <div class="space-y-2">
-                <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Tanggal Aktif</label>
+                <label for="activeDate" class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Tanggal Aktif</label>
                 <input 
+                    id="activeDate"
                     type="date" 
-                    bind:value={newMenu.activeDate}
+                    bind:value={menuForm.activeDate}
                     class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary transition-all"
                 />
             </div>
@@ -358,9 +474,10 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="space-y-2">
-                <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Status Ketersediaan</label>
+                <label for="menuStatus" class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Status Ketersediaan</label>
                 <select 
-                    bind:value={newMenu.status}
+                    id="menuStatus"
+                    bind:value={menuForm.status}
                     class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary transition-all appearance-none"
                 >
                     <option value="available">Tersedia</option>
@@ -369,10 +486,11 @@
                 </select>
             </div>
             <div class="space-y-2">
-                <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Label Stok</label>
+                <label for="stockLabel" class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Label Stok</label>
                 <input 
+                    id="stockLabel"
                     type="text" 
-                    bind:value={newMenu.stockLabel}
+                    bind:value={menuForm.stockLabel}
                     placeholder="Contoh: Tersedia terbatas"
                     class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary transition-all"
                 />
@@ -380,9 +498,10 @@
         </div>
 
         <div class="space-y-2">
-            <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Deskripsi Singkat</label>
+            <label for="menuDescription" class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Deskripsi Singkat</label>
             <textarea 
-                bind:value={newMenu.description}
+                id="menuDescription"
+                bind:value={menuForm.description}
                 rows="3"
                 placeholder="Tuliskan deskripsi singkat menu..."
                 class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary transition-all resize-none"
@@ -390,10 +509,11 @@
         </div>
 
         <div class="space-y-2">
-            <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Gambar Menu (URL)</label>
+            <label for="menuImage" class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Gambar Menu (URL)</label>
             <input 
+                id="menuImage"
                 type="text" 
-                bind:value={newMenu.image}
+                bind:value={menuForm.image}
                 placeholder="Masukkan URL gambar menu"
                 class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary transition-all"
             />
@@ -403,16 +523,16 @@
     {#snippet footer()}
         <div class="flex items-center justify-end gap-4">
             <button 
-                onclick={() => showAddModal = false}
+                onclick={() => { showAddModal = false; showEditModal = false; }}
                 class="px-8 py-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-zinc-200 transition-all"
             >
                 Batal
             </button>
             <button 
-                onclick={handleSaveMenu}
+                onclick={showAddModal ? handleSaveMenu : handleUpdateMenu}
                 class="px-10 py-4 bg-brand-charcoal dark:bg-brand-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 transition-all"
             >
-                Simpan Menu
+                {showAddModal ? "Simpan Menu" : "Update Menu"}
             </button>
         </div>
     {/snippet}

@@ -42,21 +42,26 @@ export type MockCsMenu = {
   updatedAt: string;
   activeDate?: string;
   image?: string;
+  description?: string;
 };
 
 export type MockCsCustomer = {
   id: string;
   name: string;
-  type: 'personal' | 'company' | 'institution';
+  type?: 'personal' | 'company' | 'institution';
+  accountType?: 'personal' | 'company' | 'institution';
+  requestedType?: 'personal' | 'company' | 'institution';
   whatsapp: string;
   address: string;
   totalOrders: number;
   lastOrderDate: string;
   registrationStatus: 'pending' | 'approved' | 'rejected';
-  registeredAt: string;
+  createdBy?: 'public' | 'cs' | 'admin';
   approvedBy?: 'cs' | 'admin';
+  registeredAt: string;
   approvedAt?: string;
   rejectedReason?: string;
+  internalNote?: string;
 };
 
 export const mockCsOrders: MockCsOrder[] = [
@@ -184,7 +189,8 @@ export const mockCsMenus: MockCsMenu[] = mockCatalogItems
     stockLabel: item.stockLabel || '',
     updatedAt: item.updatedAt,
     activeDate: item.activeDate,
-    image: item.image
+    image: item.image,
+    description: item.description
   }));
 
 export const mockCsCustomers: MockCsCustomer[] = [
@@ -192,11 +198,13 @@ export const mockCsCustomers: MockCsCustomer[] = [
     id: 'CUS-001',
     name: 'PT Maju Bersama',
     type: 'company',
+    accountType: 'company',
     whatsapp: '081234567890',
     address: 'Jl. Merdeka No. 10, Jakarta',
     totalOrders: 12,
     lastOrderDate: '2026-05-01',
     registrationStatus: 'approved',
+    createdBy: 'public',
     registeredAt: '2025-10-12',
     approvedBy: 'admin',
     approvedAt: '2025-10-13'
@@ -205,11 +213,13 @@ export const mockCsCustomers: MockCsCustomer[] = [
     id: 'CUS-002',
     name: 'Ibu Rina',
     type: 'personal',
+    accountType: 'personal',
     whatsapp: '087700001111',
     address: 'Jl. Anggrek No. 5, Bekasi',
     totalOrders: 4,
     lastOrderDate: '2026-04-28',
     registrationStatus: 'approved',
+    createdBy: 'public',
     registeredAt: '2026-01-20',
     approvedBy: 'cs',
     approvedAt: '2026-01-21'
@@ -218,11 +228,13 @@ export const mockCsCustomers: MockCsCustomer[] = [
     id: 'CUS-003',
     name: 'SMA Harapan Bangsa',
     type: 'institution',
+    accountType: 'institution',
     whatsapp: '082211112222',
     address: 'Jl. Pendidikan No. 3, Depok',
     totalOrders: 8,
     lastOrderDate: '2026-04-20',
     registrationStatus: 'approved',
+    createdBy: 'public',
     registeredAt: '2025-12-05',
     approvedBy: 'admin',
     approvedAt: '2025-12-06'
@@ -230,34 +242,37 @@ export const mockCsCustomers: MockCsCustomer[] = [
   {
     id: 'CUS-NEW-001',
     name: 'Bapak Budi',
-    type: 'personal',
+    requestedType: 'personal',
     whatsapp: '081211112222',
     address: 'Jl. Melati No. 45, Tangerang',
     totalOrders: 0,
     lastOrderDate: '-',
     registrationStatus: 'pending',
+    createdBy: 'public',
     registeredAt: '2026-05-06'
   },
   {
     id: 'CUS-NEW-002',
     name: 'Startup XYZ',
-    type: 'company',
+    requestedType: 'company',
     whatsapp: '085566667777',
     address: 'Co-working Space, Kuningan, Jakarta',
     totalOrders: 0,
     lastOrderDate: '-',
     registrationStatus: 'pending',
+    createdBy: 'public',
     registeredAt: '2026-05-06'
   },
   {
     id: 'CUS-NEW-003',
     name: 'Yayasan Amal',
-    type: 'institution',
+    requestedType: 'institution',
     whatsapp: '081122223333',
     address: 'Jl. Kebahagiaan No. 1, Bogor',
     totalOrders: 0,
     lastOrderDate: '-',
     registrationStatus: 'rejected',
+    createdBy: 'public',
     registeredAt: '2026-05-05',
     rejectedReason: 'Nomor WhatsApp tidak aktif saat diverifikasi.'
   }
