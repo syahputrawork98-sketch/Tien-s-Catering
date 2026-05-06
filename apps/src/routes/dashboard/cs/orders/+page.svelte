@@ -35,24 +35,26 @@
     const stats = $derived({
         total: orders.length,
         new: orders.filter(o => o.status === 'new').length,
-        proses: orders.filter(o => 
-            (o.status === 'confirmed' || o.status === 'processing' || o.status === 'ready') && 
-            !o.completedConfirmedByCs && !o.completedConfirmedByUser
-        ).length,
-        selesai: orders.filter(o => 
-            o.status === 'completed' || o.status === 'delivered' || 
-            ((o.status === 'confirmed' || o.status === 'processing' || o.status === 'ready') && 
-             (o.completedConfirmedByCs || o.completedConfirmedByUser))
-        ).length,
+        proses: orders.filter(o => {
+            const isProsesStatus = o.status === 'confirmed' || o.status === 'processing' || o.status === 'ready' || o.status === 'delivered';
+            const isConfirmedCompleted = o.completedConfirmedByCs || o.completedConfirmedByUser || o.completedConfirmedByAdmin;
+            return isProsesStatus && !isConfirmedCompleted;
+        }).length,
+        selesai: orders.filter(o => {
+            const isCompletedStatus = o.status === 'completed';
+            const isProsesStatus = o.status === 'confirmed' || o.status === 'processing' || o.status === 'ready' || o.status === 'delivered';
+            const isConfirmedCompleted = o.completedConfirmedByCs || o.completedConfirmedByUser || o.completedConfirmedByAdmin;
+            return isCompletedStatus || (isProsesStatus && isConfirmedCompleted);
+        }).length,
         batal: orders.filter(o => o.status === 'cancelled').length
     });
 
     const filteredOrders = $derived(
         orders.filter(order => {
             let matchesTab = false;
-            const isCompletedStatus = order.status === 'completed' || order.status === 'delivered';
-            const isProsesStatus = order.status === 'confirmed' || order.status === 'processing' || order.status === 'ready';
-            const isConfirmedCompleted = order.completedConfirmedByCs || order.completedConfirmedByUser;
+            const isCompletedStatus = order.status === 'completed';
+            const isProsesStatus = order.status === 'confirmed' || order.status === 'processing' || order.status === 'ready' || order.status === 'delivered';
+            const isConfirmedCompleted = order.completedConfirmedByCs || order.completedConfirmedByUser || order.completedConfirmedByAdmin;
 
             switch (activeTab) {
                 case 'NEW': 
@@ -159,7 +161,6 @@
         );
         
         alert(`Konfirmasi penyelesaian oleh CS untuk Pesanan #${selectedOrder.id} berhasil.`);
-        // Update selectedOrder so UI reflects change immediately
         selectedOrder.completedConfirmedByCs = true;
         selectedOrder.completionNote = completionNoteInput;
         
@@ -180,6 +181,24 @@
         
         alert(`Simulasi: User telah mengonfirmasi penyelesaian untuk Pesanan #${selectedOrder.id}.`);
         selectedOrder.completedConfirmedByUser = true;
+
+        if (activeTab === 'PROSES') {
+            closeModal();
+            activeTab = 'SELESAI';
+        }
+    }
+
+    function simulateAdminConfirmation() {
+        if (!selectedOrder) return;
+        
+        orders = orders.map(o => 
+            o.id === selectedOrder!.id 
+                ? { ...o, completedConfirmedByAdmin: true } 
+                : o
+        );
+        
+        alert(`Simulasi: Admin telah mengonfirmasi penyelesaian untuk Pesanan #${selectedOrder.id}.`);
+        selectedOrder.completedConfirmedByAdmin = true;
 
         if (activeTab === 'PROSES') {
             closeModal();
@@ -305,29 +324,32 @@
                                             <span class="text-base font-black text-brand-charcoal dark:text-white">{formatPrice(order.total)}</span>
                                         </td>
                                         <td class="px-10 py-8">
-                                            <div class="flex flex-col gap-2">
-                                                <span class="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest w-fit
-                                                    {order.status === 'new' ? 'bg-orange-100 text-orange-600' : 
-                                                     (order.status === 'confirmed' || order.status === 'processing' || order.status === 'ready') ? 'bg-blue-100 text-blue-600' : 
-                                                     (order.status === 'completed' || order.status === 'delivered') ? 'bg-emerald-100 text-emerald-600' :
-                                                     'bg-red-100 text-red-600'}">
-                                                    {order.status === 'delivered' ? 'selesai' : (order.status === 'ready' ? 'siap kirim' : order.status)}
-                                                </span>
-                                                
-                                                {#if order.status !== 'new' && order.status !== 'cancelled'}
-                                                    <div class="flex flex-wrap gap-1">
-                                                        {#if !order.completedConfirmedByCs && !order.completedConfirmedByUser}
-                                                            <span class="px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-[9px] font-black uppercase rounded-md">Belum Konfirmasi Selesai</span>
-                                                        {:else}
-                                                            {#if order.completedConfirmedByUser}
-                                                                <span class="px-2 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-500 text-[9px] font-black uppercase rounded-md border border-blue-100 dark:border-blue-800/50">User ✓</span>
-                                                            {/if}
-                                                            {#if order.completedConfirmedByCs}
-                                                                <span class="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-500 text-[9px] font-black uppercase rounded-md border border-emerald-100 dark:border-emerald-800/50">CS ✓</span>
-                                                            {/if}
-                                                        {/if}
-                                                    </div>
-                                                {/if}
+                                             <div class="flex flex-col gap-2">
+                                                 <span class="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest w-fit
+                                                     {order.status === 'new' ? 'bg-orange-100 text-orange-600' : 
+                                                      (order.status === 'confirmed' || order.status === 'processing' || order.status === 'ready' || order.status === 'delivered') ? 'bg-blue-100 text-blue-600' : 
+                                                      (order.status === 'completed') ? 'bg-emerald-100 text-emerald-600' :
+                                                      'bg-red-100 text-red-600'}">
+                                                     {order.status === 'ready' ? 'siap kirim' : (order.status === 'delivered' ? 'terkirim' : order.status)}
+                                                 </span>
+                                                 
+                                                 {#if order.status !== 'new' && order.status !== 'cancelled'}
+                                                     <div class="flex flex-wrap gap-1">
+                                                         {#if !order.completedConfirmedByCs && !order.completedConfirmedByUser && !order.completedConfirmedByAdmin}
+                                                             <span class="px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-[9px] font-black uppercase rounded-md">Belum Konfirmasi</span>
+                                                         {:else}
+                                                             {#if order.completedConfirmedByUser}
+                                                                 <span class="px-2 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-500 text-[9px] font-black uppercase rounded-md border border-blue-100 dark:border-blue-800/50">User ✓</span>
+                                                             {/if}
+                                                             {#if order.completedConfirmedByCs}
+                                                                 <span class="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-500 text-[9px] font-black uppercase rounded-md border border-emerald-100 dark:border-emerald-800/50">CS ✓</span>
+                                                             {/if}
+                                                             {#if order.completedConfirmedByAdmin}
+                                                                 <span class="px-2 py-0.5 bg-purple-50 dark:bg-purple-900/30 text-purple-500 text-[9px] font-black uppercase rounded-md border border-purple-100 dark:border-purple-800/50">Admin ✓</span>
+                                                             {/if}
+                                                         {/if}
+                                                     </div>
+                                                 {/if}
 
                                                 {#if order.status === 'cancelled'}
                                                     <div class="flex flex-col gap-1">
@@ -416,36 +438,57 @@
                 <!-- Confirmation Section for Proses/Selesai/History -->
                 {#if selectedOrder.status !== 'new' && selectedOrder.status !== 'cancelled'}
                     <div class="mb-8 p-6 bg-zinc-50 dark:bg-zinc-800/30 rounded-[2rem] border border-zinc-100 dark:border-zinc-800/50">
-                        <div class="flex items-center justify-between mb-4">
-                            <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Konfirmasi Penyelesaian</p>
-                            <button 
-                                onclick={simulateUserConfirmation}
-                                class="text-[9px] font-black uppercase text-brand-primary hover:underline"
-                            >
-                                Simulasikan Konfirmasi User
-                            </button>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="flex items-center gap-3 p-4 bg-white dark:bg-zinc-800 rounded-2xl shadow-sm border {selectedOrder.completedConfirmedByUser ? 'border-blue-200 dark:border-blue-900' : 'border-zinc-100 dark:border-zinc-700'}">
-                                <div class="w-8 h-8 rounded-full flex items-center justify-center {selectedOrder.completedConfirmedByUser ? 'bg-blue-500 text-white' : 'bg-zinc-100 dark:bg-zinc-700 text-zinc-300'}">
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                                </div>
-                                <div>
-                                    <p class="text-[10px] font-black uppercase text-zinc-400">User</p>
-                                    <p class="text-xs font-black {selectedOrder.completedConfirmedByUser ? 'text-blue-500' : 'text-zinc-300'}">
-                                        {selectedOrder.completedConfirmedByUser ? 'Sudah Konfirmasi' : 'Belum'}
-                                    </p>
+                        <div class="flex flex-col gap-4">
+                            <div class="flex items-center justify-between">
+                                <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Konfirmasi Penyelesaian</p>
+                                <div class="flex gap-4">
+                                    <button 
+                                        onclick={simulateUserConfirmation}
+                                        class="text-[9px] font-black uppercase text-blue-500 hover:underline"
+                                    >
+                                        Simulasi User
+                                    </button>
+                                    <button 
+                                        onclick={simulateAdminConfirmation}
+                                        class="text-[9px] font-black uppercase text-purple-500 hover:underline"
+                                    >
+                                        Simulasi Admin
+                                    </button>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-3 p-4 bg-white dark:bg-zinc-800 rounded-2xl shadow-sm border {selectedOrder.completedConfirmedByCs ? 'border-emerald-200 dark:border-emerald-900' : 'border-zinc-100 dark:border-zinc-700'}">
-                                <div class="w-8 h-8 rounded-full flex items-center justify-center {selectedOrder.completedConfirmedByCs ? 'bg-emerald-500 text-white' : 'bg-zinc-100 dark:bg-zinc-700 text-zinc-300'}">
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            
+                            <div class="grid grid-cols-3 gap-3">
+                                <!-- User -->
+                                <div class="flex flex-col items-center gap-2 p-4 bg-white dark:bg-zinc-800 rounded-2xl shadow-sm border {selectedOrder.completedConfirmedByUser ? 'border-blue-200 dark:border-blue-900' : 'border-zinc-100 dark:border-zinc-700'}">
+                                    <div class="w-8 h-8 rounded-full flex items-center justify-center {selectedOrder.completedConfirmedByUser ? 'bg-blue-500 text-white' : 'bg-zinc-100 dark:bg-zinc-700 text-zinc-300'}">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                                    </div>
+                                    <p class="text-[9px] font-black uppercase text-zinc-400">User</p>
+                                    <span class="text-[8px] font-black uppercase {selectedOrder.completedConfirmedByUser ? 'text-blue-500' : 'text-zinc-300'}">
+                                        {selectedOrder.completedConfirmedByUser ? 'Sudah' : 'Belum'}
+                                    </span>
                                 </div>
-                                <div>
-                                    <p class="text-[10px] font-black uppercase text-zinc-400">CS (Admin)</p>
-                                    <p class="text-xs font-black {selectedOrder.completedConfirmedByCs ? 'text-emerald-500' : 'text-zinc-300'}">
-                                        {selectedOrder.completedConfirmedByCs ? 'Sudah Konfirmasi' : 'Belum'}
-                                    </p>
+                                
+                                <!-- CS -->
+                                <div class="flex flex-col items-center gap-2 p-4 bg-white dark:bg-zinc-800 rounded-2xl shadow-sm border {selectedOrder.completedConfirmedByCs ? 'border-emerald-200 dark:border-emerald-900' : 'border-zinc-100 dark:border-zinc-700'}">
+                                    <div class="w-8 h-8 rounded-full flex items-center justify-center {selectedOrder.completedConfirmedByCs ? 'bg-emerald-500 text-white' : 'bg-zinc-100 dark:bg-zinc-700 text-zinc-300'}">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                                    </div>
+                                    <p class="text-[9px] font-black uppercase text-zinc-400">CS</p>
+                                    <span class="text-[8px] font-black uppercase {selectedOrder.completedConfirmedByCs ? 'text-emerald-500' : 'text-zinc-300'}">
+                                        {selectedOrder.completedConfirmedByCs ? 'Sudah' : 'Belum'}
+                                    </span>
+                                </div>
+
+                                <!-- Admin -->
+                                <div class="flex flex-col items-center gap-2 p-4 bg-white dark:bg-zinc-800 rounded-2xl shadow-sm border {selectedOrder.completedConfirmedByAdmin ? 'border-purple-200 dark:border-purple-900' : 'border-zinc-100 dark:border-zinc-700'}">
+                                    <div class="w-8 h-8 rounded-full flex items-center justify-center {selectedOrder.completedConfirmedByAdmin ? 'bg-purple-500 text-white' : 'bg-zinc-100 dark:bg-zinc-700 text-zinc-300'}">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                                    </div>
+                                    <p class="text-[9px] font-black uppercase text-zinc-400">Admin</p>
+                                    <span class="text-[8px] font-black uppercase {selectedOrder.completedConfirmedByAdmin ? 'text-purple-500' : 'text-zinc-300'}">
+                                        {selectedOrder.completedConfirmedByAdmin ? 'Sudah' : 'Belum'}
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -455,7 +498,7 @@
                                 <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">Catatan Penyelesaian (Opsional)</p>
                                 <textarea 
                                     bind:value={completionNoteInput}
-                                    placeholder="Contoh: Pesanan sudah dikirim dan diterima oleh Ibu Rina..."
+                                    placeholder="Contoh: Pesanan sudah dikirim dan diterima oleh Bapak Budi..."
                                     class="w-full bg-white dark:bg-zinc-800 border-zinc-100 dark:border-zinc-700 rounded-2xl text-xs font-medium p-4 focus:ring-2 focus:ring-emerald-500"
                                     rows="2"
                                 ></textarea>

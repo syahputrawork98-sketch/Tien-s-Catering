@@ -28,6 +28,7 @@ export type MockCsOrder = {
   cancellationReason?: string;
   completedConfirmedByCs?: boolean;
   completedConfirmedByUser?: boolean;
+  completedConfirmedByAdmin?: boolean;
   completionNote?: string;
 };
 
@@ -51,6 +52,11 @@ export type MockCsCustomer = {
   address: string;
   totalOrders: number;
   lastOrderDate: string;
+  registrationStatus: 'pending' | 'approved' | 'rejected';
+  registeredAt: string;
+  approvedBy?: 'cs' | 'admin';
+  approvedAt?: string;
+  rejectedReason?: string;
 };
 
 export const mockCsOrders: MockCsOrder[] = [
@@ -80,6 +86,7 @@ export const mockCsOrders: MockCsOrder[] = [
     paymentStatus: 'paid',
     completedConfirmedByCs: false,
     completedConfirmedByUser: false,
+    completedConfirmedByAdmin: false,
     items: [
       { name: 'Snack Box', quantity: 20, price: 15000 }
     ]
@@ -95,6 +102,7 @@ export const mockCsOrders: MockCsOrder[] = [
     paymentStatus: 'paid',
     completedConfirmedByCs: false,
     completedConfirmedByUser: true,
+    completedConfirmedByAdmin: false,
     items: [
       { name: 'Nasi Box Premium', quantity: 50, price: 30000 }
     ]
@@ -110,6 +118,7 @@ export const mockCsOrders: MockCsOrder[] = [
     paymentStatus: 'paid',
     completedConfirmedByCs: true,
     completedConfirmedByUser: true,
+    completedConfirmedByAdmin: false,
     completionNote: 'Alhamdulillah, acara lancar katering mantap.',
     items: [
       { name: 'Nasi Kuning Special', quantity: 10, price: 25000 }
@@ -139,8 +148,27 @@ export const mockCsOrders: MockCsOrder[] = [
     total: 1200000,
     status: 'ready',
     paymentStatus: 'paid',
+    completedConfirmedByCs: false,
+    completedConfirmedByUser: false,
+    completedConfirmedByAdmin: false,
     items: [
       { name: 'Nasi Box Ayam', quantity: 40, price: 30000 }
+    ]
+  },
+  {
+    id: 'ORD-2026-007',
+    customerName: 'Bank Indonesia',
+    whatsapp: '081199990000',
+    deliveryDate: '2026-05-12',
+    address: 'Jl. Thamrin No. 2, Jakarta',
+    total: 3000000,
+    status: 'processing',
+    paymentStatus: 'paid',
+    completedConfirmedByCs: false,
+    completedConfirmedByUser: false,
+    completedConfirmedByAdmin: true,
+    items: [
+      { name: 'Paket Meeting Corporate', quantity: 60, price: 50000 }
     ]
   }
 ];
@@ -167,7 +195,11 @@ export const mockCsCustomers: MockCsCustomer[] = [
     whatsapp: '081234567890',
     address: 'Jl. Merdeka No. 10, Jakarta',
     totalOrders: 12,
-    lastOrderDate: '2026-05-01'
+    lastOrderDate: '2026-05-01',
+    registrationStatus: 'approved',
+    registeredAt: '2025-10-12',
+    approvedBy: 'admin',
+    approvedAt: '2025-10-13'
   },
   {
     id: 'CUS-002',
@@ -176,7 +208,11 @@ export const mockCsCustomers: MockCsCustomer[] = [
     whatsapp: '087700001111',
     address: 'Jl. Anggrek No. 5, Bekasi',
     totalOrders: 4,
-    lastOrderDate: '2026-04-28'
+    lastOrderDate: '2026-04-28',
+    registrationStatus: 'approved',
+    registeredAt: '2026-01-20',
+    approvedBy: 'cs',
+    approvedAt: '2026-01-21'
   },
   {
     id: 'CUS-003',
@@ -185,6 +221,44 @@ export const mockCsCustomers: MockCsCustomer[] = [
     whatsapp: '082211112222',
     address: 'Jl. Pendidikan No. 3, Depok',
     totalOrders: 8,
-    lastOrderDate: '2026-04-20'
+    lastOrderDate: '2026-04-20',
+    registrationStatus: 'approved',
+    registeredAt: '2025-12-05',
+    approvedBy: 'admin',
+    approvedAt: '2025-12-06'
+  },
+  {
+    id: 'CUS-NEW-001',
+    name: 'Bapak Budi',
+    type: 'personal',
+    whatsapp: '081211112222',
+    address: 'Jl. Melati No. 45, Tangerang',
+    totalOrders: 0,
+    lastOrderDate: '-',
+    registrationStatus: 'pending',
+    registeredAt: '2026-05-06'
+  },
+  {
+    id: 'CUS-NEW-002',
+    name: 'Startup XYZ',
+    type: 'company',
+    whatsapp: '085566667777',
+    address: 'Co-working Space, Kuningan, Jakarta',
+    totalOrders: 0,
+    lastOrderDate: '-',
+    registrationStatus: 'pending',
+    registeredAt: '2026-05-06'
+  },
+  {
+    id: 'CUS-NEW-003',
+    name: 'Yayasan Amal',
+    type: 'institution',
+    whatsapp: '081122223333',
+    address: 'Jl. Kebahagiaan No. 1, Bogor',
+    totalOrders: 0,
+    lastOrderDate: '-',
+    registrationStatus: 'rejected',
+    registeredAt: '2026-05-05',
+    rejectedReason: 'Nomor WhatsApp tidak aktif saat diverifikasi.'
   }
 ];
