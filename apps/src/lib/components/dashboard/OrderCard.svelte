@@ -13,6 +13,12 @@
         <div class="flex items-center flex-wrap gap-4">
             <span class="text-lg font-black text-brand-charcoal dark:text-white tracking-tighter">#{order.orderNumber}</span>
             <OrderStatusBadge status={order.status} />
+            <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest
+                {order.paymentStatus === 'paid' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 
+                 order.paymentStatus === 'waiting_verification' ? 'bg-amber-50 text-amber-600 border border-amber-100 animate-pulse' : 
+                 'bg-zinc-50 text-zinc-400 border border-zinc-100'}">
+                {order.paymentStatus === 'waiting_verification' ? 'Verifikasi Bayar' : order.paymentStatus}
+            </span>
         </div>
         
         <div class="space-y-1">

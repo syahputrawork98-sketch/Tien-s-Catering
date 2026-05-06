@@ -27,7 +27,8 @@ export type MockCsOrder = {
   address: string;
   total: number;
   status: MockCsOrderStatus;
-  paymentStatus: 'unpaid' | 'waiting_verification' | 'paid';
+  paymentStatus: 'unpaid' | 'waiting_verification' | 'paid' | 'refunded';
+  paymentProof?: import('./orders').MockPaymentProof;
   items: {
     name: string;
     quantity: number;
@@ -95,7 +96,8 @@ export const mockCsOrders: MockCsOrder[] = mockOrders.map((o: MockOrder) => ({
   completedConfirmedByCs: o.completedConfirmedByCs,
   completedConfirmedByUser: o.completedConfirmedByUser,
   completedConfirmedByAdmin: o.completedConfirmedByAdmin,
-  completionNote: o.completionNote
+  completionNote: o.completionNote,
+  paymentProof: o.paymentProof
 }));
 
 // ─── Adapter: mockCsMenus dari catalog.ts ────────────────

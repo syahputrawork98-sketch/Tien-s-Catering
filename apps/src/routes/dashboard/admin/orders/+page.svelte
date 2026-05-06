@@ -18,8 +18,12 @@
     let overrideStatus = $state<MockOrderStatus>('confirmed');
     let overrideNote = $state('');
     let cancelReason = $state('');
-    let overrideError = $state('');
     let cancelError = $state('');
+    
+    let adminVerificationNote = $state(''); // New
+    let adminRejectionReason = $state(''); // New
+    let showAdminRejection = $state(false); // New
+    let overrideError = $state(''); // Restored
 
     const statusOptions: { value: MockOrderStatus; label: string }[] = [
         { value: 'new', label: 'Pesanan Baru' },
@@ -128,6 +132,54 @@
             : o
         );
         showCancelModal = false;
+    }
+
+    function verifyPayment(id: string) {
+        orders = orders.map(o => o.id === id ? {
+            ...o,
+            paymentStatus: 'paid' as const,
+            paymentProof: o.paymentProof ? {
+                ...o.paymentProof,
+                status: 'verified' as const,
+                verifiedBy: 'Admin Demo',
+                verifiedByRole: 'admin' as const,
+                verifiedAt: new Date().toISOString(),
+                verificationNote: adminVerificationNote
+            } : undefined
+        } : o);
+        
+        if (selectedOrder?.id === id) {
+            selectedOrder = orders.find(x => x.id === id) || null;
+        }
+        adminVerificationNote = '';
+        alert('Pembayaran berhasil diverifikasi oleh Admin.');
+    }
+
+    function rejectPayment(id: string) {
+        if (!adminRejectionReason.trim()) {
+            alert('Alasan penolakan wajib diisi.');
+            return;
+        }
+
+        orders = orders.map(o => o.id === id ? {
+            ...o,
+            paymentStatus: 'unpaid' as const,
+            paymentProof: o.paymentProof ? {
+                ...o.paymentProof,
+                status: 'rejected' as const,
+                rejectedBy: 'Admin Demo',
+                rejectedByRole: 'admin' as const,
+                rejectedAt: new Date().toISOString(),
+                rejectionReason: adminRejectionReason.trim()
+            } : undefined
+        } : o);
+
+        if (selectedOrder?.id === id) {
+            selectedOrder = orders.find(x => x.id === id) || null;
+        }
+        showAdminRejection = false;
+        adminRejectionReason = '';
+        alert('Bukti pembayaran telah ditolak oleh Admin.');
     }
 
     const tabs: { id: TabType; label: string; count: () => number }[] = [
@@ -314,6 +366,89 @@
                 <div class="p-4 bg-red-50 dark:bg-red-900/10 rounded-2xl">
                     <p class="text-[9px] font-black text-red-500 uppercase tracking-widest mb-1">Alasan Pembatalan (oleh {selectedOrder.cancelledBy})</p>
                     <p class="text-sm">{selectedOrder.cancellationReason}</p>
+                </div>
+            {/if}
+
+            <!-- Payment Proof Section (Admin) -->
+            {#if selectedOrder.paymentProof || selectedOrder.paymentStatus !== 'unpaid'}
+                <div class="mt-8 pt-8 border-t border-zinc-100 dark:border-zinc-800 space-y-6">
+                    <h4 class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Informasi Pembayaran</h4>
+                    
+                    {#if selectedOrder.paymentProof}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 bg-zinc-50 dark:bg-zinc-800/50 p-6 rounded-3xl border border-zinc-100 dark:border-zinc-800/50">
+                            <div class="space-y-3">
+                                <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Bukti Transfer</p>
+                                <div class="aspect-[3/4] bg-white rounded-2xl overflow-hidden border border-zinc-200">
+                                    <img src={selectedOrder.paymentProof.imageUrl} alt="Proof" class="w-full h-full object-cover" />
+                                </div>
+                                <div class="flex justify-between text-[8px] font-bold text-zinc-400 uppercase tracking-widest">
+                                    <span>{selectedOrder.paymentProof.fileName}</span>
+                                    <span>{selectedOrder.paymentProof.uploadedAt.split('T')[0]}</span>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col justify-between">
+                                <div class="space-y-4">
+                                    <div>
+                                        <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Status</p>
+                                        <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase
+                                            {selectedOrder.paymentProof.status === 'verified' ? 'bg-emerald-500 text-white' : 
+                                             selectedOrder.paymentProof.status === 'rejected' ? 'bg-red-500 text-white' : 
+                                             'bg-amber-500 text-white animate-pulse'}">
+                                            {selectedOrder.paymentProof.status}
+                                        </span>
+                                    </div>
+
+                                    {#if selectedOrder.paymentProof.note}
+                                        <div>
+                                            <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Catatan User</p>
+                                            <p class="text-xs font-medium text-zinc-600 dark:text-zinc-400">"{selectedOrder.paymentProof.note}"</p>
+                                        </div>
+                                    {/if}
+
+                                    {#if selectedOrder.paymentProof.status === 'verified'}
+                                        <div class="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-100 dark:border-emerald-900/30">
+                                            <p class="text-[9px] font-black text-emerald-600 uppercase mb-1">Diverifikasi Oleh</p>
+                                            <p class="text-xs font-bold text-zinc-700 dark:text-zinc-300">{selectedOrder.paymentProof.verifiedBy} ({selectedOrder.paymentProof.verifiedByRole})</p>
+                                            <p class="text-[9px] text-zinc-400 mt-1">{selectedOrder.paymentProof.verifiedAt}</p>
+                                        </div>
+                                    {:else if selectedOrder.paymentProof.status === 'rejected'}
+                                        <div class="p-4 bg-red-50 dark:bg-red-900/20 rounded-2xl border border-red-100 dark:border-red-900/30">
+                                            <p class="text-[9px] font-black text-red-600 uppercase mb-1">Ditolak Oleh</p>
+                                            <p class="text-xs font-bold text-zinc-700 dark:text-zinc-300">{selectedOrder.paymentProof.rejectedBy} ({selectedOrder.paymentProof.rejectedByRole})</p>
+                                            <p class="text-xs font-medium text-red-700 mt-1 italic">"{selectedOrder.paymentProof.rejectionReason}"</p>
+                                        </div>
+                                    {/if}
+                                </div>
+
+                                {#if selectedOrder.paymentStatus === 'waiting_verification'}
+                                    <div class="space-y-4 pt-6 mt-6 border-t border-zinc-200">
+                                        {#if !showAdminRejection}
+                                            <div class="space-y-3">
+                                                <textarea bind:value={adminVerificationNote} placeholder="Catatan verifikasi..." class="w-full bg-white dark:bg-zinc-900 border-none rounded-xl text-xs font-medium p-4 focus:ring-2 focus:ring-emerald-500" rows="2"></textarea>
+                                                <div class="flex gap-2">
+                                                    <button onclick={() => showAdminRejection = true} class="flex-1 py-3 bg-white dark:bg-zinc-900 text-red-500 text-[9px] font-black uppercase rounded-xl border border-red-100">Tolak</button>
+                                                    <button onclick={() => verifyPayment(selectedOrder!.id)} class="flex-[2] py-3 bg-emerald-500 text-white text-[9px] font-black uppercase rounded-xl shadow-lg hover:bg-emerald-600 transition-all">Validasi Lunas</button>
+                                                </div>
+                                            </div>
+                                        {:else}
+                                            <div class="space-y-3" in:fade>
+                                                <textarea bind:value={adminRejectionReason} placeholder="Alasan penolakan..." class="w-full bg-white dark:bg-zinc-900 border border-red-100 rounded-xl text-xs font-medium p-4 focus:ring-2 focus:ring-red-500" rows="2"></textarea>
+                                                <div class="flex gap-2">
+                                                    <button onclick={() => showAdminRejection = false} class="px-4 text-[9px] font-black uppercase text-zinc-400">Batal</button>
+                                                    <button onclick={() => rejectPayment(selectedOrder!.id)} class="flex-1 py-3 bg-red-600 text-white text-[9px] font-black uppercase rounded-xl shadow-lg hover:bg-red-700 transition-all">Konfirmasi Tolak</button>
+                                                </div>
+                                            </div>
+                                        {/if}
+                                    </div>
+                                {/if}
+                            </div>
+                        </div>
+                    {:else}
+                        <div class="p-6 bg-zinc-50 dark:bg-zinc-800 rounded-3xl border border-dashed border-zinc-200 dark:border-zinc-800 text-center">
+                            <p class="text-sm font-bold text-zinc-400 italic">User belum mengunggah bukti pembayaran.</p>
+                        </div>
+                    {/if}
                 </div>
             {/if}
         </div>

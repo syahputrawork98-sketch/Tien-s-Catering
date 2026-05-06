@@ -18,6 +18,37 @@ export type MockPaymentStatus =
   | 'paid'
   | 'refunded';
 
+export type MockPaymentProofStatus =
+  | 'none'
+  | 'uploaded'
+  | 'verified'
+  | 'rejected';
+
+export type MockPaymentProof = {
+  imageUrl: string;
+  fileName?: string;
+  uploadedAt: string;
+  uploadedBy: 'user' | 'cs' | 'admin';
+  note?: string;
+
+  resizedWidth?: number;
+  resizedHeight?: number;
+  originalSizeKb?: number;
+  compressedSizeKb?: number;
+
+  status: MockPaymentProofStatus;
+
+  verifiedBy?: string;
+  verifiedByRole?: 'cs' | 'admin';
+  verifiedAt?: string;
+  verificationNote?: string;
+
+  rejectedBy?: string;
+  rejectedByRole?: 'cs' | 'admin';
+  rejectedAt?: string;
+  rejectionReason?: string;
+};
+
 export type MockOrderItem = {
   catalogItemId?: string;
   name: string;
@@ -52,6 +83,8 @@ export type MockOrder = {
   completedConfirmedByCs?: boolean;
   completedConfirmedByAdmin?: boolean;
   completionNote?: string;
+
+  paymentProof?: MockPaymentProof;
 };
 
 export const mockOrders: MockOrder[] = [
@@ -72,7 +105,15 @@ export const mockOrders: MockOrder[] = [
       { catalogItemId: 'MENU-001', name: 'Nasi Box Ayam', quantity: 20, price: 25000 },
       { catalogItemId: 'MENU-002', name: 'Snack Box', quantity: 10, price: 15000 }
     ],
-    notes: 'Kirim sebelum jam 11 siang.'
+    notes: 'Kirim sebelum jam 11 siang.',
+    paymentProof: {
+      imageUrl: 'https://images.unsplash.com/photo-1554224155-169641357599?auto=format&fit=crop&q=80&w=400',
+      fileName: 'struk_bca.jpg',
+      uploadedAt: '2026-05-05T14:30:00Z',
+      uploadedBy: 'user',
+      status: 'uploaded',
+      note: 'Sudah transfer via BCA ya min.'
+    }
   },
 
   // ─── PROSES (confirmed) ───────────────────────────────────
@@ -114,7 +155,18 @@ export const mockOrders: MockOrder[] = [
     ],
     completedConfirmedByCs: false,
     completedConfirmedByUser: true,
-    completedConfirmedByAdmin: false
+    completedConfirmedByAdmin: false,
+    paymentProof: {
+      imageUrl: 'https://images.unsplash.com/photo-1554224155-169641357599?auto=format&fit=crop&q=80&w=400',
+      fileName: 'tf_mandiri.png',
+      uploadedAt: '2026-05-04T10:00:00Z',
+      uploadedBy: 'user',
+      status: 'verified',
+      verifiedBy: 'CS Demo',
+      verifiedByRole: 'cs',
+      verifiedAt: '2026-05-04T11:00:00Z',
+      verificationNote: 'Pembayaran sudah masuk di rekening Mandiri.'
+    }
   },
 
   // ─── PROSES READY ─────────────────────────────────────────
@@ -277,6 +329,24 @@ export const mockOrders: MockOrder[] = [
     ],
     cancelledBy: 'user',
     cancellationReason: 'Acara dipindahkan.'
+  },
+
+  // ─── UNPAID — user demo (Tugas 1) ───────────────────────
+  {
+    id: 'ORD-2026-012',
+    orderNumber: 'TC-2026-012',
+    customerId: 'user-001',
+    customerName: 'Customer Demo',
+    whatsapp: '081234567890',
+    orderDate: '2026-05-06',
+    deliveryDate: '2026-05-08',
+    address: 'Jl. Melati No. 12, Jakarta Selatan',
+    status: 'new',
+    paymentStatus: 'unpaid',
+    total: 250000,
+    items: [
+      { catalogItemId: 'MENU-001', name: 'Nasi Box Hemat', quantity: 10, price: 25000 }
+    ]
   }
 ];
 

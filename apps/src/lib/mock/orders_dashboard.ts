@@ -26,6 +26,8 @@ export interface Order {
   total: number;
   items: OrderItem[];
   type: 'active' | 'history';
+  paymentStatus: import('./orders').MockPaymentStatus;
+  paymentProof?: import('./orders').MockPaymentProof;
 }
 
 // ─── Helper: map status lowercase -> uppercase ────────────
@@ -79,7 +81,9 @@ export const dashboardOrders: Order[] = fallbackOrders.map(o => ({
     quantity: i.quantity,
     price: i.price
   })),
-  type: mapType(o.status)
+  type: mapType(o.status),
+  paymentStatus: o.paymentStatus,
+  paymentProof: o.paymentProof
 }));
 
 export function formatRupiah(value: number) {
