@@ -1,6 +1,7 @@
 <script lang="ts">
     import { mockCatalogPackages, type CatalogItem } from '$lib/mock/catalog';
     import { fade, fly, scale } from 'svelte/transition';
+    import Modal from '$lib/components/ui/Modal.svelte';
 
     function formatPrice(val: number) {
 		return new Intl.NumberFormat('id-ID', {
@@ -10,12 +11,28 @@
 		}).format(val);
 	}
 
+    const TODAY = '2026-05-06';
     type TabType = 'SEMUA' | 'NASI_BOX' | 'SNACK_BOX' | 'PRASMANAN' | 'CORPORATE' | 'WEDDING' | 'CUSTOM';
     
     // Local state for simulated edits
     let packages = $state<CatalogItem[]>([...mockCatalogPackages]);
-    
     let activeTab = $state<TabType>('SEMUA');
+
+    // Modal state
+    let showAddModal = $state(false);
+    let newPackage = $state({
+        name: '',
+        category: '',
+        price: 0,
+        minPax: 1,
+        status: 'active',
+        suitableFor: '',
+        features: '',
+        packageItems: '',
+        description: '',
+        image: ''
+    });
+    let formErrors = $state<Record<string, string>>({});
 
     const tabs = [
         { id: 'SEMUA', label: 'Semua Paket', category: null },
@@ -69,6 +86,61 @@
     function handleEdit(name: string) {
         alert(`Edit Paket: ${name}\n\nBuka editor paket (Simulasi UI).`);
     }
+
+    function validateForm() {
+        const errors: Record<string, string> = {};
+        if (!newPackage.name.trim()) errors.name = 'Nama paket wajib diisi';
+        if (!newPackage.category) errors.category = 'Kategori wajib dipilih';
+        if (newPackage.price <= 0) errors.price = 'Harga mulai dari wajib diisi';
+        if (newPackage.minPax <= 0) errors.minPax = 'Minimal pax wajib diisi';
+        
+        formErrors = errors;
+        return Object.keys(errors).length === 0;
+    }
+
+    function handleSavePackage() {
+        if (!validateForm()) return;
+
+        const newItem: CatalogItem = {
+            id: `PKG-${Date.now()}`,
+            type: 'package',
+            name: newPackage.name,
+            slug: newPackage.name.toLowerCase().replace(/\s+/g, '-'),
+            description: newPackage.description,
+            category: newPackage.category,
+            packageCategory: newPackage.category,
+            basePrice: newPackage.price,
+            minPax: newPackage.minPax,
+            isActive: newPackage.status === 'active',
+            isAvailable: true,
+            status: newPackage.status as any,
+            suitableFor: newPackage.suitableFor.split(',').map(s => s.trim()).filter(s => s !== ''),
+            features: newPackage.features.split('\n').map(s => s.trim()).filter(s => s !== ''),
+            packageItems: newPackage.packageItems.split('\n').map(s => s.trim()).filter(s => s !== ''),
+            image: newPackage.image || 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500&q=80',
+            createdAt: TODAY,
+            updatedAt: TODAY
+        };
+
+        packages = [newItem, ...packages];
+        showAddModal = false;
+        
+        // Reset form
+        newPackage = {
+            name: '',
+            category: '',
+            price: 0,
+            minPax: 1,
+            status: 'active',
+            suitableFor: '',
+            features: '',
+            packageItems: '',
+            description: '',
+            image: ''
+        };
+        
+        alert('Paket berhasil dibuat! (Simulasi State Lokal)');
+    }
 </script>
 
 <div class="space-y-12 pb-24 relative">
@@ -79,7 +151,10 @@
             <p class="text-zinc-500 font-medium mt-2">Atur paket catering berdasarkan kategori dan kebutuhan acara pelanggan.</p>
         </div>
         <div class="flex gap-4" in:fly={{ x: 20, duration: 500 }}>
-            <button onclick={() => alert('Tambah Paket Baru (Simulasi UI)')} class="px-8 py-4 bg-brand-charcoal dark:bg-brand-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2">
+            <button 
+                onclick={() => showAddModal = true}
+                class="w-full md:w-auto px-8 py-4 bg-brand-charcoal dark:bg-brand-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2"
+            >
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
@@ -251,6 +326,157 @@
         </div>
     </div>
 </div>
+
+<!-- Add Package Modal -->
+<Modal 
+    show={showAddModal} 
+    title="Buat Paket Catering Baru 🎁" 
+    onClose={() => showAddModal = false}
+    maxWidth="max-w-3xl"
+>
+    <div class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-2">
+                <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Nama Paket *</label>
+                <input 
+                    type="text" 
+                    bind:value={newPackage.name}
+                    placeholder="Contoh: Paket Meeting Kantor"
+                    class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary transition-all"
+                />
+                {#if formErrors.name}
+                    <p class="text-[10px] font-bold text-red-500 uppercase tracking-wider">{formErrors.name}</p>
+                {/if}
+            </div>
+            <div class="space-y-2">
+                <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Kategori Paket *</label>
+                <select 
+                    bind:value={newPackage.category}
+                    class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary transition-all appearance-none"
+                >
+                    <option value="">Pilih Kategori</option>
+                    <option value="Nasi Box">Nasi Box</option>
+                    <option value="Snack Box">Snack Box</option>
+                    <option value="Prasmanan">Prasmanan</option>
+                    <option value="Meeting/Corporate">Meeting/Corporate</option>
+                    <option value="Event/Wedding">Event/Wedding</option>
+                    <option value="Custom">Custom</option>
+                </select>
+                {#if formErrors.category}
+                    <p class="text-[10px] font-bold text-red-500 uppercase tracking-wider">{formErrors.category}</p>
+                {/if}
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-2">
+                <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Harga Mulai Dari *</label>
+                <input 
+                    type="number" 
+                    bind:value={newPackage.price}
+                    placeholder="45000"
+                    class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary transition-all"
+                />
+                {#if formErrors.price}
+                    <p class="text-[10px] font-bold text-red-500 uppercase tracking-wider">{formErrors.price}</p>
+                {/if}
+            </div>
+            <div class="space-y-2">
+                <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Minimal Pax *</label>
+                <input 
+                    type="number" 
+                    bind:value={newPackage.minPax}
+                    placeholder="20"
+                    class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary transition-all"
+                />
+                {#if formErrors.minPax}
+                    <p class="text-[10px] font-bold text-red-500 uppercase tracking-wider">{formErrors.minPax}</p>
+                {/if}
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-2">
+                <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Status Paket</label>
+                <select 
+                    bind:value={newPackage.status}
+                    class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary transition-all appearance-none"
+                >
+                    <option value="active">Aktif</option>
+                    <option value="inactive">Nonaktif</option>
+                    <option value="draft">Draft</option>
+                </select>
+            </div>
+            <div class="space-y-2">
+                <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Cocok Untuk (Pisahkan Koma)</label>
+                <input 
+                    type="text" 
+                    bind:value={newPackage.suitableFor}
+                    placeholder="Contoh: Meeting, Seminar, Training"
+                    class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary transition-all"
+                />
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-2">
+                <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Fitur Paket (Per Baris)</label>
+                <textarea 
+                    bind:value={newPackage.features}
+                    rows="3"
+                    placeholder="Contoh:&#10;Makan siang box&#10;Coffee break"
+                    class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary transition-all resize-none"
+                ></textarea>
+            </div>
+            <div class="space-y-2">
+                <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Isi Paket (Per Baris)</label>
+                <textarea 
+                    bind:value={newPackage.packageItems}
+                    rows="3"
+                    placeholder="Contoh:&#10;Nasi putih&#10;Ayam bakar"
+                    class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary transition-all resize-none"
+                ></textarea>
+            </div>
+        </div>
+
+        <div class="space-y-2">
+            <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Deskripsi Paket</label>
+            <textarea 
+                bind:value={newPackage.description}
+                rows="3"
+                placeholder="Tuliskan deskripsi singkat paket..."
+                class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary transition-all resize-none"
+            ></textarea>
+        </div>
+
+        <div class="space-y-2">
+            <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Gambar Paket (URL)</label>
+            <input 
+                type="text" 
+                bind:value={newPackage.image}
+                placeholder="Masukkan URL gambar paket"
+                class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary transition-all"
+            />
+        </div>
+    </div>
+
+    {#snippet footer()}
+        <div class="flex items-center justify-end gap-4">
+            <button 
+                onclick={() => showAddModal = false}
+                class="px-8 py-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-zinc-200 transition-all"
+            >
+                Batal
+            </button>
+            <button 
+                onclick={handleSavePackage}
+                class="px-10 py-4 bg-brand-charcoal dark:bg-brand-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 transition-all"
+            >
+                Simpan Paket
+            </button>
+        </div>
+    {/snippet}
+</Modal>
 
 <style>
     .no-scrollbar::-webkit-scrollbar {
