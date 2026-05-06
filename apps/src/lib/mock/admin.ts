@@ -5,7 +5,7 @@
 // Settings tetap statis
 // ============================================================
 
-import { mockAccounts, type MockAccount } from './accounts';
+import { mockAccounts, type MockAccount, type MockAccountType } from './accounts';
 export { mockAdminMetrics, mockAdminSalesReports } from './reports';
 export type { MockAdminReportMetric, MockAdminSalesReport } from './reports';
 
@@ -16,9 +16,13 @@ export type MockAdminUser = {
   id: string;
   name: string;
   email: string;
+  whatsapp?: string;
   role: MockAdminUserRole;
-  status: 'active' | 'inactive' | 'pending';
+  status: 'active' | 'inactive' | 'pending' | 'approved' | 'rejected';
   lastLogin: string;
+  accountType?: MockAccountType;
+  requestedType?: MockAccountType;
+  registrationStatus?: 'pending' | 'approved' | 'rejected';
 };
 
 export type MockAdminSetting = {
@@ -32,17 +36,23 @@ export type MockAdminSetting = {
 // ─── Adapter: mockAdminUsers dari accounts.ts ────────────
 function mapStatus(a: MockAccount): MockAdminUser['status'] {
   if (a.registrationStatus === 'pending') return 'pending';
+  if (a.registrationStatus === 'rejected' || a.status === 'rejected') return 'rejected';
   if (a.status === 'inactive') return 'inactive';
-  return 'active';
+  if (a.status === 'approved' || a.status === 'active') return 'active';
+  return a.status as any;
 }
 
 export const mockAdminUsers: MockAdminUser[] = mockAccounts.map((a: MockAccount) => ({
   id: a.id,
   name: a.name,
   email: a.email ?? `${a.id}@tienscatering.test`,
+  whatsapp: a.whatsapp,
   role: a.role as MockAdminUserRole,
   status: mapStatus(a),
-  lastLogin: a.lastLogin ?? '-'
+  lastLogin: a.lastLogin ?? '-',
+  accountType: a.accountType,
+  requestedType: a.requestedType,
+  registrationStatus: a.registrationStatus
 }));
 
 // ─── Settings (statis — belum perlu backend) ─────────────
