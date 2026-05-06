@@ -1,5 +1,6 @@
 <script lang="ts">
     import { mockUserProfile } from '$lib/mock/user';
+    import { mockBusinessProfile } from '$lib/mock/business';
     import { fade, fly } from 'svelte/transition';
     import Modal from '$lib/components/ui/Modal.svelte';
 
@@ -63,23 +64,23 @@
                 <div class="p-10 space-y-6">
                     <div class="grid md:grid-cols-2 gap-6">
                         <div>
-                            <label class="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1">Nama Lengkap</label>
-                            <input type="text" bind:value={profile.name} class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800 rounded-2xl focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all font-bold text-brand-charcoal dark:text-white" />
+                            <label for="profile-name" class="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1">Nama Lengkap</label>
+                            <input id="profile-name" type="text" bind:value={profile.name} class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800 rounded-2xl focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all font-bold text-brand-charcoal dark:text-white" />
                         </div>
                         <div>
-                            <label class="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1">WhatsApp</label>
-                            <input type="tel" bind:value={profile.whatsapp} class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800 rounded-2xl focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all font-bold text-brand-charcoal dark:text-white" />
+                            <label for="profile-whatsapp" class="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1">WhatsApp</label>
+                            <input id="profile-whatsapp" type="tel" bind:value={profile.whatsapp} class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800 rounded-2xl focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all font-bold text-brand-charcoal dark:text-white" />
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1">Email</label>
-                        <input type="email" bind:value={profile.email} class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800 rounded-2xl focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all font-bold text-brand-charcoal dark:text-white" />
+                        <label for="profile-email" class="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1">Email</label>
+                        <input id="profile-email" type="email" bind:value={profile.email} class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800 rounded-2xl focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all font-bold text-brand-charcoal dark:text-white" />
                     </div>
 
                     <div>
-                        <label class="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1">Alamat Default</label>
-                        <textarea bind:value={profile.defaultAddress} rows="3" class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800 rounded-2xl focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all font-bold text-brand-charcoal dark:text-white resize-none"></textarea>
+                        <label for="profile-address" class="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1">Alamat Default</label>
+                        <textarea id="profile-address" bind:value={profile.defaultAddress} rows="3" class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800 rounded-2xl focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all font-bold text-brand-charcoal dark:text-white resize-none"></textarea>
                     </div>
 
                     <div class="pt-4 flex gap-4">
@@ -133,20 +134,27 @@
                         <span class="text-lg">📞</span>
                         <div>
                             <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest">WhatsApp CS</p>
-                            <p class="text-xs font-bold text-brand-charcoal dark:text-white">+62 812-3456-7890</p>
+                            <p class="text-xs font-bold text-brand-charcoal dark:text-white">{mockBusinessProfile.whatsappDisplay}</p>
                         </div>
                     </div>
                     <div class="flex items-center gap-3">
                         <span class="text-lg">🕒</span>
                         <div>
                             <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Operasional</p>
-                            <p class="text-xs font-bold text-brand-charcoal dark:text-white">Sen - Sab (08:00 - 17:00)</p>
+                            <p class="text-xs font-bold text-brand-charcoal dark:text-white">{mockBusinessProfile.operatingHours}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="text-lg">📍</span>
+                        <div>
+                            <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Area Layanan</p>
+                            <p class="text-xs font-bold text-brand-charcoal dark:text-white">{mockBusinessProfile.serviceArea}</p>
                         </div>
                     </div>
                 </div>
 
                 <a 
-                    href="https://wa.me/6281234567890" 
+                    href={mockBusinessProfile.whatsappUrl} 
                     target="_blank"
                     rel="noreferrer"
                     class="block w-full py-5 bg-brand-primary text-white text-center rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-brand-primary/20 hover:scale-[1.02] transition-all"
@@ -175,8 +183,9 @@
 
         <div class="space-y-4">
             <div>
-                <label class="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1">Password Saat Ini</label>
+                <label for="current-password" class="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1">Password Saat Ini</label>
                 <input 
+                    id="current-password"
                     type="password" 
                     bind:value={passwordForm.currentPassword}
                     class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800 rounded-2xl focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all font-bold text-brand-charcoal dark:text-white"
@@ -184,8 +193,9 @@
                 />
             </div>
             <div class="pt-4 border-t border-zinc-50 dark:border-zinc-800">
-                <label class="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1">Password Baru</label>
+                <label for="new-password" class="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1">Password Baru</label>
                 <input 
+                    id="new-password"
                     type="password" 
                     bind:value={passwordForm.newPassword}
                     class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800 rounded-2xl focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all font-bold text-brand-charcoal dark:text-white"
@@ -193,8 +203,9 @@
                 />
             </div>
             <div>
-                <label class="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1">Konfirmasi Password Baru</label>
+                <label for="confirm-password" class="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1">Konfirmasi Password Baru</label>
                 <input 
+                    id="confirm-password"
                     type="password" 
                     bind:value={passwordForm.confirmPassword}
                     class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800 rounded-2xl focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all font-bold text-brand-charcoal dark:text-white"

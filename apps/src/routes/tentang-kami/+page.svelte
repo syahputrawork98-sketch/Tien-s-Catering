@@ -1,6 +1,7 @@
 <script lang="ts">
 	import PublicNavbar from "$lib/components/PublicNavbar.svelte";
 	import { fade, fly } from "svelte/transition";
+	import { mockBusinessProfile } from "$lib/mock/business";
 </script>
 
 <svelte:head>
@@ -103,7 +104,7 @@
 		<section class="bg-brand-charcoal rounded-[4rem] p-20 text-white flex flex-col md:flex-row items-center justify-between gap-12">
 			<div class="max-w-xl">
 				<h2 class="text-4xl font-black mb-6 tracking-tighter italic">Area Layanan Kami</h2>
-				<p class="text-zinc-400 font-medium mb-8">Saat ini kami melayani pengiriman di seluruh wilayah Banjarmasin dan sekitarnya (Banjarbaru & Martapura).</p>
+				<p class="text-zinc-400 font-medium mb-8">Saat ini kami {mockBusinessProfile.serviceArea}.</p>
 				<div class="flex gap-4">
 					<a href="/katalog" class="bg-brand-primary text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-brand-primary/20">Cek Katalog Menu</a>
 					<a href="/kontak" class="bg-white/10 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest border border-white/10 hover:bg-white/20">Hubungi Kami</a>
@@ -112,7 +113,8 @@
 			<div class="w-full md:w-1/3 aspect-square bg-white/5 rounded-[3rem] border border-white/10 flex items-center justify-center p-12 text-center">
 				<div>
 					<p class="text-6xl mb-4">📍</p>
-					<p class="text-xs font-black uppercase tracking-[0.3em]">Kantor Pusat Banjarmasin</p>
+					<p class="text-xs font-black uppercase tracking-[0.2em]">{mockBusinessProfile.locationTitle}</p>
+					<p class="text-[10px] text-zinc-500 font-bold mt-2 uppercase tracking-widest">{mockBusinessProfile.shortAddress}</p>
 				</div>
 			</div>
 		</section>
