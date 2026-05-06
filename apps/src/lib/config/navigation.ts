@@ -67,22 +67,47 @@ export const dashboardNavigation: Record<MockRole, DashboardNavItem[]> = {
     {
       label: 'Admin Overview',
       href: '/dashboard/admin',
-      description: 'Ringkasan bisnis dan operasional'
+      description: 'Ringkasan bisnis dan kontrol operasional'
+    },
+    {
+      label: 'Pesanan',
+      href: '/dashboard/admin/orders',
+      description: 'Monitoring dan kontrol seluruh pesanan'
+    },
+    {
+      label: 'Menu',
+      href: '/dashboard/admin/menu',
+      description: 'Kelola master menu dan status publik'
+    },
+    {
+      label: 'Paket',
+      href: '/dashboard/admin/packages',
+      description: 'Kelola master paket catering'
+    },
+    {
+      label: 'Customer',
+      href: '/dashboard/admin/customers',
+      description: 'Kelola customer dan approval akun'
+    },
+    {
+      label: 'Users & Role',
+      href: '/dashboard/admin/users',
+      description: 'Kelola akun internal dan role pengguna'
     },
     {
       label: 'Laporan',
       href: '/dashboard/admin/reports',
-      description: 'Rekap penjualan dan performa'
+      description: 'Rekap penjualan dan performa bisnis'
     },
     {
-      label: 'Users',
-      href: '/dashboard/admin/users',
-      description: 'Kelola user dan role'
+      label: 'Audit Log',
+      href: '/dashboard/admin/audit',
+      description: 'Riwayat perubahan dan aktivitas sistem'
     },
     {
       label: 'Settings',
       href: '/dashboard/admin/settings',
-      description: 'Pengaturan sistem'
+      description: 'Pengaturan sistem dan website'
     }
   ]
 };
