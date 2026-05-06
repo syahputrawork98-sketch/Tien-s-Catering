@@ -100,6 +100,11 @@ export const dashboardNavigation: Record<MockRole, DashboardNavItem[]> = {
       description: 'Rekap penjualan dan performa bisnis'
     },
     {
+      label: 'Pajak & Invoice',
+      href: '/dashboard/admin/tax',
+      description: 'Atur pajak, invoice, dan aturan billing customer'
+    },
+    {
       label: 'Audit Log',
       href: '/dashboard/admin/audit',
       description: 'Riwayat perubahan dan aktivitas sistem'

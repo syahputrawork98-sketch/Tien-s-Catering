@@ -27,8 +27,9 @@
         { href: '/dashboard/admin/menu', icon: '🍱', label: 'Kelola Menu', desc: 'Master menu & status publik', color: 'from-emerald-500 to-teal-600' },
         { href: '/dashboard/admin/packages', icon: '🎁', label: 'Kelola Paket', desc: 'Master paket catering', color: 'from-purple-500 to-violet-600' },
         { href: '/dashboard/admin/customers', icon: '👥', label: 'Kelola Customer', desc: 'Approval & manajemen akun', color: 'from-amber-500 to-orange-600' },
-        { href: '/dashboard/admin/users', icon: '🔑', label: 'Users & Role', desc: 'Akun internal & hak akses', color: 'from-zinc-600 to-zinc-800' },
-        { href: '/dashboard/admin/audit', icon: '🧭', label: 'Audit Log', desc: 'Riwayat perubahan sistem', color: 'from-red-500 to-rose-600' }
+        { href: '/dashboard/admin/reports', icon: '📊', label: 'Laporan', desc: 'Rekap penjualan & performa', color: 'from-zinc-600 to-zinc-800' },
+        { href: '/dashboard/admin/tax', icon: '🧾', label: 'Pajak & Invoice', desc: 'Atur pajak & aturan billing', color: 'from-red-500 to-rose-600' },
+        { href: '/dashboard/admin/audit', icon: '🧭', label: 'Audit Log', desc: 'Riwayat perubahan sistem', color: 'from-zinc-700 to-zinc-900' }
     ];
 
     const actorDot = (actor: string) => ({ admin: 'bg-red-500', cs: 'bg-blue-500', user: 'bg-zinc-400' }[actor] ?? 'bg-zinc-400');
@@ -110,7 +111,7 @@
     <!-- Quick Actions -->
     <div in:fade={{ delay: 200 }}>
         <h2 class="text-xs font-black text-zinc-400 uppercase tracking-widest mb-6">Quick Actions</h2>
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
             {#each quickActions as action}
                 <a href={action.href} class="group flex flex-col items-center text-center p-6 bg-white dark:bg-zinc-900 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 hover:border-brand-primary hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                     <div class="w-14 h-14 rounded-2xl bg-gradient-to-br {action.color} flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform shadow-lg">

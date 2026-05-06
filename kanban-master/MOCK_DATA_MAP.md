@@ -164,6 +164,8 @@ Saat backend dibuat, mapping ke tabel database:
 | `orders.ts` | `orders`, `order_items` |
 | `orders.ts` (payment fields) | `payments` |
 | `reports.ts` | Views / aggregates / `reports` |
+| `tax.ts` | `tax_rules`, `invoice_settings` |
+| `session.ts` | `auth_sessions` |
 | `user.ts` (addresses) | `addresses` |
 | `admin.ts` (settings) | `settings` |
 

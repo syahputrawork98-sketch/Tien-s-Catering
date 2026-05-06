@@ -22,7 +22,9 @@ Peta rute aplikasi Tien's Catering beserta status implementasi saat ini.
 | `/dashboard/cs/menu` | Dashboard | CS | Done | `mockCsMenus` | none | Yes | Update stok menu harian |
 | `/dashboard/cs/customers`| Dashboard | CS | Done | `mockCsCustomers`| none | Yes | Database pelanggan |
 | `/dashboard/admin` | Dashboard | ADMIN | Done | `mockAdminMetrics`| `localStorage` | Yes | Overview bisnis & performa |
-| `/dashboard/admin/reports`| Dashboard | ADMIN | Done | `mockAdminSales` | none | Yes | Laporan keuangan mingguan |
+| `/dashboard/admin/reports` | Dashboard | ADMIN | Done | reports.ts | Local State | Yes | Rekap penjualan & performa |
+| `/dashboard/admin/tax` | Dashboard | ADMIN | Done | tax.ts | Local State | Yes | Pengaturan pajak & invoice |
+| `/dashboard/admin/audit` | Dashboard | ADMIN | Done | audit.ts | Local State | Yes | Riwayat aktivitas sistem |
 | `/dashboard/admin/users` | Dashboard | ADMIN | Done | `mockAdminUsers` | none | Yes | Manajemen akun & role |
 | `/dashboard/admin/settings`| Dashboard | ADMIN | Done | `mockAdminSettings`| none | Yes | Konfigurasi sistem |
 
