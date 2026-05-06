@@ -1,3 +1,15 @@
+// ============================================================
+// cs.ts — Adapter compatibility untuk CS dashboard
+// Data customer berasal dari accounts.ts
+// Data order berasal dari orders.ts
+// Data menu berasal dari catalog.ts
+// ============================================================
+
+import { mockAccounts, type MockAccount } from './accounts';
+import { mockOrders, type MockOrder } from './orders';
+import { mockCatalogItems } from './catalog';
+
+// ─── Types ───────────────────────────────────────────────
 export type MockCsOrderStatus =
   | 'new'
   | 'confirmed'
@@ -6,8 +18,6 @@ export type MockCsOrderStatus =
   | 'delivered'
   | 'completed'
   | 'cancelled';
-
-import { mockCatalogItems } from './catalog';
 
 export type MockCsOrder = {
   id: string;
@@ -64,120 +74,31 @@ export type MockCsCustomer = {
   internalNote?: string;
 };
 
-export const mockCsOrders: MockCsOrder[] = [
-  {
-    id: 'ORD-2026-001',
-    customerName: 'PT Maju Bersama',
-    whatsapp: '081234567890',
-    deliveryDate: '2026-05-08',
-    address: 'Jl. Merdeka No. 10, Jakarta',
-    total: 750000,
-    status: 'new',
-    paymentStatus: 'waiting_verification',
-    items: [
-      { name: 'Nasi Box Ayam', quantity: 20, price: 25000 },
-      { name: 'Snack Box', quantity: 10, price: 15000 }
-    ],
-    notes: 'Kirim sebelum jam 11 siang.'
-  },
-  {
-    id: 'ORD-2026-002',
-    customerName: 'Ibu Rina',
-    whatsapp: '087700001111',
-    deliveryDate: '2026-05-09',
-    address: 'Jl. Anggrek No. 5, Bekasi',
-    total: 300000,
-    status: 'confirmed',
-    paymentStatus: 'paid',
-    completedConfirmedByCs: false,
-    completedConfirmedByUser: false,
-    completedConfirmedByAdmin: false,
-    items: [
-      { name: 'Snack Box', quantity: 20, price: 15000 }
-    ]
-  },
-  {
-    id: 'ORD-2026-003',
-    customerName: 'Dinas Pendidikan',
-    whatsapp: '081299998888',
-    deliveryDate: '2026-05-10',
-    address: 'Gedung Sate Lt 2, Bandung',
-    total: 1500000,
-    status: 'processing',
-    paymentStatus: 'paid',
-    completedConfirmedByCs: false,
-    completedConfirmedByUser: true,
-    completedConfirmedByAdmin: false,
-    items: [
-      { name: 'Nasi Box Premium', quantity: 50, price: 30000 }
-    ]
-  },
-  {
-    id: 'ORD-2026-004',
-    customerName: 'Bapak Ahmad',
-    whatsapp: '081222223333',
-    deliveryDate: '2026-05-05',
-    address: 'Komp. Harapan Jaya C1, Bekasi',
-    total: 250000,
-    status: 'completed',
-    paymentStatus: 'paid',
-    completedConfirmedByCs: true,
-    completedConfirmedByUser: true,
-    completedConfirmedByAdmin: false,
-    completionNote: 'Alhamdulillah, acara lancar katering mantap.',
-    items: [
-      { name: 'Nasi Kuning Special', quantity: 10, price: 25000 }
-    ]
-  },
-  {
-    id: 'ORD-2026-005',
-    customerName: 'Sisca Kohl',
-    whatsapp: '081344445555',
-    deliveryDate: '2026-05-06',
-    address: 'Pantai Indah Kapuk, Jakarta',
-    total: 5000000,
-    status: 'cancelled',
-    paymentStatus: 'unpaid',
-    cancelledBy: 'user',
-    cancellationReason: 'Berubah pikiran, ingin makan steak berlapis emas.',
-    items: [
-      { name: 'Prasmanan Premium', quantity: 100, price: 50000 }
-    ]
-  },
-  {
-    id: 'ORD-2026-006',
-    customerName: 'Kantor Pajak',
-    whatsapp: '081255556666',
-    deliveryDate: '2026-05-11',
-    address: 'Jl. Gatot Subroto, Jakarta',
-    total: 1200000,
-    status: 'ready',
-    paymentStatus: 'paid',
-    completedConfirmedByCs: false,
-    completedConfirmedByUser: false,
-    completedConfirmedByAdmin: false,
-    items: [
-      { name: 'Nasi Box Ayam', quantity: 40, price: 30000 }
-    ]
-  },
-  {
-    id: 'ORD-2026-007',
-    customerName: 'Bank Indonesia',
-    whatsapp: '081199990000',
-    deliveryDate: '2026-05-12',
-    address: 'Jl. Thamrin No. 2, Jakarta',
-    total: 3000000,
-    status: 'processing',
-    paymentStatus: 'paid',
-    completedConfirmedByCs: false,
-    completedConfirmedByUser: false,
-    completedConfirmedByAdmin: true,
-    items: [
-      { name: 'Paket Meeting Corporate', quantity: 60, price: 50000 }
-    ]
-  }
-];
+// ─── Adapter: mockCsOrders dari orders.ts ────────────────
+export const mockCsOrders: MockCsOrder[] = mockOrders.map((o: MockOrder) => ({
+  id: o.id,
+  customerName: o.customerName,
+  whatsapp: o.whatsapp,
+  deliveryDate: o.deliveryDate,
+  address: o.address,
+  total: o.total,
+  status: o.status as MockCsOrderStatus,
+  paymentStatus: o.paymentStatus as MockCsOrder['paymentStatus'],
+  items: o.items.map(i => ({
+    name: i.name,
+    quantity: i.quantity,
+    price: i.price
+  })),
+  notes: o.notes,
+  cancelledBy: o.cancelledBy as 'cs' | 'user' | undefined,
+  cancellationReason: o.cancellationReason,
+  completedConfirmedByCs: o.completedConfirmedByCs,
+  completedConfirmedByUser: o.completedConfirmedByUser,
+  completedConfirmedByAdmin: o.completedConfirmedByAdmin,
+  completionNote: o.completionNote
+}));
 
+// ─── Adapter: mockCsMenus dari catalog.ts ────────────────
 export const mockCsMenus: MockCsMenu[] = mockCatalogItems
   .filter(item => item.type === 'menu')
   .map(item => ({
@@ -193,87 +114,24 @@ export const mockCsMenus: MockCsMenu[] = mockCatalogItems
     description: item.description
   }));
 
-export const mockCsCustomers: MockCsCustomer[] = [
-  {
-    id: 'CUS-001',
-    name: 'PT Maju Bersama',
-    type: 'company',
-    accountType: 'company',
-    whatsapp: '081234567890',
-    address: 'Jl. Merdeka No. 10, Jakarta',
-    totalOrders: 12,
-    lastOrderDate: '2026-05-01',
-    registrationStatus: 'approved',
-    createdBy: 'public',
-    registeredAt: '2025-10-12',
-    approvedBy: 'admin',
-    approvedAt: '2025-10-13'
-  },
-  {
-    id: 'CUS-002',
-    name: 'Ibu Rina',
-    type: 'personal',
-    accountType: 'personal',
-    whatsapp: '087700001111',
-    address: 'Jl. Anggrek No. 5, Bekasi',
-    totalOrders: 4,
-    lastOrderDate: '2026-04-28',
-    registrationStatus: 'approved',
-    createdBy: 'public',
-    registeredAt: '2026-01-20',
-    approvedBy: 'cs',
-    approvedAt: '2026-01-21'
-  },
-  {
-    id: 'CUS-003',
-    name: 'SMA Harapan Bangsa',
-    type: 'institution',
-    accountType: 'institution',
-    whatsapp: '082211112222',
-    address: 'Jl. Pendidikan No. 3, Depok',
-    totalOrders: 8,
-    lastOrderDate: '2026-04-20',
-    registrationStatus: 'approved',
-    createdBy: 'public',
-    registeredAt: '2025-12-05',
-    approvedBy: 'admin',
-    approvedAt: '2025-12-06'
-  },
-  {
-    id: 'CUS-NEW-001',
-    name: 'Bapak Budi',
-    requestedType: 'personal',
-    whatsapp: '081211112222',
-    address: 'Jl. Melati No. 45, Tangerang',
-    totalOrders: 0,
-    lastOrderDate: '-',
-    registrationStatus: 'pending',
-    createdBy: 'public',
-    registeredAt: '2026-05-06'
-  },
-  {
-    id: 'CUS-NEW-002',
-    name: 'Startup XYZ',
-    requestedType: 'company',
-    whatsapp: '085566667777',
-    address: 'Co-working Space, Kuningan, Jakarta',
-    totalOrders: 0,
-    lastOrderDate: '-',
-    registrationStatus: 'pending',
-    createdBy: 'public',
-    registeredAt: '2026-05-06'
-  },
-  {
-    id: 'CUS-NEW-003',
-    name: 'Yayasan Amal',
-    requestedType: 'institution',
-    whatsapp: '081122223333',
-    address: 'Jl. Kebahagiaan No. 1, Bogor',
-    totalOrders: 0,
-    lastOrderDate: '-',
-    registrationStatus: 'rejected',
-    createdBy: 'public',
-    registeredAt: '2026-05-05',
-    rejectedReason: 'Nomor WhatsApp tidak aktif saat diverifikasi.'
-  }
-];
+// ─── Adapter: mockCsCustomers dari accounts.ts ───────────
+export const mockCsCustomers: MockCsCustomer[] = mockAccounts
+  .filter((a: MockAccount) => a.role === 'USER')
+  .map((a: MockAccount) => ({
+    id: a.id,
+    name: a.name,
+    type: a.accountType ?? a.requestedType,
+    accountType: a.accountType,
+    requestedType: a.requestedType,
+    whatsapp: a.whatsapp ?? '',
+    address: a.address ?? '',
+    totalOrders: a.totalOrders ?? 0,
+    lastOrderDate: a.lastOrderDate ?? '-',
+    registrationStatus: (a.registrationStatus ?? 'pending') as MockCsCustomer['registrationStatus'],
+    createdBy: a.createdBy,
+    approvedBy: a.approvedBy,
+    registeredAt: a.registeredAt ?? '',
+    approvedAt: a.approvedAt,
+    rejectedReason: a.rejectedReason,
+    internalNote: a.internalNote
+  }));
