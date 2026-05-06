@@ -4,6 +4,7 @@ export type MockCsOrderStatus =
   | 'processing'
   | 'ready'
   | 'delivered'
+  | 'completed'
   | 'cancelled';
 
 export type MockCsOrder = {
@@ -21,6 +22,11 @@ export type MockCsOrder = {
     price: number;
   }[];
   notes?: string;
+  cancelledBy?: 'cs' | 'user';
+  cancellationReason?: string;
+  completedConfirmedByCs?: boolean;
+  completedConfirmedByUser?: boolean;
+  completionNote?: string;
 };
 
 export type MockCsMenu = {
@@ -31,6 +37,8 @@ export type MockCsMenu = {
   isAvailable: boolean;
   stockLabel: string;
   updatedAt: string;
+  activeDate?: string;
+  image?: string;
 };
 
 export type MockCsCustomer = {
@@ -68,6 +76,8 @@ export const mockCsOrders: MockCsOrder[] = [
     total: 300000,
     status: 'confirmed',
     paymentStatus: 'paid',
+    completedConfirmedByCs: false,
+    completedConfirmedByUser: false,
     items: [
       { name: 'Snack Box', quantity: 20, price: 15000 }
     ]
@@ -81,8 +91,54 @@ export const mockCsOrders: MockCsOrder[] = [
     total: 1500000,
     status: 'processing',
     paymentStatus: 'paid',
+    completedConfirmedByCs: false,
+    completedConfirmedByUser: true,
     items: [
       { name: 'Nasi Box Premium', quantity: 50, price: 30000 }
+    ]
+  },
+  {
+    id: 'ORD-2026-004',
+    customerName: 'Bapak Ahmad',
+    whatsapp: '081222223333',
+    deliveryDate: '2026-05-05',
+    address: 'Komp. Harapan Jaya C1, Bekasi',
+    total: 250000,
+    status: 'completed',
+    paymentStatus: 'paid',
+    completedConfirmedByCs: true,
+    completedConfirmedByUser: true,
+    completionNote: 'Alhamdulillah, acara lancar katering mantap.',
+    items: [
+      { name: 'Nasi Kuning Special', quantity: 10, price: 25000 }
+    ]
+  },
+  {
+    id: 'ORD-2026-005',
+    customerName: 'Sisca Kohl',
+    whatsapp: '081344445555',
+    deliveryDate: '2026-05-06',
+    address: 'Pantai Indah Kapuk, Jakarta',
+    total: 5000000,
+    status: 'cancelled',
+    paymentStatus: 'unpaid',
+    cancelledBy: 'user',
+    cancellationReason: 'Berubah pikiran, ingin makan steak berlapis emas.',
+    items: [
+      { name: 'Prasmanan Premium', quantity: 100, price: 50000 }
+    ]
+  },
+  {
+    id: 'ORD-2026-006',
+    customerName: 'Kantor Pajak',
+    whatsapp: '081255556666',
+    deliveryDate: '2026-05-11',
+    address: 'Jl. Gatot Subroto, Jakarta',
+    total: 1200000,
+    status: 'ready',
+    paymentStatus: 'paid',
+    items: [
+      { name: 'Nasi Box Ayam', quantity: 40, price: 30000 }
     ]
   }
 ];
@@ -90,21 +146,25 @@ export const mockCsOrders: MockCsOrder[] = [
 export const mockCsMenus: MockCsMenu[] = [
   {
     id: 'MENU-001',
-    name: 'Nasi Box Ayam',
+    name: 'Nasi Box Ayam Bakar',
     category: 'Nasi Box',
     price: 25000,
     isAvailable: true,
     stockLabel: 'Tersedia',
-    updatedAt: '2026-05-05'
+    updatedAt: '2026-05-06',
+    activeDate: '2026-05-06',
+    image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=80'
   },
   {
     id: 'MENU-002',
-    name: 'Snack Box',
+    name: 'Snack Box Arisan',
     category: 'Snack Box',
     price: 15000,
     isAvailable: true,
     stockLabel: 'Tersedia terbatas',
-    updatedAt: '2026-05-05'
+    updatedAt: '2026-05-06',
+    activeDate: '2026-05-06',
+    image: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=500&q=80'
   },
   {
     id: 'MENU-003',
@@ -112,8 +172,10 @@ export const mockCsMenus: MockCsMenu[] = [
     category: 'Prasmanan',
     price: 65000,
     isAvailable: false,
-    stockLabel: 'By request',
-    updatedAt: '2026-05-04'
+    stockLabel: 'Habis',
+    updatedAt: '2026-05-06',
+    activeDate: '2026-05-06',
+    image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500&q=80'
   },
   {
     id: 'MENU-004',
@@ -122,7 +184,31 @@ export const mockCsMenus: MockCsMenu[] = [
     price: 28000,
     isAvailable: true,
     stockLabel: 'Tersedia',
-    updatedAt: '2026-05-05'
+    updatedAt: '2026-05-06',
+    activeDate: '2026-05-06',
+    image: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=500&q=80'
+  },
+  {
+    id: 'MENU-005',
+    name: 'Es Teh Manis',
+    category: 'Minuman',
+    price: 5000,
+    isAvailable: true,
+    stockLabel: 'Tersedia',
+    updatedAt: '2026-05-05',
+    activeDate: '2026-05-05',
+    image: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=500&q=80'
+  },
+  {
+    id: 'MENU-006',
+    name: 'Ayam Goreng Kalasan',
+    category: 'Nasi Box',
+    price: 27000,
+    isAvailable: true,
+    stockLabel: 'Tersedia',
+    updatedAt: '2026-05-05',
+    activeDate: '2026-05-05',
+    image: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=500&q=80'
   }
 ];
 
