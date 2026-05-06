@@ -38,53 +38,78 @@
 			{#each data.packages as pkg, i}
 				<div 
 					in:fly={{ y: 20, delay: i * 100 }}
-					class="group bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-[3rem] p-10 hover:border-brand-primary/50 hover:bg-white dark:hover:bg-zinc-800 transition-all duration-500 shadow-sm hover:shadow-2xl hover:shadow-brand-primary/5"
+					class="group bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-[3rem] overflow-hidden hover:border-brand-primary/50 hover:bg-white dark:hover:bg-zinc-800 transition-all duration-500 shadow-sm hover:shadow-2xl hover:shadow-brand-primary/5"
 				>
-					<div class="w-16 h-16 bg-brand-primary/10 rounded-2xl flex items-center justify-center text-brand-primary mb-8 group-hover:scale-110 group-hover:bg-brand-primary group-hover:text-white transition-all">
-						<svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-						</svg>
-					</div>
-
-					<h3 class="text-2xl font-black text-brand-charcoal dark:text-white mb-4">{pkg.name}</h3>
-					<p class="text-zinc-500 text-sm leading-relaxed mb-8">{pkg.description}</p>
-					
-					<div class="mb-8 space-y-3">
-						<p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Cocok Untuk:</p>
-						<div class="flex flex-wrap gap-2">
-							{#each pkg.suitableFor as tag}
-								<span class="px-3 py-1 bg-white dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-lg text-[10px] font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">{tag}</span>
-							{/each}
+					<!-- Image Container -->
+					<div class="aspect-[16/10] overflow-hidden relative">
+						{#if pkg.image}
+							<img 
+								src={pkg.image} 
+								alt={pkg.name} 
+								class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+							/>
+						{:else}
+							<div class="w-full h-full bg-brand-primary/5 flex items-center justify-center text-5xl">
+								🍱
+							</div>
+						{/if}
+						<div class="absolute top-6 left-6 flex gap-2">
+							<span class="px-3 py-1 bg-white/90 backdrop-blur-md rounded-lg text-[8px] font-black uppercase tracking-widest text-brand-charcoal shadow-sm">
+								{pkg.packageCategory || pkg.category}
+							</span>
+							{#if pkg.minPax}
+								<span class="px-3 py-1 bg-brand-primary/90 backdrop-blur-md rounded-lg text-[8px] font-black uppercase tracking-widest text-white shadow-sm">
+									Min. {pkg.minPax} Pax
+								</span>
+							{/if}
 						</div>
 					</div>
 
-					<div class="mb-8">
-						<p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-3">Isi Paket Utama:</p>
-						<ul class="space-y-2">
-							{#each pkg.features as feature}
-								<li class="flex items-center gap-3 text-xs font-bold text-zinc-500">
-									<svg class="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-									</svg>
-									{feature}
-								</li>
-							{/each}
-						</ul>
-					</div>
+					<div class="p-10">
+						<h3 class="text-2xl font-black text-brand-charcoal dark:text-white mb-4 group-hover:text-brand-primary transition-colors">{pkg.name}</h3>
+						<p class="text-zinc-500 text-sm leading-relaxed mb-8 line-clamp-2">{pkg.description}</p>
+						
+						{#if pkg.suitableFor && pkg.suitableFor.length > 0}
+							<div class="mb-8 space-y-3">
+								<p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Cocok Untuk:</p>
+								<div class="flex flex-wrap gap-2">
+									{#each pkg.suitableFor as tag}
+										<span class="px-3 py-1 bg-white dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-lg text-[10px] font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">{tag}</span>
+									{/each}
+								</div>
+							</div>
+						{/if}
 
-					<div class="pt-8 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
-						<div>
-							<p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">Mulai Dari</p>
-							<p class="text-xl font-black text-brand-primary italic">
-								{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(pkg.basePrice)}
-							</p>
+						{#if pkg.features && pkg.features.length > 0}
+							<div class="mb-8">
+								<p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-3">Isi Paket Utama:</p>
+								<ul class="space-y-2">
+									{#each pkg.features as feature}
+										<li class="flex items-center gap-3 text-xs font-bold text-zinc-500">
+											<svg class="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+											</svg>
+											{feature}
+										</li>
+									{/each}
+								</ul>
+							</div>
+						{/if}
+
+						<div class="pt-8 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
+							<div>
+								<p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">Mulai Dari</p>
+								<p class="text-xl font-black text-brand-primary italic">
+									{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(pkg.basePrice)}
+								</p>
+							</div>
+							<button 
+								onclick={() => openPackageDetail(pkg)}
+								class="bg-brand-charcoal text-white px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-brand-primary hover:scale-105 transition-all shadow-xl shadow-brand-charcoal/10"
+							>
+								Detail Paket
+							</button>
 						</div>
-						<button 
-                            onclick={() => openPackageDetail(pkg)}
-                            class="bg-brand-charcoal text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-brand-primary transition-all"
-                        >
-                            Detail
-                        </button>
 					</div>
 				</div>
 			{/each}
