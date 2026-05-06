@@ -27,15 +27,23 @@ export type MockCsOrder = {
   address: string;
   total: number;
   status: MockCsOrderStatus;
-  paymentStatus: 'unpaid' | 'waiting_verification' | 'paid' | 'refunded';
+  paymentStatus: import('./orders').MockPaymentStatus;
   paymentProof?: import('./orders').MockPaymentProof;
+  
+  // New payment fields
+  paymentPlan?: import('./orders').MockPaymentPlan;
+  paymentMethod?: import('./orders').MockPaymentMethod;
+  paymentBreakdown?: import('./orders').MockPaymentBreakdown;
+  paymentProofs?: import('./orders').MockPaymentProof[];
+  codCollection?: import('./orders').MockCodCollection;
+
   items: {
     name: string;
     quantity: number;
     price: number;
   }[];
   notes?: string;
-  cancelledBy?: 'cs' | 'user';
+  cancelledBy?: 'cs' | 'user' | 'admin';
   cancellationReason?: string;
   completedConfirmedByCs?: boolean;
   completedConfirmedByUser?: boolean;
@@ -84,20 +92,25 @@ export const mockCsOrders: MockCsOrder[] = mockOrders.map((o: MockOrder) => ({
   address: o.address,
   total: o.total,
   status: o.status as MockCsOrderStatus,
-  paymentStatus: o.paymentStatus as MockCsOrder['paymentStatus'],
+  paymentStatus: o.paymentStatus as any,
   items: o.items.map(i => ({
     name: i.name,
     quantity: i.quantity,
     price: i.price
   })),
   notes: o.notes,
-  cancelledBy: o.cancelledBy as 'cs' | 'user' | undefined,
+  cancelledBy: o.cancelledBy as any,
   cancellationReason: o.cancellationReason,
   completedConfirmedByCs: o.completedConfirmedByCs,
   completedConfirmedByUser: o.completedConfirmedByUser,
   completedConfirmedByAdmin: o.completedConfirmedByAdmin,
   completionNote: o.completionNote,
-  paymentProof: o.paymentProof
+  paymentProof: o.paymentProof,
+  paymentPlan: o.paymentPlan,
+  paymentMethod: o.paymentMethod,
+  paymentBreakdown: o.paymentBreakdown,
+  paymentProofs: o.paymentProofs,
+  codCollection: o.codCollection
 }));
 
 // ─── Adapter: mockCsMenus dari catalog.ts ────────────────

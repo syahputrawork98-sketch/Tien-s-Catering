@@ -28,6 +28,13 @@ export interface Order {
   type: 'active' | 'history';
   paymentStatus: import('./orders').MockPaymentStatus;
   paymentProof?: import('./orders').MockPaymentProof;
+  
+  // New payment fields
+  paymentPlan?: import('./orders').MockPaymentPlan;
+  paymentMethod?: import('./orders').MockPaymentMethod;
+  paymentBreakdown?: import('./orders').MockPaymentBreakdown;
+  paymentProofs?: import('./orders').MockPaymentProof[];
+  codCollection?: import('./orders').MockCodCollection;
 }
 
 // ─── Helper: map status lowercase -> uppercase ────────────
@@ -83,7 +90,12 @@ export const dashboardOrders: Order[] = fallbackOrders.map(o => ({
   })),
   type: mapType(o.status),
   paymentStatus: o.paymentStatus,
-  paymentProof: o.paymentProof
+  paymentProof: o.paymentProof,
+  paymentPlan: o.paymentPlan,
+  paymentMethod: o.paymentMethod,
+  paymentBreakdown: o.paymentBreakdown,
+  paymentProofs: o.paymentProofs,
+  codCollection: o.codCollection
 }));
 
 export function formatRupiah(value: number) {
