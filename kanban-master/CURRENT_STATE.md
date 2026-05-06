@@ -43,10 +43,21 @@ Project **Tien's Catering** telah berhasil bermigrasi ke arsitektur repositori b
 - **Mode**: Client-side Mock Session.
 - **Security**: Tidak ada proteksi server. Seluruh pengecekan role dilakukan di `src/lib/stores/mockSession.svelte.ts`.
 
+## Current App State
+
+- [UI-DONE] Public website routes tersedia (Home, Katalog, Paket, Kontak, Tentang Kami).
+- [UI-DONE] Customer dashboard dasar tersedia (Orders, Addresses, Profile).
+- [UI-DONE] CS dashboard dasar tersedia (Orders, Menu, Customers, Packages).
+- [UI-DONE] Admin dashboard revamp Tahap 1 (Users & Reports) selesai.
+- [UI-DONE] Mock data single source of truth sudah dirapikan (catalog, accounts, orders).
+- [IN PROGRESS] Kanban Master Sync: Dokumentasi sedang diselaraskan dengan kode.
+- [BLOCKED-BACKEND] Backend, database, API, upload storage, dan auth role asli belum dimulai.
+
 ## Backend Status
 - **Status**: **NOT STARTED**.
 - **Database**: Belum ada (Drizzle/Postgres belum diinstal).
 - **API**: Belum ada endpoint server.
+- **Persistence**: Murni client-side (Local/Session Storage).
 
 ## Validation Status
 - **Build**: Berhasil (Laporan Tahap 2J).

@@ -143,9 +143,53 @@
 - [x] Form label associations (Target 2J)
 - [x] Semantic HTML (h1-h3)
 
+## Backlog: Public Refinements
+### Public Package Images
+- [ ] Audit data source `/paket-catering`
+- [ ] Ganti source ke `mockCatalogPackages` jika belum
+- [ ] Render `pkg.image` pada package card
+- [ ] Render image pada modal/detail jika ada
+- [ ] Fallback icon hanya jika image kosong
+
+### Public Contact Location
+- [ ] Buat/update business contact config
+- [ ] Ganti alamat dummy menjadi Cimahi, Jawa Barat
+- [ ] Tambahkan Google Maps link (Terapi Telapak Tangan)
+- [ ] Ganti map placeholder menjadi clickable map card
+- [ ] Perbaiki wa.me ke format 628 (bukan 081)
+
+## Backlog: Dashboard Polish
+### Customer Profile Polish
+- [ ] Avatar initial dari `profile.name`
+- [ ] Nama user tampil jelas di card
+- [ ] Status akun customer tampil jelas (e.g. "Customer Aktif")
+- [ ] Modal Ubah Password UI-only
+- [ ] Bantuan kontak pakai business config
+
+### Admin Users & Role (Phase 2)
+- [ ] Primary tabs fungsional (All, Admin, CS, Customer, Pending, Inactive)
+- [ ] Search users di semua tab
+- [ ] Customer/User secondary tabs (Personal, Company, Institution)
+- [ ] Count badge pada setiap tab
+- [ ] Empty state UI yang informatif
+
+### Admin Reports (Phase 2)
+- [ ] Report categories tab (Ringkasan, Penjualan, Pesanan, Customer, Produk, Keuangan)
+- [ ] Search/filter per tab & Period filter
+- [ ] Data ringkasan performa nyata dari mock data
+
+## Backlog: Operational Flow (UI-Only)
+### Payment Flow UI
+- [ ] Update payment model (Method, Plan, Breakdown)
+- [ ] Upload bukti pembayaran (Simulasi client-side)
+- [ ] Preview bukti pembayaran di dashboard CS/Admin
+- [ ] Tombol Validasi/Tolak bukti pembayaran
+- [ ] Konfirmasi penerimaan uang COD
+- [ ] Audit validator role (CS vs Admin)
+
 ## Polish & Future Review
-- [ ] Implementasi Real Auth (Tahap 4)
-- [ ] Implementasi Real Database (Tahap 4)
+- [ ] Implementasi Real Auth (Tahap 4) [BLOCKED-BACKEND]
+- [ ] Implementasi Real Database (Tahap 4) [BLOCKED-BACKEND]
 - [ ] Loading skeletons untuk transisi halaman
 - [ ] Validasi form yang lebih ketat (Regex WA, dll)
 - [ ] Penanganan state kosong (Empty orders, Empty menu)

@@ -15,6 +15,9 @@ Aplikasi beroperasi menggunakan:
 - **Cart**: `localStorage`.
 - **Checkout**: Frontend-only logic.
 - **Persistence**: Tidak ada persistensi data di sisi server.
+- **Payment Proof**: Upload bukti pembayaran murni simulasi UI-only (Base64/Local State).
+- **Payment Accounts**: Data rekening murni mock (Local State).
+- **Audit Logs**: Pencatatan aktivitas murni simulasi di sisi client.
 
 ## What Does Not Exist Yet
 Daftar fitur backend yang **HARUS** dibangun di fase berikutnya:

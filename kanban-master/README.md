@@ -26,6 +26,7 @@ Backend lama dari repositori `catering-fullstack` **tidak dimigrasikan** karena 
 ## Documents
 
 - [**CURRENT_STATE.md**](./CURRENT_STATE.md): Ringkasan kondisi aktual project (Frontend, Auth, Data, Backend).
+- [**KANBAN_FRONTEND.md**](./KANBAN_FRONTEND.md): Board tracking fitur frontend per module (UI-DONE, TODO, IN PROGRESS).
 - [**FRONTEND_ATOMIC_CHECKLIST.md**](./FRONTEND_ATOMIC_CHECKLIST.md): Checklist detail setiap halaman, komponen, dan fitur yang sudah ada.
 - [**ROUTE_MAP.md**](./ROUTE_MAP.md): Peta seluruh route aplikasi beserta status dan dependensinya.
 - [**ROLE_MATRIX.md**](./ROLE_MATRIX.md): Matriks hak akses dan fitur berdasarkan Role (Public, User, CS, Admin).

@@ -117,6 +117,11 @@ apps/src/lib/mock/
 | `completedConfirmedByCs` | boolean? | Konfirmasi selesai dari CS |
 | `completedConfirmedByAdmin` | boolean? | Konfirmasi selesai dari admin |
 | `completionNote` | string? | Catatan penyelesaian |
+| `paymentMethod` | string? | 'transfer' \| 'qris' \| 'cod' [TODO] |
+| `paymentPlan` | string? | 'full' \| 'dp' [TODO] |
+| `paymentBreakdown` | object? | { dpAmount, balanceAmount } [TODO] |
+| `paymentProofs` | object[]? | { url, date, verifiedBy, status } [TODO] |
+| `codCollection` | object? | { collectedBy, date, amount } [TODO] |
 
 **Dipakai oleh:**
 - `cs.ts` (adapter → CS Orders halaman)
@@ -125,19 +130,32 @@ apps/src/lib/mock/
 
 ---
 
-### `reports.ts` — Derived Reports
-**Data laporan admin yang dihitung dari orders & accounts.**
+### `business.ts` — Shared Config [TODO]
+**Konfigurasi bisnis dan lokasi.**
 
-Fungsi helper:
-- `getTotalRevenue()` — Total revenue dari completed orders
-- `getTotalOrderCount()` — Total semua order
-- `getPendingOrderCount()` — Order dengan status 'new'
-- `getActiveCustomerCount()` — Customer approved dengan totalOrders > 0
+| Field | Tipe | Keterangan |
+|---|---|---|
+| `name` | string | Tien's Catering |
+| `address` | string | Cimahi, Jawa Barat |
+| `mapLink` | string | Google Maps Terapi Telapak Tangan |
+| `whatsapp` | string | format 628... |
+| `email` | string | email bisnis |
 
-Export:
-- `mockAdminMetrics` — 4 metric kartu dashboard admin
-- `mockAdminSalesReports` — Laporan mingguan (derived dari grouped orders)
-- Fallback ke data statis jika tidak ada completed orders yang cukup
+---
+
+### `paymentAccounts.ts` — Payment Accounts [TODO]
+**Daftar rekening dan QRIS untuk pembayaran.**
+
+| Field | Tipe | Keterangan |
+|---|---|---|
+| `id` | string | Unique identifier |
+| `bankName` | string | Nama Bank / QRIS |
+| `accountNumber` | string | Nomor rekening |
+| `accountHolder` | string | Nama pemilik |
+| `type` | string | 'bank' \| 'qris' |
+| `qrImageUrl` | string? | URL gambar QRIS |
+| `isPrimary` | boolean | Rekening utama |
+| `isActive` | boolean | Status aktif |
 
 ---
 

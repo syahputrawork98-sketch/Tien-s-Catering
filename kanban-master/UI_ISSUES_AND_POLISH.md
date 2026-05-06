@@ -38,6 +38,16 @@ Daftar hal yang perlu dirapikan untuk meningkatkan kualitas User Experience (UX)
 ## Future UX Improvements
 - [ ] Fitur "Pesan Lagi" (Re-order) satu klik dari riwayat pesanan.
 - [ ] Dark Mode support yang lebih merata di seluruh komponen dashboard (Beberapa border masih terlalu kontras di dark mode).
+## Current Focus: Refinement & Data Sync
+- [ ] Public: `/paket-catering` ganti icon ke `pkg.image` [TODO]
+- [ ] Public: `/kontak` ganti lokasi ke Cimahi & Map Card [TODO]
+- [ ] Dashboard: Customer Profile Avatar initials (bukan 'G') [TODO]
+- [ ] Dashboard: Customer Status & Account info readability [TODO]
+- [ ] Admin: Users tab navigation polish (Nested/Secondary tabs) [TODO]
+- [ ] Admin: Reports information architecture (Categorized tabs) [TODO]
+- [ ] Admin: Tax/Invoice settings & Payment Accounts UI [TODO]
+- [ ] Operations: Payment proof validation UI (CS & Admin) [TODO]
+
 ## Brand Consistency Check (Phase 2K/2L)
 - [x] Public: `/`, `/katalog`, `/paket-catering`, `/tentang-kami`, `/kontak` (Tien's Catering)
 - [x] Navbar: Login button contrast fix (Solid mode visibility)
