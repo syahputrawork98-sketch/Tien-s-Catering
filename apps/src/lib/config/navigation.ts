@@ -52,6 +52,11 @@ export const dashboardNavigation: Record<MockRole, DashboardNavItem[]> = {
       description: 'Posting dan update menu harian'
     },
     {
+      label: 'Kelola Paket',
+      href: '/dashboard/cs/packages',
+      description: 'Kelola paket catering dan kategori layanan'
+    },
+    {
       label: 'Data Customer',
       href: '/dashboard/cs/customers',
       description: 'Kelola data pelanggan dan instansi'

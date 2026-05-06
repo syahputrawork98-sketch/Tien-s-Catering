@@ -1,0 +1,1003 @@
+﻿
+> tiens-catering@0.0.1 check
+> svelte-kit sync && svelte-check --tsconfig ./tsconfig.json
+
+Loading svelte-check in workspace: i:\Workspace\Workspace-Syahputrawork\Tien-s-Catering\apps
+Getting Svelte diagnostics...
+
+i:\Workspace\Workspace-Syahputrawork\Tien-s-Catering\apps\[32msrc\lib\components\MenuCard.svelte[39m:93:21
+[31mError[39m: Cannot find name 'onDetail'. (ts)
+[36m				<button 
+					onclick={() => [35monDetail[36m && onDetail({ id, name, price, image, category, stock })}
+					class="text-[10px] font-black text-zinc-400 uppercase tracking-widest hover:text-brand-primary text-left mt-1"[39m
+
+i:\Workspace\Workspace-Syahputrawork\Tien-s-Catering\apps\[32msrc\lib\components\MenuCard.svelte[39m:93:33
+[31mError[39m: Cannot find name 'onDetail'. (ts)
+[36m				<button 
+					onclick={() => onDetail && [35monDetail[36m({ id, name, price, image, category, stock })}
+					class="text-[10px] font-black text-zinc-400 uppercase tracking-widest hover:text-brand-primary text-left mt-1"[39m
+
+i:\Workspace\Workspace-Syahputrawork\Tien-s-Catering\apps\[32msrc\lib\components\ModalMenuDetail.svelte[39m:41:2
+[33mWarn[39m: Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events (svelte)
+[36m	<!-- Overlay -->
+	[35m<div 
+		class="fixed inset-0 z-[140] flex items-center justify-center p-4 bg-brand-charcoal/60 backdrop-blur-md"
+		transition:fade
+		onclick={onClose}
+	>
+		<!-- Panel -->
+		<div 
+			class="bg-white w-full max-w-2xl rounded-[2.5rem] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.3)] relative flex flex-col md:flex-row"
+			transition:fly={{ y: 50, duration: 500 }}
+			onclick={(e) => e.stopPropagation()}
+		>
+			<!-- Close Button -->
+			<button 
+				type="button"
+				aria-label="Tutup detail menu"
+				onclick={onClose}
+				class="absolute top-6 right-6 w-12 h-12 bg-white/90 hover:bg-white text-brand-charcoal rounded-full flex items-center justify-center shadow-2xl transition-all z-[160] hover:rotate-90 active:scale-90"
+			>
+				<svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+				</svg>
+			</button>
+
+			<!-- Detail Image -->
+			<div class="h-64 md:h-auto md:w-1/2 bg-zinc-100 shrink-0">
+				<img src={item.image || '/images/placeholder-menu.jpg'} alt={item.name} class="w-full h-full object-cover" />
+			</div>
+
+			<!-- Detail Content -->
+			<div class="p-10 flex flex-col justify-between">
+				<div>
+					<div class="flex items-center gap-3 mb-6">
+						<span class="text-[10px] font-black uppercase tracking-[0.2em] text-brand-primary bg-brand-primary/10 px-4 py-2 rounded-full border border-brand-primary/20">
+							{item.category}
+						</span>
+						{#if item.stock > 0}
+							<span class="text-[10px] font-black uppercase tracking-[0.2em] text-green-600 bg-green-50 px-4 py-2 rounded-full border border-green-100">
+								Stok Tersedia
+							</span>
+						{/if}
+					</div>
+					
+					<h2 class="text-3xl font-black text-brand-charcoal mb-4 tracking-tighter uppercase">{item.name}</h2>
+					<p class="text-zinc-500 text-sm leading-relaxed mb-8">
+						{item.description || "Nikmati perpaduan rasa autentik dari bahan-bahan pilihan berkualitas tinggi. Dimasak segar setiap hari untuk menjaga cita rasa katering yang maksimal."}
+					</p>
+
+					<div class="space-y-2 mb-10">
+						<div class="flex items-center gap-2 text-zinc-400">
+							<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+							</svg>
+							<span class="text-xs font-bold uppercase tracking-widest">Menu Harian: {deliveryDate || "Hari Ini"}</span>
+						</div>
+					</div>
+				</div>
+
+				<div class="space-y-6 pt-8 border-t border-zinc-100">
+					<div class="flex items-center justify-between">
+						<div>
+							<p class="text-[10px] text-zinc-400 font-black uppercase tracking-widest mb-1">Total Harga</p>
+							<p class="text-3xl font-black text-brand-primary tracking-tight">
+								{formatPrice(item.price * quantity)}
+							</p>
+						</div>
+
+						<!-- Quantity Selector -->
+						<div class="flex items-center bg-zinc-50 border border-zinc-100 rounded-2xl overflow-hidden p-1 shadow-inner">
+							<button 
+								onclick={() => quantity = Math.max(1, quantity - 1)}
+								class="w-10 h-10 flex items-center justify-center hover:bg-white text-zinc-400 hover:text-brand-charcoal transition-all font-bold text-xl rounded-xl"
+							>-</button>
+							<span class="w-12 text-center text-sm font-black text-brand-charcoal">{quantity}</span>
+							<button 
+								onclick={() => quantity++}
+								class="w-10 h-10 flex items-center justify-center hover:bg-white text-zinc-400 hover:text-brand-charcoal transition-all font-bold text-xl rounded-xl"
+							>+</button>
+						</div>
+					</div>
+
+					<button 
+						onclick={handleAddToCart}
+						disabled={item.stock === 0}
+						class="w-full bg-brand-charcoal text-white py-5 rounded-2xl font-black text-sm uppercase tracking-[0.2em] shadow-2xl hover:bg-brand-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+					>
+						Tambahkan Ke Keranjang
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>[36m
+{/if}[39m
+
+i:\Workspace\Workspace-Syahputrawork\Tien-s-Catering\apps\[32msrc\lib\components\ModalMenuDetail.svelte[39m:41:2
+[33mWarn[39m: `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions (svelte)
+[36m	<!-- Overlay -->
+	[35m<div 
+		class="fixed inset-0 z-[140] flex items-center justify-center p-4 bg-brand-charcoal/60 backdrop-blur-md"
+		transition:fade
+		onclick={onClose}
+	>
+		<!-- Panel -->
+		<div 
+			class="bg-white w-full max-w-2xl rounded-[2.5rem] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.3)] relative flex flex-col md:flex-row"
+			transition:fly={{ y: 50, duration: 500 }}
+			onclick={(e) => e.stopPropagation()}
+		>
+			<!-- Close Button -->
+			<button 
+				type="button"
+				aria-label="Tutup detail menu"
+				onclick={onClose}
+				class="absolute top-6 right-6 w-12 h-12 bg-white/90 hover:bg-white text-brand-charcoal rounded-full flex items-center justify-center shadow-2xl transition-all z-[160] hover:rotate-90 active:scale-90"
+			>
+				<svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+				</svg>
+			</button>
+
+			<!-- Detail Image -->
+			<div class="h-64 md:h-auto md:w-1/2 bg-zinc-100 shrink-0">
+				<img src={item.image || '/images/placeholder-menu.jpg'} alt={item.name} class="w-full h-full object-cover" />
+			</div>
+
+			<!-- Detail Content -->
+			<div class="p-10 flex flex-col justify-between">
+				<div>
+					<div class="flex items-center gap-3 mb-6">
+						<span class="text-[10px] font-black uppercase tracking-[0.2em] text-brand-primary bg-brand-primary/10 px-4 py-2 rounded-full border border-brand-primary/20">
+							{item.category}
+						</span>
+						{#if item.stock > 0}
+							<span class="text-[10px] font-black uppercase tracking-[0.2em] text-green-600 bg-green-50 px-4 py-2 rounded-full border border-green-100">
+								Stok Tersedia
+							</span>
+						{/if}
+					</div>
+					
+					<h2 class="text-3xl font-black text-brand-charcoal mb-4 tracking-tighter uppercase">{item.name}</h2>
+					<p class="text-zinc-500 text-sm leading-relaxed mb-8">
+						{item.description || "Nikmati perpaduan rasa autentik dari bahan-bahan pilihan berkualitas tinggi. Dimasak segar setiap hari untuk menjaga cita rasa katering yang maksimal."}
+					</p>
+
+					<div class="space-y-2 mb-10">
+						<div class="flex items-center gap-2 text-zinc-400">
+							<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+							</svg>
+							<span class="text-xs font-bold uppercase tracking-widest">Menu Harian: {deliveryDate || "Hari Ini"}</span>
+						</div>
+					</div>
+				</div>
+
+				<div class="space-y-6 pt-8 border-t border-zinc-100">
+					<div class="flex items-center justify-between">
+						<div>
+							<p class="text-[10px] text-zinc-400 font-black uppercase tracking-widest mb-1">Total Harga</p>
+							<p class="text-3xl font-black text-brand-primary tracking-tight">
+								{formatPrice(item.price * quantity)}
+							</p>
+						</div>
+
+						<!-- Quantity Selector -->
+						<div class="flex items-center bg-zinc-50 border border-zinc-100 rounded-2xl overflow-hidden p-1 shadow-inner">
+							<button 
+								onclick={() => quantity = Math.max(1, quantity - 1)}
+								class="w-10 h-10 flex items-center justify-center hover:bg-white text-zinc-400 hover:text-brand-charcoal transition-all font-bold text-xl rounded-xl"
+							>-</button>
+							<span class="w-12 text-center text-sm font-black text-brand-charcoal">{quantity}</span>
+							<button 
+								onclick={() => quantity++}
+								class="w-10 h-10 flex items-center justify-center hover:bg-white text-zinc-400 hover:text-brand-charcoal transition-all font-bold text-xl rounded-xl"
+							>+</button>
+						</div>
+					</div>
+
+					<button 
+						onclick={handleAddToCart}
+						disabled={item.stock === 0}
+						class="w-full bg-brand-charcoal text-white py-5 rounded-2xl font-black text-sm uppercase tracking-[0.2em] shadow-2xl hover:bg-brand-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+					>
+						Tambahkan Ke Keranjang
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>[36m
+{/if}[39m
+
+i:\Workspace\Workspace-Syahputrawork\Tien-s-Catering\apps\[32msrc\lib\components\ModalMenuDetail.svelte[39m:47:3
+[33mWarn[39m: Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events (svelte)
+[36m		<!-- Panel -->
+		[35m<div 
+			class="bg-white w-full max-w-2xl rounded-[2.5rem] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.3)] relative flex flex-col md:flex-row"
+			transition:fly={{ y: 50, duration: 500 }}
+			onclick={(e) => e.stopPropagation()}
+		>
+			<!-- Close Button -->
+			<button 
+				type="button"
+				aria-label="Tutup detail menu"
+				onclick={onClose}
+				class="absolute top-6 right-6 w-12 h-12 bg-white/90 hover:bg-white text-brand-charcoal rounded-full flex items-center justify-center shadow-2xl transition-all z-[160] hover:rotate-90 active:scale-90"
+			>
+				<svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+				</svg>
+			</button>
+
+			<!-- Detail Image -->
+			<div class="h-64 md:h-auto md:w-1/2 bg-zinc-100 shrink-0">
+				<img src={item.image || '/images/placeholder-menu.jpg'} alt={item.name} class="w-full h-full object-cover" />
+			</div>
+
+			<!-- Detail Content -->
+			<div class="p-10 flex flex-col justify-between">
+				<div>
+					<div class="flex items-center gap-3 mb-6">
+						<span class="text-[10px] font-black uppercase tracking-[0.2em] text-brand-primary bg-brand-primary/10 px-4 py-2 rounded-full border border-brand-primary/20">
+							{item.category}
+						</span>
+						{#if item.stock > 0}
+							<span class="text-[10px] font-black uppercase tracking-[0.2em] text-green-600 bg-green-50 px-4 py-2 rounded-full border border-green-100">
+								Stok Tersedia
+							</span>
+						{/if}
+					</div>
+					
+					<h2 class="text-3xl font-black text-brand-charcoal mb-4 tracking-tighter uppercase">{item.name}</h2>
+					<p class="text-zinc-500 text-sm leading-relaxed mb-8">
+						{item.description || "Nikmati perpaduan rasa autentik dari bahan-bahan pilihan berkualitas tinggi. Dimasak segar setiap hari untuk menjaga cita rasa katering yang maksimal."}
+					</p>
+
+					<div class="space-y-2 mb-10">
+						<div class="flex items-center gap-2 text-zinc-400">
+							<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+							</svg>
+							<span class="text-xs font-bold uppercase tracking-widest">Menu Harian: {deliveryDate || "Hari Ini"}</span>
+						</div>
+					</div>
+				</div>
+
+				<div class="space-y-6 pt-8 border-t border-zinc-100">
+					<div class="flex items-center justify-between">
+						<div>
+							<p class="text-[10px] text-zinc-400 font-black uppercase tracking-widest mb-1">Total Harga</p>
+							<p class="text-3xl font-black text-brand-primary tracking-tight">
+								{formatPrice(item.price * quantity)}
+							</p>
+						</div>
+
+						<!-- Quantity Selector -->
+						<div class="flex items-center bg-zinc-50 border border-zinc-100 rounded-2xl overflow-hidden p-1 shadow-inner">
+							<button 
+								onclick={() => quantity = Math.max(1, quantity - 1)}
+								class="w-10 h-10 flex items-center justify-center hover:bg-white text-zinc-400 hover:text-brand-charcoal transition-all font-bold text-xl rounded-xl"
+							>-</button>
+							<span class="w-12 text-center text-sm font-black text-brand-charcoal">{quantity}</span>
+							<button 
+								onclick={() => quantity++}
+								class="w-10 h-10 flex items-center justify-center hover:bg-white text-zinc-400 hover:text-brand-charcoal transition-all font-bold text-xl rounded-xl"
+							>+</button>
+						</div>
+					</div>
+
+					<button 
+						onclick={handleAddToCart}
+						disabled={item.stock === 0}
+						class="w-full bg-brand-charcoal text-white py-5 rounded-2xl font-black text-sm uppercase tracking-[0.2em] shadow-2xl hover:bg-brand-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+					>
+						Tambahkan Ke Keranjang
+					</button>
+				</div>
+			</div>
+		</div>[36m
+	</div>[39m
+
+i:\Workspace\Workspace-Syahputrawork\Tien-s-Catering\apps\[32msrc\lib\components\ModalMenuDetail.svelte[39m:47:3
+[33mWarn[39m: `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions (svelte)
+[36m		<!-- Panel -->
+		[35m<div 
+			class="bg-white w-full max-w-2xl rounded-[2.5rem] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.3)] relative flex flex-col md:flex-row"
+			transition:fly={{ y: 50, duration: 500 }}
+			onclick={(e) => e.stopPropagation()}
+		>
+			<!-- Close Button -->
+			<button 
+				type="button"
+				aria-label="Tutup detail menu"
+				onclick={onClose}
+				class="absolute top-6 right-6 w-12 h-12 bg-white/90 hover:bg-white text-brand-charcoal rounded-full flex items-center justify-center shadow-2xl transition-all z-[160] hover:rotate-90 active:scale-90"
+			>
+				<svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+				</svg>
+			</button>
+
+			<!-- Detail Image -->
+			<div class="h-64 md:h-auto md:w-1/2 bg-zinc-100 shrink-0">
+				<img src={item.image || '/images/placeholder-menu.jpg'} alt={item.name} class="w-full h-full object-cover" />
+			</div>
+
+			<!-- Detail Content -->
+			<div class="p-10 flex flex-col justify-between">
+				<div>
+					<div class="flex items-center gap-3 mb-6">
+						<span class="text-[10px] font-black uppercase tracking-[0.2em] text-brand-primary bg-brand-primary/10 px-4 py-2 rounded-full border border-brand-primary/20">
+							{item.category}
+						</span>
+						{#if item.stock > 0}
+							<span class="text-[10px] font-black uppercase tracking-[0.2em] text-green-600 bg-green-50 px-4 py-2 rounded-full border border-green-100">
+								Stok Tersedia
+							</span>
+						{/if}
+					</div>
+					
+					<h2 class="text-3xl font-black text-brand-charcoal mb-4 tracking-tighter uppercase">{item.name}</h2>
+					<p class="text-zinc-500 text-sm leading-relaxed mb-8">
+						{item.description || "Nikmati perpaduan rasa autentik dari bahan-bahan pilihan berkualitas tinggi. Dimasak segar setiap hari untuk menjaga cita rasa katering yang maksimal."}
+					</p>
+
+					<div class="space-y-2 mb-10">
+						<div class="flex items-center gap-2 text-zinc-400">
+							<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+							</svg>
+							<span class="text-xs font-bold uppercase tracking-widest">Menu Harian: {deliveryDate || "Hari Ini"}</span>
+						</div>
+					</div>
+				</div>
+
+				<div class="space-y-6 pt-8 border-t border-zinc-100">
+					<div class="flex items-center justify-between">
+						<div>
+							<p class="text-[10px] text-zinc-400 font-black uppercase tracking-widest mb-1">Total Harga</p>
+							<p class="text-3xl font-black text-brand-primary tracking-tight">
+								{formatPrice(item.price * quantity)}
+							</p>
+						</div>
+
+						<!-- Quantity Selector -->
+						<div class="flex items-center bg-zinc-50 border border-zinc-100 rounded-2xl overflow-hidden p-1 shadow-inner">
+							<button 
+								onclick={() => quantity = Math.max(1, quantity - 1)}
+								class="w-10 h-10 flex items-center justify-center hover:bg-white text-zinc-400 hover:text-brand-charcoal transition-all font-bold text-xl rounded-xl"
+							>-</button>
+							<span class="w-12 text-center text-sm font-black text-brand-charcoal">{quantity}</span>
+							<button 
+								onclick={() => quantity++}
+								class="w-10 h-10 flex items-center justify-center hover:bg-white text-zinc-400 hover:text-brand-charcoal transition-all font-bold text-xl rounded-xl"
+							>+</button>
+						</div>
+					</div>
+
+					<button 
+						onclick={handleAddToCart}
+						disabled={item.stock === 0}
+						class="w-full bg-brand-charcoal text-white py-5 rounded-2xl font-black text-sm uppercase tracking-[0.2em] shadow-2xl hover:bg-brand-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+					>
+						Tambahkan Ke Keranjang
+					</button>
+				</div>
+			</div>
+		</div>[36m
+	</div>[39m
+
+i:\Workspace\Workspace-Syahputrawork\Tien-s-Catering\apps\[32msrc\lib\components\PackageDetailModal.svelte[39m:28:2
+[33mWarn[39m: Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events (svelte)
+[36m	<!-- Overlay -->
+	[35m<div 
+		class="fixed inset-0 z-[140] flex items-center justify-center p-4 bg-brand-charcoal/60 backdrop-blur-md"
+		transition:fade
+		onclick={onClose}
+	>
+		<!-- Panel -->
+		<div 
+			class="bg-white w-full max-w-3xl rounded-[2.5rem] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.3)] relative flex flex-col md:flex-row"
+			transition:fly={{ y: 50, duration: 500 }}
+			onclick={(e) => e.stopPropagation()}
+		>
+			<!-- Close Button -->
+			<button 
+				type="button"
+				aria-label="Tutup detail paket"
+				onclick={onClose}
+				class="absolute top-6 right-6 w-12 h-12 bg-white/90 hover:bg-white text-brand-charcoal rounded-full flex items-center justify-center shadow-2xl transition-all z-[160] hover:rotate-90 active:scale-90"
+			>
+				<svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+				</svg>
+			</button>
+
+			<!-- Detail Sidebar (Image/Info) -->
+			<div class="md:w-2/5 bg-brand-charcoal p-10 text-white flex flex-col justify-between overflow-hidden relative">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-brand-primary/10 blur-[80px] -mr-32 -mt-32"></div>
+                
+                <div class="relative z-10">
+                    <span class="text-[10px] font-black uppercase tracking-[0.3em] text-brand-primary mb-4 block">Premium Service</span>
+                    <h2 class="text-4xl font-black mb-6 tracking-tighter uppercase leading-none">{pkg.name}</h2>
+                    <p class="text-zinc-400 text-sm leading-relaxed mb-8">
+                        {pkg.description}
+                    </p>
+                </div>
+
+                <div class="relative z-10 space-y-4">
+                    <div class="bg-white/5 border border-white/10 p-4 rounded-2xl">
+                        <p class="text-[9px] text-zinc-500 font-black uppercase tracking-widest mb-1">Mulai Dari</p>
+                        <p class="text-2xl font-black text-brand-primary">{formatPrice(pkg.basePrice)}</p>
+                    </div>
+                </div>
+			</div>
+
+			<!-- Detail Content -->
+			<div class="p-10 md:w-3/5 overflow-y-auto max-h-[80vh] no-scrollbar">
+                <h3 class="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 mb-8 pb-4 border-b border-zinc-100">Apa yang Anda dapatkan?</h3>
+                
+                <div class="space-y-6 mb-12">
+                    <div class="flex gap-4">
+                        <div class="w-8 h-8 rounded-full bg-brand-primary/10 flex items-center justify-center shrink-0">
+                            <svg class="w-4 h-4 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="font-bold text-brand-charcoal">Menu Utama Pilihan</p>
+                            <p class="text-xs text-zinc-500">Pilihan 5-8 menu utama mulai dari hidangan Nusantara hingga Internasional.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-4">
+                        <div class="w-8 h-8 rounded-full bg-brand-primary/10 flex items-center justify-center shrink-0">
+                            <svg class="w-4 h-4 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="font-bold text-brand-charcoal">Layanan Pramusaji</p>
+                            <p class="text-xs text-zinc-500">Tim pramusaji profesional siap melayani tamu Anda selama acara berlangsung.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <div class="w-8 h-8 rounded-full bg-brand-primary/10 flex items-center justify-center shrink-0">
+                            <svg class="w-4 h-4 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="font-bold text-brand-charcoal">Peralatan Lengkap</p>
+                            <p class="text-xs text-zinc-500">Termasuk alat makan, buffet set premium, dan meja display yang elegan.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-10">
+                    <div class="p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
+                        <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Min. Order</p>
+                        <p class="font-bold text-brand-charcoal">50 Porsi</p>
+                    </div>
+                    <div class="p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
+                        <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Area Layanan</p>
+                        <p class="font-bold text-brand-charcoal">Banjarmasin & Sekitarnya</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-4">
+                    <button 
+                        onclick={handleSelectPackage}
+                        class="w-full bg-brand-primary text-white py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:bg-orange-600 transition-all"
+                    >
+                        Pilih Paket Ini
+                    </button>
+                    <button 
+                        onclick={() => alert("Menghubungkan ke WhatsApp Konsultan kami...")}
+                        class="w-full bg-zinc-50 text-brand-charcoal py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] border border-zinc-100 hover:bg-zinc-100 transition-all flex items-center justify-center gap-2"
+                    >
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                        </svg>
+                        Konsultasi via WhatsApp
+                    </button>
+                </div>
+			</div>
+		</div>
+	</div>[36m
+{/if}[39m
+
+i:\Workspace\Workspace-Syahputrawork\Tien-s-Catering\apps\[32msrc\lib\components\PackageDetailModal.svelte[39m:28:2
+[33mWarn[39m: `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions (svelte)
+[36m	<!-- Overlay -->
+	[35m<div 
+		class="fixed inset-0 z-[140] flex items-center justify-center p-4 bg-brand-charcoal/60 backdrop-blur-md"
+		transition:fade
+		onclick={onClose}
+	>
+		<!-- Panel -->
+		<div 
+			class="bg-white w-full max-w-3xl rounded-[2.5rem] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.3)] relative flex flex-col md:flex-row"
+			transition:fly={{ y: 50, duration: 500 }}
+			onclick={(e) => e.stopPropagation()}
+		>
+			<!-- Close Button -->
+			<button 
+				type="button"
+				aria-label="Tutup detail paket"
+				onclick={onClose}
+				class="absolute top-6 right-6 w-12 h-12 bg-white/90 hover:bg-white text-brand-charcoal rounded-full flex items-center justify-center shadow-2xl transition-all z-[160] hover:rotate-90 active:scale-90"
+			>
+				<svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+				</svg>
+			</button>
+
+			<!-- Detail Sidebar (Image/Info) -->
+			<div class="md:w-2/5 bg-brand-charcoal p-10 text-white flex flex-col justify-between overflow-hidden relative">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-brand-primary/10 blur-[80px] -mr-32 -mt-32"></div>
+                
+                <div class="relative z-10">
+                    <span class="text-[10px] font-black uppercase tracking-[0.3em] text-brand-primary mb-4 block">Premium Service</span>
+                    <h2 class="text-4xl font-black mb-6 tracking-tighter uppercase leading-none">{pkg.name}</h2>
+                    <p class="text-zinc-400 text-sm leading-relaxed mb-8">
+                        {pkg.description}
+                    </p>
+                </div>
+
+                <div class="relative z-10 space-y-4">
+                    <div class="bg-white/5 border border-white/10 p-4 rounded-2xl">
+                        <p class="text-[9px] text-zinc-500 font-black uppercase tracking-widest mb-1">Mulai Dari</p>
+                        <p class="text-2xl font-black text-brand-primary">{formatPrice(pkg.basePrice)}</p>
+                    </div>
+                </div>
+			</div>
+
+			<!-- Detail Content -->
+			<div class="p-10 md:w-3/5 overflow-y-auto max-h-[80vh] no-scrollbar">
+                <h3 class="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 mb-8 pb-4 border-b border-zinc-100">Apa yang Anda dapatkan?</h3>
+                
+                <div class="space-y-6 mb-12">
+                    <div class="flex gap-4">
+                        <div class="w-8 h-8 rounded-full bg-brand-primary/10 flex items-center justify-center shrink-0">
+                            <svg class="w-4 h-4 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="font-bold text-brand-charcoal">Menu Utama Pilihan</p>
+                            <p class="text-xs text-zinc-500">Pilihan 5-8 menu utama mulai dari hidangan Nusantara hingga Internasional.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-4">
+                        <div class="w-8 h-8 rounded-full bg-brand-primary/10 flex items-center justify-center shrink-0">
+                            <svg class="w-4 h-4 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="font-bold text-brand-charcoal">Layanan Pramusaji</p>
+                            <p class="text-xs text-zinc-500">Tim pramusaji profesional siap melayani tamu Anda selama acara berlangsung.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <div class="w-8 h-8 rounded-full bg-brand-primary/10 flex items-center justify-center shrink-0">
+                            <svg class="w-4 h-4 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="font-bold text-brand-charcoal">Peralatan Lengkap</p>
+                            <p class="text-xs text-zinc-500">Termasuk alat makan, buffet set premium, dan meja display yang elegan.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-10">
+                    <div class="p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
+                        <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Min. Order</p>
+                        <p class="font-bold text-brand-charcoal">50 Porsi</p>
+                    </div>
+                    <div class="p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
+                        <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Area Layanan</p>
+                        <p class="font-bold text-brand-charcoal">Banjarmasin & Sekitarnya</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-4">
+                    <button 
+                        onclick={handleSelectPackage}
+                        class="w-full bg-brand-primary text-white py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:bg-orange-600 transition-all"
+                    >
+                        Pilih Paket Ini
+                    </button>
+                    <button 
+                        onclick={() => alert("Menghubungkan ke WhatsApp Konsultan kami...")}
+                        class="w-full bg-zinc-50 text-brand-charcoal py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] border border-zinc-100 hover:bg-zinc-100 transition-all flex items-center justify-center gap-2"
+                    >
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                        </svg>
+                        Konsultasi via WhatsApp
+                    </button>
+                </div>
+			</div>
+		</div>
+	</div>[36m
+{/if}[39m
+
+i:\Workspace\Workspace-Syahputrawork\Tien-s-Catering\apps\[32msrc\lib\components\PackageDetailModal.svelte[39m:34:3
+[33mWarn[39m: Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events (svelte)
+[36m		<!-- Panel -->
+		[35m<div 
+			class="bg-white w-full max-w-3xl rounded-[2.5rem] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.3)] relative flex flex-col md:flex-row"
+			transition:fly={{ y: 50, duration: 500 }}
+			onclick={(e) => e.stopPropagation()}
+		>
+			<!-- Close Button -->
+			<button 
+				type="button"
+				aria-label="Tutup detail paket"
+				onclick={onClose}
+				class="absolute top-6 right-6 w-12 h-12 bg-white/90 hover:bg-white text-brand-charcoal rounded-full flex items-center justify-center shadow-2xl transition-all z-[160] hover:rotate-90 active:scale-90"
+			>
+				<svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+				</svg>
+			</button>
+
+			<!-- Detail Sidebar (Image/Info) -->
+			<div class="md:w-2/5 bg-brand-charcoal p-10 text-white flex flex-col justify-between overflow-hidden relative">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-brand-primary/10 blur-[80px] -mr-32 -mt-32"></div>
+                
+                <div class="relative z-10">
+                    <span class="text-[10px] font-black uppercase tracking-[0.3em] text-brand-primary mb-4 block">Premium Service</span>
+                    <h2 class="text-4xl font-black mb-6 tracking-tighter uppercase leading-none">{pkg.name}</h2>
+                    <p class="text-zinc-400 text-sm leading-relaxed mb-8">
+                        {pkg.description}
+                    </p>
+                </div>
+
+                <div class="relative z-10 space-y-4">
+                    <div class="bg-white/5 border border-white/10 p-4 rounded-2xl">
+                        <p class="text-[9px] text-zinc-500 font-black uppercase tracking-widest mb-1">Mulai Dari</p>
+                        <p class="text-2xl font-black text-brand-primary">{formatPrice(pkg.basePrice)}</p>
+                    </div>
+                </div>
+			</div>
+
+			<!-- Detail Content -->
+			<div class="p-10 md:w-3/5 overflow-y-auto max-h-[80vh] no-scrollbar">
+                <h3 class="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 mb-8 pb-4 border-b border-zinc-100">Apa yang Anda dapatkan?</h3>
+                
+                <div class="space-y-6 mb-12">
+                    <div class="flex gap-4">
+                        <div class="w-8 h-8 rounded-full bg-brand-primary/10 flex items-center justify-center shrink-0">
+                            <svg class="w-4 h-4 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="font-bold text-brand-charcoal">Menu Utama Pilihan</p>
+                            <p class="text-xs text-zinc-500">Pilihan 5-8 menu utama mulai dari hidangan Nusantara hingga Internasional.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-4">
+                        <div class="w-8 h-8 rounded-full bg-brand-primary/10 flex items-center justify-center shrink-0">
+                            <svg class="w-4 h-4 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="font-bold text-brand-charcoal">Layanan Pramusaji</p>
+                            <p class="text-xs text-zinc-500">Tim pramusaji profesional siap melayani tamu Anda selama acara berlangsung.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <div class="w-8 h-8 rounded-full bg-brand-primary/10 flex items-center justify-center shrink-0">
+                            <svg class="w-4 h-4 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="font-bold text-brand-charcoal">Peralatan Lengkap</p>
+                            <p class="text-xs text-zinc-500">Termasuk alat makan, buffet set premium, dan meja display yang elegan.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-10">
+                    <div class="p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
+                        <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Min. Order</p>
+                        <p class="font-bold text-brand-charcoal">50 Porsi</p>
+                    </div>
+                    <div class="p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
+                        <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Area Layanan</p>
+                        <p class="font-bold text-brand-charcoal">Banjarmasin & Sekitarnya</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-4">
+                    <button 
+                        onclick={handleSelectPackage}
+                        class="w-full bg-brand-primary text-white py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:bg-orange-600 transition-all"
+                    >
+                        Pilih Paket Ini
+                    </button>
+                    <button 
+                        onclick={() => alert("Menghubungkan ke WhatsApp Konsultan kami...")}
+                        class="w-full bg-zinc-50 text-brand-charcoal py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] border border-zinc-100 hover:bg-zinc-100 transition-all flex items-center justify-center gap-2"
+                    >
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                        </svg>
+                        Konsultasi via WhatsApp
+                    </button>
+                </div>
+			</div>
+		</div>[36m
+	</div>[39m
+
+i:\Workspace\Workspace-Syahputrawork\Tien-s-Catering\apps\[32msrc\lib\components\PackageDetailModal.svelte[39m:34:3
+[33mWarn[39m: `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions (svelte)
+[36m		<!-- Panel -->
+		[35m<div 
+			class="bg-white w-full max-w-3xl rounded-[2.5rem] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.3)] relative flex flex-col md:flex-row"
+			transition:fly={{ y: 50, duration: 500 }}
+			onclick={(e) => e.stopPropagation()}
+		>
+			<!-- Close Button -->
+			<button 
+				type="button"
+				aria-label="Tutup detail paket"
+				onclick={onClose}
+				class="absolute top-6 right-6 w-12 h-12 bg-white/90 hover:bg-white text-brand-charcoal rounded-full flex items-center justify-center shadow-2xl transition-all z-[160] hover:rotate-90 active:scale-90"
+			>
+				<svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+				</svg>
+			</button>
+
+			<!-- Detail Sidebar (Image/Info) -->
+			<div class="md:w-2/5 bg-brand-charcoal p-10 text-white flex flex-col justify-between overflow-hidden relative">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-brand-primary/10 blur-[80px] -mr-32 -mt-32"></div>
+                
+                <div class="relative z-10">
+                    <span class="text-[10px] font-black uppercase tracking-[0.3em] text-brand-primary mb-4 block">Premium Service</span>
+                    <h2 class="text-4xl font-black mb-6 tracking-tighter uppercase leading-none">{pkg.name}</h2>
+                    <p class="text-zinc-400 text-sm leading-relaxed mb-8">
+                        {pkg.description}
+                    </p>
+                </div>
+
+                <div class="relative z-10 space-y-4">
+                    <div class="bg-white/5 border border-white/10 p-4 rounded-2xl">
+                        <p class="text-[9px] text-zinc-500 font-black uppercase tracking-widest mb-1">Mulai Dari</p>
+                        <p class="text-2xl font-black text-brand-primary">{formatPrice(pkg.basePrice)}</p>
+                    </div>
+                </div>
+			</div>
+
+			<!-- Detail Content -->
+			<div class="p-10 md:w-3/5 overflow-y-auto max-h-[80vh] no-scrollbar">
+                <h3 class="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 mb-8 pb-4 border-b border-zinc-100">Apa yang Anda dapatkan?</h3>
+                
+                <div class="space-y-6 mb-12">
+                    <div class="flex gap-4">
+                        <div class="w-8 h-8 rounded-full bg-brand-primary/10 flex items-center justify-center shrink-0">
+                            <svg class="w-4 h-4 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="font-bold text-brand-charcoal">Menu Utama Pilihan</p>
+                            <p class="text-xs text-zinc-500">Pilihan 5-8 menu utama mulai dari hidangan Nusantara hingga Internasional.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-4">
+                        <div class="w-8 h-8 rounded-full bg-brand-primary/10 flex items-center justify-center shrink-0">
+                            <svg class="w-4 h-4 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="font-bold text-brand-charcoal">Layanan Pramusaji</p>
+                            <p class="text-xs text-zinc-500">Tim pramusaji profesional siap melayani tamu Anda selama acara berlangsung.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <div class="w-8 h-8 rounded-full bg-brand-primary/10 flex items-center justify-center shrink-0">
+                            <svg class="w-4 h-4 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="font-bold text-brand-charcoal">Peralatan Lengkap</p>
+                            <p class="text-xs text-zinc-500">Termasuk alat makan, buffet set premium, dan meja display yang elegan.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-10">
+                    <div class="p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
+                        <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Min. Order</p>
+                        <p class="font-bold text-brand-charcoal">50 Porsi</p>
+                    </div>
+                    <div class="p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
+                        <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Area Layanan</p>
+                        <p class="font-bold text-brand-charcoal">Banjarmasin & Sekitarnya</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-4">
+                    <button 
+                        onclick={handleSelectPackage}
+                        class="w-full bg-brand-primary text-white py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:bg-orange-600 transition-all"
+                    >
+                        Pilih Paket Ini
+                    </button>
+                    <button 
+                        onclick={() => alert("Menghubungkan ke WhatsApp Konsultan kami...")}
+                        class="w-full bg-zinc-50 text-brand-charcoal py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] border border-zinc-100 hover:bg-zinc-100 transition-all flex items-center justify-center gap-2"
+                    >
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                        </svg>
+                        Konsultasi via WhatsApp
+                    </button>
+                </div>
+			</div>
+		</div>[36m
+	</div>[39m
+
+i:\Workspace\Workspace-Syahputrawork\Tien-s-Catering\apps\[32msrc\routes\+page.svelte[39m:87:2
+[33mWarn[39m: Unused CSS selector ".no-scrollbar::-webkit-scrollbar"
+https://svelte.dev/e/css_unused_selector (svelte)
+[36m<style>
+	[35m.no-scrollbar::-webkit-scrollbar[36m {
+		display: none;[39m
+
+i:\Workspace\Workspace-Syahputrawork\Tien-s-Catering\apps\[32msrc\routes\+page.svelte[39m:90:2
+[33mWarn[39m: Unused CSS selector ".no-scrollbar"
+https://svelte.dev/e/css_unused_selector (svelte)
+[36m	}
+	[35m.no-scrollbar[36m {
+		-ms-overflow-style: none;[39m
+
+i:\Workspace\Workspace-Syahputrawork\Tien-s-Catering\apps\[32msrc\routes\checkout\+page.svelte[39m:81:8
+[33mWarn[39m: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+[36m						<div class="md:col-span-2">
+							[35m<label class="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1">Nama Penerima</label>[36m
+							<input type="text" bind:value={customerName} required placeholder="Nama Lengkap" class="w-full px-6 py-4 bg-zinc-50 border border-zinc-100 rounded-2xl focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all font-bold text-brand-charcoal" />[39m
+
+i:\Workspace\Workspace-Syahputrawork\Tien-s-Catering\apps\[32msrc\routes\checkout\+page.svelte[39m:86:8
+[33mWarn[39m: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+[36m						<div>
+							[35m<label class="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1">Nomor WhatsApp</label>[36m
+							<input type="tel" bind:value={whatsapp} required placeholder="0812xxxxxx" class="w-full px-6 py-4 bg-zinc-50 border border-zinc-100 rounded-2xl focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all font-bold text-brand-charcoal" />[39m
+
+i:\Workspace\Workspace-Syahputrawork\Tien-s-Catering\apps\[32msrc\routes\checkout\+page.svelte[39m:91:8
+[33mWarn[39m: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+[36m						<div>
+							[35m<label class="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1">Tanggal Pengiriman</label>[36m
+							<input type="date" bind:value={deliveryDate} required class="w-full px-6 py-4 bg-zinc-50 border border-zinc-100 rounded-2xl focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all font-bold text-brand-charcoal" />[39m
+
+i:\Workspace\Workspace-Syahputrawork\Tien-s-Catering\apps\[32msrc\routes\checkout\+page.svelte[39m:96:8
+[33mWarn[39m: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+[36m						<div class="md:col-span-2">
+							[35m<label class="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1">Alamat Lengkap</label>[36m
+							<textarea bind:value={address} required rows="3" placeholder="Nama Jalan, Gedung, Lantai, No. Rumah..." class="w-full px-6 py-4 bg-zinc-50 border border-zinc-100 rounded-2xl focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all font-bold text-brand-charcoal resize-none"></textarea>[39m
+
+i:\Workspace\Workspace-Syahputrawork\Tien-s-Catering\apps\[32msrc\routes\checkout\+page.svelte[39m:101:8
+[33mWarn[39m: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+[36m						<div class="md:col-span-2">
+							[35m<label class="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1">Catatan Tambahan (Opsional)</label>[36m
+							<input type="text" bind:value={notes} placeholder="Contoh: Sambal dipisah, No MSG..." class="w-full px-6 py-4 bg-zinc-50 border border-zinc-100 rounded-2xl focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all font-bold text-brand-charcoal" />[39m
+
+i:\Workspace\Workspace-Syahputrawork\Tien-s-Catering\apps\[32msrc\routes\dashboard\admin\settings\+page.svelte[39m:56:37
+[33mWarn[39m: Buttons and links should either contain text or have an `aria-label`, `aria-labelledby` or `title` attribute
+https://svelte.dev/e/a11y_consider_explicit_label (svelte)
+[36m                                    />
+                                    [35m<button class="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-300 hover:text-brand-primary transition-colors">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                        </svg>
+                                    </button>[36m
+                                </div>[39m
+
+i:\Workspace\Workspace-Syahputrawork\Tien-s-Catering\apps\[32msrc\routes\dashboard\admin\users\+page.svelte[39m:107:37
+[33mWarn[39m: Buttons and links should either contain text or have an `aria-label`, `aria-labelledby` or `title` attribute
+https://svelte.dev/e/a11y_consider_explicit_label (svelte)
+[36m                                    </button>
+                                    [35m<button class="p-2 bg-zinc-50 dark:bg-zinc-800 rounded-lg text-zinc-400 hover:text-brand-primary transition-all">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </button>[36m
+                                </div>[39m
+
+i:\Workspace\Workspace-Syahputrawork\Tien-s-Catering\apps\[32msrc\routes\dashboard\cs\customers\+page.svelte[39m:77:37
+[33mWarn[39m: Buttons and links should either contain text or have an `aria-label`, `aria-labelledby` or `title` attribute
+https://svelte.dev/e/a11y_consider_explicit_label (svelte)
+[36m                                <div class="flex items-center justify-end gap-2">
+                                    [35m<button class="p-2 bg-zinc-50 dark:bg-zinc-800 rounded-lg hover:text-brand-primary transition-all shadow-sm">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                                        </svg>
+                                    </button>[36m
+                                </div>[39m
+
+i:\Workspace\Workspace-Syahputrawork\Tien-s-Catering\apps\[32msrc\routes\dashboard\cs\menu\+page.svelte[39m:98:37
+[33mWarn[39m: Buttons and links should either contain text or have an `aria-label`, `aria-labelledby` or `title` attribute
+https://svelte.dev/e/a11y_consider_explicit_label (svelte)
+[36m                                <div class="flex items-center justify-end gap-2">
+                                    [35m<button class="p-2 bg-zinc-50 dark:bg-zinc-800 rounded-lg hover:text-brand-primary transition-all shadow-sm">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </button>[36m
+                                </div>[39m
+
+i:\Workspace\Workspace-Syahputrawork\Tien-s-Catering\apps\[32msrc\routes\dashboard\cs\orders\+page.svelte[39m:118:37
+[33mWarn[39m: Buttons and links should either contain text or have an `aria-label`, `aria-labelledby` or `title` attribute
+https://svelte.dev/e/a11y_consider_explicit_label (svelte)
+[36m                                <div class="flex items-center justify-end gap-2">
+                                    [35m<button onclick={() => handleAction('Detail', order.id)} class="p-2 bg-zinc-50 dark:bg-zinc-800 rounded-lg hover:text-brand-primary transition-all shadow-sm">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                    </button>[36m
+                                    <button onclick={() => handleAction('Konfirmasi', order.id)} class="px-4 py-2 bg-brand-primary text-white text-[10px] font-black uppercase tracking-widest rounded-lg shadow-lg shadow-brand-primary/20 hover:scale-105 transition-all">Konfirmasi</button>[39m
+
+i:\Workspace\Workspace-Syahputrawork\Tien-s-Catering\apps\[32msrc\routes\dashboard\profile\+page.svelte[39m:27:29
+[33mWarn[39m: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+[36m                        <div>
+                            [35m<label class="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1">Nama Lengkap</label>[36m
+                            <input type="text" bind:value={profile.name} class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800 rounded-2xl focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all font-bold text-brand-charcoal dark:text-white" />[39m
+
+i:\Workspace\Workspace-Syahputrawork\Tien-s-Catering\apps\[32msrc\routes\dashboard\profile\+page.svelte[39m:31:29
+[33mWarn[39m: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+[36m                        <div>
+                            [35m<label class="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1">WhatsApp</label>[36m
+                            <input type="tel" bind:value={profile.whatsapp} class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800 rounded-2xl focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all font-bold text-brand-charcoal dark:text-white" />[39m
+
+i:\Workspace\Workspace-Syahputrawork\Tien-s-Catering\apps\[32msrc\routes\dashboard\profile\+page.svelte[39m:37:25
+[33mWarn[39m: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+[36m                    <div>
+                        [35m<label class="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1">Email</label>[36m
+                        <input type="email" bind:value={profile.email} class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800 rounded-2xl focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all font-bold text-brand-charcoal dark:text-white" />[39m
+
+i:\Workspace\Workspace-Syahputrawork\Tien-s-Catering\apps\[32msrc\routes\dashboard\profile\+page.svelte[39m:42:25
+[33mWarn[39m: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+[36m                    <div>
+                        [35m<label class="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1">Alamat Default</label>[36m
+                        <textarea bind:value={profile.defaultAddress} rows="3" class="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800 rounded-2xl focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all font-bold text-brand-charcoal dark:text-white resize-none"></textarea>[39m
+
+====================================
+[31msvelte-check found 2 errors and 24 warnings in 11 files
+[39m

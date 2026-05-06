@@ -7,6 +7,8 @@ export type MockCsOrderStatus =
   | 'completed'
   | 'cancelled';
 
+import { mockCatalogItems } from './catalog';
+
 export type MockCsOrder = {
   id: string;
   customerName: string;
@@ -143,74 +145,19 @@ export const mockCsOrders: MockCsOrder[] = [
   }
 ];
 
-export const mockCsMenus: MockCsMenu[] = [
-  {
-    id: 'MENU-001',
-    name: 'Nasi Box Ayam Bakar',
-    category: 'Nasi Box',
-    price: 25000,
-    isAvailable: true,
-    stockLabel: 'Tersedia',
-    updatedAt: '2026-05-06',
-    activeDate: '2026-05-06',
-    image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=80'
-  },
-  {
-    id: 'MENU-002',
-    name: 'Snack Box Arisan',
-    category: 'Snack Box',
-    price: 15000,
-    isAvailable: true,
-    stockLabel: 'Tersedia terbatas',
-    updatedAt: '2026-05-06',
-    activeDate: '2026-05-06',
-    image: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=500&q=80'
-  },
-  {
-    id: 'MENU-003',
-    name: 'Prasmanan Premium',
-    category: 'Prasmanan',
-    price: 65000,
-    isAvailable: false,
-    stockLabel: 'Habis',
-    updatedAt: '2026-05-06',
-    activeDate: '2026-05-06',
-    image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500&q=80'
-  },
-  {
-    id: 'MENU-004',
-    name: 'Nasi Kuning Special',
-    category: 'Nasi Box',
-    price: 28000,
-    isAvailable: true,
-    stockLabel: 'Tersedia',
-    updatedAt: '2026-05-06',
-    activeDate: '2026-05-06',
-    image: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=500&q=80'
-  },
-  {
-    id: 'MENU-005',
-    name: 'Es Teh Manis',
-    category: 'Minuman',
-    price: 5000,
-    isAvailable: true,
-    stockLabel: 'Tersedia',
-    updatedAt: '2026-05-05',
-    activeDate: '2026-05-05',
-    image: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=500&q=80'
-  },
-  {
-    id: 'MENU-006',
-    name: 'Ayam Goreng Kalasan',
-    category: 'Nasi Box',
-    price: 27000,
-    isAvailable: true,
-    stockLabel: 'Tersedia',
-    updatedAt: '2026-05-05',
-    activeDate: '2026-05-05',
-    image: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=500&q=80'
-  }
-];
+export const mockCsMenus: MockCsMenu[] = mockCatalogItems
+  .filter(item => item.type === 'daily-menu')
+  .map(item => ({
+    id: item.id,
+    name: item.name,
+    category: item.category,
+    price: item.basePrice,
+    isAvailable: item.isAvailable,
+    stockLabel: item.stockLabel || '',
+    updatedAt: item.updatedAt,
+    activeDate: item.activeDate,
+    image: item.image
+  }));
 
 export const mockCsCustomers: MockCsCustomer[] = [
   {
