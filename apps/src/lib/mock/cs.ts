@@ -146,7 +146,7 @@ export const mockCsOrders: MockCsOrder[] = [
 ];
 
 export const mockCsMenus: MockCsMenu[] = mockCatalogItems
-  .filter(item => item.type === 'daily-menu')
+  .filter(item => item.type === 'menu')
   .map(item => ({
     id: item.id,
     name: item.name,

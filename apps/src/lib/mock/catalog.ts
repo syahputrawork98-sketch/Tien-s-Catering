@@ -1,4 +1,4 @@
-export type CatalogItemType = 'daily-menu' | 'package';
+export type CatalogItemType = 'menu' | 'package';
 
 export type CatalogItemStatus = 'active' | 'inactive' | 'sold_out' | 'draft';
 
@@ -32,10 +32,10 @@ export type CatalogItem = {
 };
 
 export const mockCatalogItems: CatalogItem[] = [
-  // DAILY MENUS (From cs.ts logic)
+  // DAILY MENUS
   {
     id: 'MENU-001',
-    type: 'daily-menu',
+    type: 'menu',
     name: 'Nasi Box Ayam Bakar',
     slug: 'nasi-box-ayam-bakar',
     description: 'Nasi box dengan ayam bakar bumbu rempah spesial, sambal terasi, dan lalapan segar.',
@@ -53,7 +53,7 @@ export const mockCatalogItems: CatalogItem[] = [
   },
   {
     id: 'MENU-002',
-    type: 'daily-menu',
+    type: 'menu',
     name: 'Snack Box Arisan',
     slug: 'snack-box-arisan',
     description: 'Paket snack isi 3 macam kue (lemper, risoles, sus fruit) dan air mineral.',
@@ -71,7 +71,7 @@ export const mockCatalogItems: CatalogItem[] = [
   },
   {
     id: 'MENU-003',
-    type: 'daily-menu',
+    type: 'menu',
     name: 'Prasmanan Premium',
     slug: 'prasmanan-premium',
     description: 'Menu prasmanan lengkap dengan pilihan lauk daging, ayam, ikan, dan sayuran.',
@@ -89,7 +89,7 @@ export const mockCatalogItems: CatalogItem[] = [
   },
   {
     id: 'MENU-005',
-    type: 'daily-menu',
+    type: 'menu',
     name: 'Es Teh Manis',
     slug: 'es-teh-manis',
     description: 'Es teh manis segar dengan gula asli.',
@@ -106,7 +106,7 @@ export const mockCatalogItems: CatalogItem[] = [
     dailyStock: 100
   },
 
-  // PACKAGES (From packages.ts)
+  // PACKAGES
   {
     id: 'pkg-nasi-box',
     type: 'package',
@@ -227,3 +227,6 @@ export const mockCatalogItems: CatalogItem[] = [
     updatedAt: '2026-05-01'
   }
 ];
+
+export const mockCatalogMenus = mockCatalogItems.filter((item) => item.type === 'menu');
+export const mockCatalogPackages = mockCatalogItems.filter((item) => item.type === 'package');

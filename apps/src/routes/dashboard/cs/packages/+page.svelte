@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { mockCatalogItems, type CatalogItem } from '$lib/mock/catalog';
+    import { mockCatalogPackages, type CatalogItem } from '$lib/mock/catalog';
     import { fade, fly, scale } from 'svelte/transition';
 
     function formatPrice(val: number) {
@@ -13,9 +13,7 @@
     type TabType = 'SEMUA' | 'NASI_BOX' | 'SNACK_BOX' | 'PRASMANAN' | 'CORPORATE' | 'WEDDING' | 'CUSTOM';
     
     // Local state for simulated edits
-    let packages = $state<CatalogItem[]>(
-        mockCatalogItems.filter(item => item.type === 'package')
-    );
+    let packages = $state<CatalogItem[]>([...mockCatalogPackages]);
     
     let activeTab = $state<TabType>('SEMUA');
 
