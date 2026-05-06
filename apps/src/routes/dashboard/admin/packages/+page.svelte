@@ -1,7 +1,7 @@
 <script lang="ts">
     import { fly, fade, scale } from 'svelte/transition';
     import { mockCatalogItems, type CatalogItem } from '$lib/mock/catalog';
-    import Modal from '$lib/components/Modal.svelte';
+    import Modal from '$lib/components/ui/Modal.svelte';
 
     type TabType = 'ALL' | 'ACTIVE' | 'DRAFT' | string;
 

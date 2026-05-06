@@ -1,7 +1,7 @@
 <script lang="ts">
     import { fly, fade, scale } from 'svelte/transition';
     import { mockOrders, type MockOrder, type MockOrderStatus } from '$lib/mock/orders';
-    import Modal from '$lib/components/Modal.svelte';
+    import Modal from '$lib/components/ui/Modal.svelte';
 
     type TabType = 'ALL' | 'NEW' | 'PROCESS' | 'DONE' | 'CANCELLED';
 

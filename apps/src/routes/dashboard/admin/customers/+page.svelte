@@ -1,7 +1,7 @@
 <script lang="ts">
     import { fly, fade, scale } from 'svelte/transition';
     import { mockAccounts, type MockAccount } from '$lib/mock/accounts';
-    import Modal from '$lib/components/Modal.svelte';
+    import Modal from '$lib/components/ui/Modal.svelte';
 
     type TabType = 'ALL' | 'PENDING' | 'personal' | 'company' | 'institution' | 'REJECTED';
 
