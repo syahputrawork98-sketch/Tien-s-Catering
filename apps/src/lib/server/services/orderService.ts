@@ -1,5 +1,6 @@
-import { createOrderRecord } from '$lib/server/repositories/orderRepository';
+import { createOrderRecord, listOrderRecords } from '$lib/server/repositories/orderRepository';
 import {
+	type OrderListRecord,
 	paymentMethods,
 	type CreateOrderInput,
 	type CreatedOrderSummary,
@@ -173,4 +174,8 @@ export function createOrder(payload: unknown): CreateOrderResult {
 		ok: true,
 		order
 	};
+}
+
+export function getOrders(): OrderListRecord[] {
+	return listOrderRecords();
 }

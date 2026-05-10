@@ -1,6 +1,16 @@
 import { json } from '@sveltejs/kit';
-import { createOrder } from '$lib/server/services/orderService';
+import { createOrder, getOrders } from '$lib/server/services/orderService';
 import type { RequestHandler } from './$types';
+
+export const GET: RequestHandler = async () => {
+	try {
+		const items = getOrders();
+		return json({ items });
+	} catch (error) {
+		console.error('Failed to fetch local orders.', error);
+		return json({ message: 'Gagal mengambil data order.' }, { status: 500 });
+	}
+};
 
 export const POST: RequestHandler = async ({ request }) => {
 	let payload: unknown;

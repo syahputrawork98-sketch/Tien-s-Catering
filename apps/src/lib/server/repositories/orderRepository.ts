@@ -1,5 +1,10 @@
 import { ensureDatabaseInitialized, getDatabase } from '$lib/server/db/client';
-import type { CreateOrderInput, CreatedOrderSummary } from '$lib/server/types/order';
+import type {
+	CreateOrderInput,
+	CreatedOrderSummary,
+	OrderListItem,
+	OrderListRecord
+} from '$lib/server/types/order';
 
 function formatOrderNumberTimestamp(now: Date) {
 	const datePart = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(
@@ -181,4 +186,150 @@ export function createOrderRecord(input: CreateOrderInput): CreatedOrderSummary 
 	});
 
 	return runCreateOrder(input);
+}
+
+type RawOrderRow = {
+	id: string;
+	orderNumber: string;
+	customerName: string;
+	whatsapp: string;
+	orderDate: string;
+	deliveryDate: string;
+	status: string;
+	subtotal: number;
+	taxAmount: number;
+	deliveryFee: number;
+	totalAmount: number;
+	notes: string;
+	devPersonaCode: string | null;
+	departmentOrUnit: string | null;
+	floor: string | null;
+	locationNote: string | null;
+	addressSummary: string | null;
+	paymentMethod: string | null;
+	paymentStatus: string | null;
+	paidAmount: number | null;
+	remainingAmount: number | null;
+	paymentTotalAmount: number | null;
+};
+
+type RawOrderItemRow = {
+	id: string;
+	orderId: string;
+	menuId: string | null;
+	name: string;
+	quantity: number;
+	price: number;
+	subtotal: number;
+};
+
+export function listOrderRecords(): OrderListRecord[] {
+	ensureDatabaseInitialized();
+	const db = getDatabase();
+
+	const orderQuery = db.prepare(
+		`SELECT
+			o.id AS id,
+			o.order_number AS orderNumber,
+			o.customer_name AS customerName,
+			o.whatsapp AS whatsapp,
+			o.created_at AS orderDate,
+			o.delivery_date AS deliveryDate,
+			o.status AS status,
+			o.subtotal AS subtotal,
+			o.tax_amount AS taxAmount,
+			o.delivery_fee AS deliveryFee,
+			o.total_amount AS totalAmount,
+			o.notes AS notes,
+			o.dev_persona_code AS devPersonaCode,
+			d.department_or_unit AS departmentOrUnit,
+			d.floor AS floor,
+			d.location_note AS locationNote,
+			d.address_summary AS addressSummary,
+			p.payment_method AS paymentMethod,
+			p.payment_status AS paymentStatus,
+			p.paid_amount AS paidAmount,
+			p.remaining_amount AS remainingAmount,
+			p.total_amount AS paymentTotalAmount
+		FROM orders o
+		LEFT JOIN delivery_info d ON d.order_id = o.id
+		LEFT JOIN payment_info p ON p.order_id = o.id
+		ORDER BY o.created_at DESC;`
+	);
+
+	const orderItemQuery = db.prepare(
+		`SELECT
+			id AS id,
+			order_id AS orderId,
+			menu_id AS menuId,
+			name AS name,
+			quantity AS quantity,
+			price AS price,
+			subtotal AS subtotal
+		FROM order_items
+		ORDER BY rowid ASC;`
+	);
+
+	const orderRows = orderQuery.all() as RawOrderRow[];
+	const orderItemRows = orderItemQuery.all() as RawOrderItemRow[];
+
+	const orderItemsByOrderId = new Map<string, OrderListItem[]>();
+	for (const row of orderItemRows) {
+		const orderItem: OrderListItem = {
+			id: row.id,
+			menuId: row.menuId,
+			name: row.name,
+			quantity: Math.max(0, Number(row.quantity)),
+			price: Math.max(0, Number(row.price)),
+			subtotal: Math.max(0, Number(row.subtotal))
+		};
+
+		const existingItems = orderItemsByOrderId.get(row.orderId);
+		if (existingItems) {
+			existingItems.push(orderItem);
+		} else {
+			orderItemsByOrderId.set(row.orderId, [orderItem]);
+		}
+	}
+
+	return orderRows.map((row) => {
+		const normalizedTotal = Math.max(0, Number(row.totalAmount));
+		const paymentMethod = row.paymentMethod ?? 'unknown';
+		const paymentStatus = row.paymentStatus ?? 'unpaid';
+		const paidAmount = Math.max(0, Number(row.paidAmount ?? 0));
+		const remainingAmount = Math.max(0, Number(row.remainingAmount ?? normalizedTotal));
+		const paymentTotalAmount = Math.max(0, Number(row.paymentTotalAmount ?? normalizedTotal));
+
+		return {
+			id: row.id,
+			orderNumber: row.orderNumber,
+			customerName: row.customerName,
+			whatsapp: row.whatsapp,
+			orderDate: row.orderDate,
+			deliveryDate: row.deliveryDate,
+			status: row.status || 'new',
+			paymentMethod,
+			paymentStatus,
+			subtotal: Math.max(0, Number(row.subtotal)),
+			taxAmount: Math.max(0, Number(row.taxAmount)),
+			deliveryFee: Math.max(0, Number(row.deliveryFee)),
+			total: normalizedTotal,
+			notes: row.notes ?? '',
+			devPersonaCode: row.devPersonaCode,
+			deliveryInfo: {
+				departmentOrUnit: row.departmentOrUnit,
+				floor: row.floor,
+				locationNote: row.locationNote,
+				addressSummary: row.addressSummary
+			},
+			payment: {
+				method: paymentMethod,
+				status: paymentStatus,
+				totalAmount: paymentTotalAmount,
+				paidAmount,
+				remainingAmount
+			},
+			items: orderItemsByOrderId.get(row.id) ?? []
+		} satisfies OrderListRecord;
+	});
 }

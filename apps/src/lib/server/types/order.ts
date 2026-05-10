@@ -42,3 +42,44 @@ export type CreatedOrderSummary = {
 	paymentStatus: PaymentStatus;
 	total: number;
 };
+
+export type OrderListItem = {
+	id: string;
+	menuId: string | null;
+	name: string;
+	quantity: number;
+	price: number;
+	subtotal: number;
+};
+
+export type OrderListRecord = {
+	id: string;
+	orderNumber: string;
+	customerName: string;
+	whatsapp: string;
+	orderDate: string;
+	deliveryDate: string;
+	status: string;
+	paymentMethod: string;
+	paymentStatus: string;
+	subtotal: number;
+	taxAmount: number;
+	deliveryFee: number;
+	total: number;
+	notes: string;
+	devPersonaCode: string | null;
+	deliveryInfo: {
+		departmentOrUnit: string | null;
+		floor: string | null;
+		locationNote: string | null;
+		addressSummary: string | null;
+	};
+	payment: {
+		method: string;
+		status: string;
+		totalAmount: number;
+		paidAmount: number;
+		remainingAmount: number;
+	};
+	items: OrderListItem[];
+};
