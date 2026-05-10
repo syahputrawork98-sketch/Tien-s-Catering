@@ -1,11 +1,16 @@
 import {
 	createPackageRequestRecord,
-	listPackageRequestRecords
+	listPackageRequestRecords,
+	updatePackageRequestReviewRecord
 } from '$lib/server/repositories/packageRequestRepository';
+import { packageRequestReviewStatuses } from '$lib/server/types/packageRequest';
 import type {
 	CreatePackageRequestInput,
 	CreatedPackageRequestSummary,
-	PackageRequestRecord
+	PackageRequestRecord,
+	PackageRequestReviewStatus,
+	UpdatePackageRequestReviewInput,
+	UpdatedPackageRequestSummary
 } from '$lib/server/types/packageRequest';
 
 type CreatePackageRequestResult =
@@ -22,6 +27,27 @@ type ParseCreatePackageRequestPayloadResult =
 	| {
 			ok: true;
 			data: CreatePackageRequestInput;
+	  }
+	| {
+			ok: false;
+			message: string;
+	  };
+
+type UpdatePackageRequestReviewResult =
+	| {
+			ok: true;
+			request: UpdatedPackageRequestSummary;
+	  }
+	| {
+			ok: false;
+			status: 400 | 404;
+			message: string;
+	  };
+
+type ParseUpdatePackageRequestReviewPayloadResult =
+	| {
+			ok: true;
+			data: UpdatePackageRequestReviewInput;
 	  }
 	| {
 			ok: false;
@@ -51,6 +77,13 @@ function parsePositiveInteger(value: unknown): number | null {
 	const normalized = Math.floor(parsed);
 	if (normalized <= 0) return null;
 	return normalized;
+}
+
+function parseNonNegativeInteger(value: unknown): number | null {
+	const parsed = Number(value);
+	if (!Number.isFinite(parsed)) return null;
+	if (parsed < 0) return null;
+	return Math.floor(parsed);
 }
 
 function parseCreatePackageRequestPayload(payload: unknown): ParseCreatePackageRequestPayloadResult {
@@ -131,4 +164,70 @@ export function createPackageRequest(payload: unknown): CreatePackageRequestResu
 
 export function getPackageRequests(): PackageRequestRecord[] {
 	return listPackageRequestRecords();
+}
+
+function parseUpdatePackageRequestReviewPayload(
+	payload: unknown
+): ParseUpdatePackageRequestReviewPayloadResult {
+	if (!isRecord(payload)) {
+		return { ok: false, message: 'Payload tidak valid.' };
+	}
+
+	const rawStatus = parseRequiredString(payload.status);
+	if (!rawStatus) {
+		return { ok: false, message: 'status wajib diisi.' };
+	}
+
+	const normalizedStatus = rawStatus.toLowerCase();
+	if (!packageRequestReviewStatuses.includes(normalizedStatus as PackageRequestReviewStatus)) {
+		return {
+			ok: false,
+			message: `status harus salah satu: ${packageRequestReviewStatuses.join(', ')}.`
+		};
+	}
+
+	const adminNote = parseOptionalString(payload.adminNote);
+
+	let estimatedPrice: number | null = null;
+	if (payload.estimatedPrice !== undefined && payload.estimatedPrice !== null && payload.estimatedPrice !== '') {
+		const parsedEstimatedPrice = parseNonNegativeInteger(payload.estimatedPrice);
+		if (parsedEstimatedPrice === null) {
+			return { ok: false, message: 'estimatedPrice harus angka >= 0.' };
+		}
+		estimatedPrice = parsedEstimatedPrice;
+	}
+
+	return {
+		ok: true,
+		data: {
+			status: normalizedStatus as PackageRequestReviewStatus,
+			adminNote,
+			estimatedPrice
+		}
+	};
+}
+
+export function updatePackageRequestReview(
+	requestId: string,
+	payload: unknown
+): UpdatePackageRequestReviewResult {
+	const normalizedRequestId = parseRequiredString(requestId);
+	if (!normalizedRequestId) {
+		return { ok: false, status: 400, message: 'request id wajib diisi.' };
+	}
+
+	const parsed = parseUpdatePackageRequestReviewPayload(payload);
+	if (!parsed.ok) {
+		return { ok: false, status: 400, message: parsed.message };
+	}
+
+	const updated = updatePackageRequestReviewRecord(normalizedRequestId, parsed.data);
+	if (!updated) {
+		return { ok: false, status: 404, message: 'Request paket tidak ditemukan.' };
+	}
+
+	return {
+		ok: true,
+		request: updated
+	};
 }

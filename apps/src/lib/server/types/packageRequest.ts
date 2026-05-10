@@ -8,6 +8,8 @@ export const packageRequestStatuses = [
 ] as const;
 
 export type PackageRequestStatus = (typeof packageRequestStatuses)[number];
+export const packageRequestReviewStatuses = ['new', 'reviewing', 'quoted', 'rejected', 'cancelled'] as const;
+export type PackageRequestReviewStatus = (typeof packageRequestReviewStatuses)[number];
 
 export type CreatePackageRequestInput = {
 	packageId: string;
@@ -34,6 +36,9 @@ export type CreatedPackageRequestSummary = {
 	notes: string;
 	status: PackageRequestStatus;
 	createdAt: string;
+	adminNote: string | null;
+	estimatedPrice: number | null;
+	reviewedAt: string | null;
 };
 
 export type PackageRequestRecord = {
@@ -49,5 +54,24 @@ export type PackageRequestRecord = {
 	notes: string;
 	status: PackageRequestStatus;
 	createdAt: string;
+	updatedAt: string;
+	adminNote: string | null;
+	estimatedPrice: number | null;
+	reviewedAt: string | null;
+};
+
+export type UpdatePackageRequestReviewInput = {
+	status: PackageRequestReviewStatus;
+	adminNote: string | null;
+	estimatedPrice: number | null;
+};
+
+export type UpdatedPackageRequestSummary = {
+	id: string;
+	requestNumber: string;
+	status: PackageRequestReviewStatus;
+	adminNote: string | null;
+	estimatedPrice: number | null;
+	reviewedAt: string | null;
 	updatedAt: string;
 };

@@ -10,6 +10,8 @@
 		| 'cancelled'
 		| 'converted_to_order';
 
+	type PackageRequestReviewStatus = 'new' | 'reviewing' | 'quoted' | 'rejected' | 'cancelled';
+
 	type AdminPackageRequest = {
 		id: string;
 		requestNumber: string;
@@ -22,6 +24,9 @@
 		location: string;
 		notes: string;
 		status: PackageRequestStatus;
+		adminNote: string | null;
+		estimatedPrice: number | null;
+		reviewedAt: string | null;
 		createdAt: string;
 		updatedAt: string;
 	};
@@ -31,9 +36,40 @@
 		message?: string;
 	};
 
+	type PackageRequestReviewApiResponse = {
+		request?: {
+			id?: unknown;
+			requestNumber?: unknown;
+			status?: unknown;
+			adminNote?: unknown;
+			estimatedPrice?: unknown;
+			reviewedAt?: unknown;
+			updatedAt?: unknown;
+		};
+		message?: string;
+	};
+
+	type ReviewDraft = {
+		status: PackageRequestReviewStatus;
+		adminNote: string;
+		estimatedPrice: string;
+	};
+
+	const reviewStatuses: Array<{ value: PackageRequestReviewStatus; label: string }> = [
+		{ value: 'new', label: 'Baru' },
+		{ value: 'reviewing', label: 'Sedang Ditinjau' },
+		{ value: 'quoted', label: 'Sudah Diquote' },
+		{ value: 'rejected', label: 'Ditolak' },
+		{ value: 'cancelled', label: 'Dibatalkan' }
+	];
+
 	let loading = $state(true);
 	let error = $state('');
 	let requests = $state<AdminPackageRequest[]>([]);
+	let reviewSavingId = $state<string | null>(null);
+	let reviewError = $state('');
+	let reviewSuccess = $state('');
+	let reviewDraftById = $state<Record<string, ReviewDraft>>({});
 
 	function isRecord(value: unknown): value is Record<string, unknown> {
 		return typeof value === 'object' && value !== null;
@@ -67,6 +103,14 @@
 			: 'new';
 	}
 
+	function normalizeReviewStatus(value: unknown): PackageRequestReviewStatus {
+		const normalized = getString(value, 'new').toLowerCase();
+		const allowed: PackageRequestReviewStatus[] = ['new', 'reviewing', 'quoted', 'rejected', 'cancelled'];
+		return allowed.includes(normalized as PackageRequestReviewStatus)
+			? (normalized as PackageRequestReviewStatus)
+			: 'new';
+	}
+
 	function normalizeRequest(raw: unknown): AdminPackageRequest | null {
 		if (!isRecord(raw)) return null;
 
@@ -85,6 +129,12 @@
 			location: getString(raw.location, '-'),
 			notes: getString(raw.notes, ''),
 			status: normalizeStatus(raw.status),
+			adminNote: getString(raw.adminNote) || null,
+			estimatedPrice:
+				raw.estimatedPrice === null || raw.estimatedPrice === undefined
+					? null
+					: Math.max(0, Math.floor(getNumber(raw.estimatedPrice, 0))),
+			reviewedAt: getString(raw.reviewedAt) || null,
 			createdAt: getString(raw.createdAt, '-'),
 			updatedAt: getString(raw.updatedAt, '-')
 		};
@@ -102,6 +152,14 @@
 			month: 'short',
 			year: 'numeric'
 		}).format(date);
+	}
+
+	function formatPrice(value: number): string {
+		return new Intl.NumberFormat('id-ID', {
+			style: 'currency',
+			currency: 'IDR',
+			maximumFractionDigits: 0
+		}).format(value);
 	}
 
 	function statusLabel(status: PackageRequestStatus): string {
@@ -130,6 +188,46 @@
 		return colors[status];
 	}
 
+	function setDraftStatus(requestId: string, status: string) {
+		const normalized = normalizeReviewStatus(status);
+		const current = reviewDraftById[requestId];
+		if (!current) return;
+
+		reviewDraftById = {
+			...reviewDraftById,
+			[requestId]: {
+				...current,
+				status: normalized
+			}
+		};
+	}
+
+	function setDraftAdminNote(requestId: string, note: string) {
+		const current = reviewDraftById[requestId];
+		if (!current) return;
+
+		reviewDraftById = {
+			...reviewDraftById,
+			[requestId]: {
+				...current,
+				adminNote: note
+			}
+		};
+	}
+
+	function setDraftEstimatedPrice(requestId: string, estimatedPrice: string) {
+		const current = reviewDraftById[requestId];
+		if (!current) return;
+
+		reviewDraftById = {
+			...reviewDraftById,
+			[requestId]: {
+				...current,
+				estimatedPrice
+			}
+		};
+	}
+
 	async function loadPackageRequests() {
 		loading = true;
 		error = '';
@@ -156,11 +254,73 @@
 			requests = body.items
 				.map((item) => normalizeRequest(item))
 				.filter((item): item is AdminPackageRequest => item !== null);
+
+			reviewDraftById = requests.reduce<Record<string, ReviewDraft>>((acc, request) => {
+				acc[request.id] = {
+					status: normalizeReviewStatus(request.status),
+					adminNote: request.adminNote ?? '',
+					estimatedPrice:
+						request.estimatedPrice === null || request.estimatedPrice === undefined
+							? ''
+							: String(request.estimatedPrice)
+				};
+				return acc;
+			}, {});
 		} catch {
 			error = 'Gagal terhubung ke server. Silakan coba lagi.';
 			requests = [];
 		} finally {
 			loading = false;
+		}
+	}
+
+	async function saveReview(request: AdminPackageRequest) {
+		const draft = reviewDraftById[request.id];
+		if (!draft) return;
+
+		reviewError = '';
+		reviewSuccess = '';
+
+		let estimatedPrice: number | null = null;
+		if (draft.estimatedPrice.trim().length > 0) {
+			const parsed = Number(draft.estimatedPrice);
+			if (!Number.isFinite(parsed) || parsed < 0) {
+				reviewError = 'Estimasi harga harus angka >= 0.';
+				return;
+			}
+			estimatedPrice = Math.floor(parsed);
+		}
+
+		reviewSavingId = request.id;
+
+		try {
+			const response = await fetch(`/api/package-requests/${encodeURIComponent(request.id)}/status`, {
+				method: 'PATCH',
+				headers: {
+					'content-type': 'application/json'
+				},
+				body: JSON.stringify({
+					status: draft.status,
+					adminNote: draft.adminNote.trim().length > 0 ? draft.adminNote.trim() : null,
+					estimatedPrice
+				})
+			});
+
+			const body = (await response.json().catch(() => null)) as PackageRequestReviewApiResponse | null;
+			if (!response.ok) {
+				reviewError =
+					typeof body?.message === 'string' && body.message.trim().length > 0
+						? body.message
+						: 'Gagal menyimpan review request paket.';
+				return;
+			}
+
+			reviewSuccess = `Review ${request.requestNumber} berhasil disimpan.`;
+			await loadPackageRequests();
+		} catch {
+			reviewError = 'Gagal terhubung ke server saat menyimpan review.';
+		} finally {
+			reviewSavingId = null;
 		}
 	}
 
@@ -178,10 +338,22 @@
 		<h1 class="text-4xl lg:text-5xl font-black text-brand-charcoal dark:text-white tracking-tighter italic">
 			Package Requests Admin
 		</h1>
-		<p class="text-zinc-500 font-medium mt-2">
-			Daftar request paket dari database lokal. Aksi review/quote/approve/convert masih Hold.
+	<p class="text-zinc-500 font-medium mt-2">
+			Review request paket minimal aktif. Convert ke order/payment/invoice tetap Hold.
 		</p>
 	</header>
+
+	{#if reviewError}
+		<div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/40 rounded-2xl p-4" in:fade>
+			<p class="text-xs font-bold text-red-700 dark:text-red-300">{reviewError}</p>
+		</div>
+	{/if}
+
+	{#if reviewSuccess}
+		<div class="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-900/40 rounded-2xl p-4" in:fade>
+			<p class="text-xs font-bold text-emerald-700 dark:text-emerald-300">{reviewSuccess}</p>
+		</div>
+	{/if}
 
 	{#if loading}
 		<div class="bg-white dark:bg-zinc-900 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 p-10 shadow-sm" in:fade>
@@ -240,6 +412,18 @@
 									<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Dibuat</p>
 									<p class="text-sm font-bold text-brand-charcoal dark:text-white">{formatDate(request.createdAt)}</p>
 								</div>
+								<div>
+									<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Estimasi Harga</p>
+									<p class="text-sm font-bold text-brand-charcoal dark:text-white">
+										{request.estimatedPrice === null ? '-' : formatPrice(request.estimatedPrice)}
+									</p>
+								</div>
+								<div>
+									<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Direview</p>
+									<p class="text-sm font-bold text-brand-charcoal dark:text-white">
+										{request.reviewedAt ? formatDate(request.reviewedAt) : '-'}
+									</p>
+								</div>
 								<div class="md:col-span-2">
 									<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Lokasi / Acara</p>
 									<p class="text-sm font-medium text-zinc-600 dark:text-zinc-300">{request.location}</p>
@@ -248,10 +432,65 @@
 									<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Catatan Kebutuhan</p>
 									<p class="text-sm font-medium text-zinc-600 dark:text-zinc-300">{request.notes || '-'}</p>
 								</div>
+								<div class="md:col-span-2">
+									<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Catatan Admin</p>
+									<p class="text-sm font-medium text-zinc-600 dark:text-zinc-300">{request.adminNote || '-'}</p>
+								</div>
 							</div>
 						</div>
 
-						<div class="lg:min-w-[220px] space-y-3">
+						<div class="lg:min-w-[300px] space-y-3">
+							<div class="p-4 bg-zinc-50 dark:bg-zinc-800 rounded-2xl border border-zinc-100 dark:border-zinc-700 space-y-3">
+								<p class="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Review Request</p>
+								<div>
+									<label for={`status-${request.id}`} class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1 block">Status</label>
+									<select
+										id={`status-${request.id}`}
+										value={reviewDraftById[request.id]?.status ?? normalizeReviewStatus(request.status)}
+										disabled={reviewSavingId !== null}
+										onchange={(event) => setDraftStatus(request.id, (event.currentTarget as HTMLSelectElement).value)}
+										class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-[11px] font-bold text-zinc-700 dark:text-zinc-200 disabled:opacity-60"
+									>
+										{#each reviewStatuses as item}
+											<option value={item.value}>{item.label}</option>
+										{/each}
+									</select>
+								</div>
+								<div>
+									<label for={`estimated-${request.id}`} class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1 block">Estimasi Harga</label>
+									<input
+										id={`estimated-${request.id}`}
+										type="number"
+										min="0"
+										step="1"
+										value={reviewDraftById[request.id]?.estimatedPrice ?? ''}
+										disabled={reviewSavingId !== null}
+										oninput={(event) => setDraftEstimatedPrice(request.id, (event.currentTarget as HTMLInputElement).value)}
+										class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-[11px] font-bold text-zinc-700 dark:text-zinc-200 disabled:opacity-60"
+										placeholder="Contoh: 2500000"
+									/>
+								</div>
+								<div>
+									<label for={`note-${request.id}`} class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1 block">Catatan Admin</label>
+									<textarea
+										id={`note-${request.id}`}
+										rows="2"
+										disabled={reviewSavingId !== null}
+										oninput={(event) => setDraftAdminNote(request.id, (event.currentTarget as HTMLTextAreaElement).value)}
+										class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-[11px] font-bold text-zinc-700 dark:text-zinc-200 disabled:opacity-60 resize-none"
+										placeholder="Contoh: butuh konfirmasi jumlah pax final H-2."
+									>{reviewDraftById[request.id]?.adminNote ?? ''}</textarea>
+								</div>
+								<button
+									type="button"
+									disabled={reviewSavingId !== null}
+									onclick={() => saveReview(request)}
+									class="w-full px-5 py-2.5 bg-brand-charcoal text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-zinc-800 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+								>
+									{reviewSavingId === request.id ? 'Menyimpan Review...' : 'Simpan Review'}
+								</button>
+							</div>
+
 							<button
 								type="button"
 								disabled

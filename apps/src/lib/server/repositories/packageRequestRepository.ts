@@ -4,7 +4,10 @@ import {
 	type CreatedPackageRequestSummary,
 	packageRequestStatuses,
 	type PackageRequestRecord,
-	type PackageRequestStatus
+	type PackageRequestReviewStatus,
+	type PackageRequestStatus,
+	type UpdatePackageRequestReviewInput,
+	type UpdatedPackageRequestSummary
 } from '$lib/server/types/packageRequest';
 
 type RawPackageRequestRow = {
@@ -19,8 +22,25 @@ type RawPackageRequestRow = {
 	location: string;
 	notes: string;
 	status: string;
+	adminNote: string | null;
+	estimatedPrice: number | null;
+	reviewedAt: string | null;
 	createdAt: string;
 	updatedAt: string;
+};
+
+type RawPackageRequestUpdateRow = {
+	id: string;
+	requestNumber: string;
+	status: string;
+	adminNote: string | null;
+	estimatedPrice: number | null;
+	reviewedAt: string | null;
+	updatedAt: string;
+};
+
+type SqliteTableColumnInfo = {
+	name: string;
 };
 
 function formatRequestNumberTimestamp(now: Date) {
@@ -43,11 +63,45 @@ function normalizeRequestStatus(value: string | null | undefined): PackageReques
 	return 'new';
 }
 
+function normalizeReviewStatus(value: string | null | undefined): PackageRequestReviewStatus {
+	if (
+		value === 'new' ||
+		value === 'reviewing' ||
+		value === 'quoted' ||
+		value === 'rejected' ||
+		value === 'cancelled'
+	) {
+		return value;
+	}
+
+	return 'new';
+}
+
+function hasColumn(db: ReturnType<typeof getDatabase>, tableName: string, columnName: string): boolean {
+	const columns = db.prepare(`PRAGMA table_info(${tableName});`).all() as SqliteTableColumnInfo[];
+	return columns.some((column) => column.name === columnName);
+}
+
+function ensurePackageRequestReviewColumns(db: ReturnType<typeof getDatabase>) {
+	if (!hasColumn(db, 'package_requests', 'admin_note')) {
+		db.exec(`ALTER TABLE package_requests ADD COLUMN admin_note TEXT;`);
+	}
+
+	if (!hasColumn(db, 'package_requests', 'estimated_price')) {
+		db.exec(`ALTER TABLE package_requests ADD COLUMN estimated_price INTEGER;`);
+	}
+
+	if (!hasColumn(db, 'package_requests', 'reviewed_at')) {
+		db.exec(`ALTER TABLE package_requests ADD COLUMN reviewed_at TEXT;`);
+	}
+}
+
 export function createPackageRequestRecord(
 	input: CreatePackageRequestInput
 ): CreatedPackageRequestSummary {
 	ensureDatabaseInitialized();
 	const db = getDatabase();
+	ensurePackageRequestReviewColumns(db);
 
 	const insertQuery = db.prepare(
 		`INSERT INTO package_requests (
@@ -62,6 +116,9 @@ export function createPackageRequestRecord(
 			location,
 			notes,
 			status,
+			admin_note,
+			estimated_price,
+			reviewed_at,
 			created_at,
 			updated_at
 		) VALUES (
@@ -76,6 +133,9 @@ export function createPackageRequestRecord(
 			@location,
 			@notes,
 			@status,
+			@adminNote,
+			@estimatedPrice,
+			@reviewedAt,
 			@createdAt,
 			@updatedAt
 		);`
@@ -99,6 +159,9 @@ export function createPackageRequestRecord(
 		location: input.location,
 		notes: input.notes,
 		status: normalizedStatus,
+		adminNote: null,
+		estimatedPrice: null,
+		reviewedAt: null,
 		createdAt: timestamp,
 		updatedAt: timestamp
 	});
@@ -115,13 +178,17 @@ export function createPackageRequestRecord(
 		location: input.location,
 		notes: input.notes,
 		status: normalizedStatus,
-		createdAt: timestamp
+		createdAt: timestamp,
+		adminNote: null,
+		estimatedPrice: null,
+		reviewedAt: null
 	};
 }
 
 export function listPackageRequestRecords(): PackageRequestRecord[] {
 	ensureDatabaseInitialized();
 	const db = getDatabase();
+	ensurePackageRequestReviewColumns(db);
 
 	const query = db.prepare(
 		`SELECT
@@ -136,6 +203,9 @@ export function listPackageRequestRecords(): PackageRequestRecord[] {
 			location AS location,
 			notes AS notes,
 			status AS status,
+			admin_note AS adminNote,
+			estimated_price AS estimatedPrice,
+			reviewed_at AS reviewedAt,
 			created_at AS createdAt,
 			updated_at AS updatedAt
 		FROM package_requests
@@ -155,7 +225,68 @@ export function listPackageRequestRecords(): PackageRequestRecord[] {
 		location: row.location,
 		notes: row.notes ?? '',
 		status: normalizeRequestStatus(row.status),
+		adminNote: row.adminNote ?? null,
+		estimatedPrice: row.estimatedPrice !== null ? Math.max(0, Number(row.estimatedPrice)) : null,
+		reviewedAt: row.reviewedAt ?? null,
 		createdAt: row.createdAt,
 		updatedAt: row.updatedAt
 	}));
+}
+
+export function updatePackageRequestReviewRecord(
+	requestId: string,
+	input: UpdatePackageRequestReviewInput
+): UpdatedPackageRequestSummary | null {
+	ensureDatabaseInitialized();
+	const db = getDatabase();
+	ensurePackageRequestReviewColumns(db);
+
+	const selectQuery = db.prepare(
+		`SELECT
+			id AS id,
+			request_number AS requestNumber,
+			status AS status,
+			admin_note AS adminNote,
+			estimated_price AS estimatedPrice,
+			reviewed_at AS reviewedAt,
+			updated_at AS updatedAt
+		FROM package_requests
+		WHERE id = @id
+		LIMIT 1;`
+	);
+
+	const existing = selectQuery.get({ id: requestId }) as RawPackageRequestUpdateRow | undefined;
+	if (!existing) {
+		return null;
+	}
+
+	const timestamp = new Date().toISOString();
+	const updateQuery = db.prepare(
+		`UPDATE package_requests
+		SET status = @status,
+			admin_note = @adminNote,
+			estimated_price = @estimatedPrice,
+			reviewed_at = @reviewedAt,
+			updated_at = @updatedAt
+		WHERE id = @id;`
+	);
+
+	updateQuery.run({
+		id: requestId,
+		status: input.status,
+		adminNote: input.adminNote,
+		estimatedPrice: input.estimatedPrice,
+		reviewedAt: timestamp,
+		updatedAt: timestamp
+	});
+
+	return {
+		id: existing.id,
+		requestNumber: existing.requestNumber,
+		status: normalizeReviewStatus(input.status),
+		adminNote: input.adminNote,
+		estimatedPrice: input.estimatedPrice,
+		reviewedAt: timestamp,
+		updatedAt: timestamp
+	};
 }

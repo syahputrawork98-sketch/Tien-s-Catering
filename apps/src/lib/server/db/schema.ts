@@ -55,6 +55,9 @@ export const createTablesSql = [
 		location TEXT NOT NULL,
 		notes TEXT NOT NULL DEFAULT '',
 		status TEXT NOT NULL DEFAULT 'new',
+		admin_note TEXT,
+		estimated_price INTEGER,
+		reviewed_at TEXT,
 		created_at TEXT NOT NULL,
 		updated_at TEXT NOT NULL
 	);`,
