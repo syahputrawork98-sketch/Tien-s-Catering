@@ -7,8 +7,9 @@
 3. Checkout submit payload ke `POST /api/orders`.
 4. Order disimpan ke SQLite lokal (`orders`, `order_items`, `delivery_info`, `payment_info`).
 5. Order-success menampilkan ringkasan response order.
-6. Admin order list membaca data order dari `GET /api/orders` (read-only).
-7. Admin detail order membaca data DB-safe (read-only).
+6. Admin order list/detail membaca data order dari `GET /api/orders`.
+7. Admin update status order via `PATCH /api/orders/[id]/status`.
+8. Admin update payment status manual via `PATCH /api/orders/[id]/payment-status`.
 
 ## Lokasi Pengantaran (Fase Sekarang)
 
@@ -17,26 +18,37 @@
 - Catatan lokasi (`locationNote`)
 - Ringkasan lokasi (`addressSummary`)
 
-## Metode Pembayaran Awal
+## Metode Pembayaran (Manual Lokal)
 
 - `cash`
 - `transfer`
 - `qris`
 - `cod`
 
-## Status Pembayaran Awal
+## Status Pembayaran (Manual Lokal)
 
 - `unpaid`
+- `waiting_verification`
+- `paid`
 - `cod`
 
-## Status Order Saat Ini
+## Alur Transaksi Stok
 
-- Status order berasal dari backend order foundation dan masih sederhana untuk kebutuhan read-only admin.
-- Mutation status admin masih Hold (belum ada update status via API).
+- Stok **tidak** berkurang saat checkout submit (`POST /api/orders`).
+- Stok berkurang saat admin mengubah status order ke `confirmed`.
+- Jika stok kurang saat confirm, request status gagal (`400`) dan status order tetap.
+- Stok dikembalikan saat admin mengubah status ke `cancelled`, hanya jika sebelumnya sudah dipotong.
+- Retry `cancelled` tidak menambah stok lagi (anti double restore).
+- Item order tanpa `menuId` diabaikan untuk backward compatibility.
+- Guard utama memakai `orders.stock_status`:
+  - `not_deducted`
+  - `deducted`
+  - `released`
+- Status lain (`processing`, `ready`, `delivered`, `completed`) tidak mengubah stok.
 
 ## Item Hold (Belum Aktif)
 
 - Payment verification.
-- Admin update status/cancel/complete mutation.
-- Stock decrement transaction saat order dibuat.
-- Stock restore transaction saat order dibatalkan.
+- Payment gateway/QRIS production.
+- Upload bukti pembayaran production.
+- Auth production (login/JWT/session/password/RBAC).

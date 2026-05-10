@@ -9,31 +9,38 @@ Dokumen ini merangkum progres fitur project pada fase local development.
 - Checkout submit order ke API (`POST /api/orders`).
 - Order tersimpan ke database SQLite lokal.
 - Order-success menampilkan response order API.
-- Admin order list membaca database secara read-only (`GET /api/orders`).
-- Admin order detail sudah DB-safe/read-only.
-- Local backend foundation aktif (`/api/health`, `/api/menus`, `/api/orders`).
+- Admin order list dan order detail membaca database (`GET /api/orders`).
+- Admin update status order minimal aktif (`PATCH /api/orders/[id]/status`).
+- Admin update payment status manual aktif (`PATCH /api/orders/[id]/payment-status`).
+- Transaksi stok aktif:
+  - stok tidak berkurang saat checkout submit,
+  - stok berkurang saat order dikonfirmasi,
+  - stok dikembalikan saat order dibatalkan jika sebelumnya sudah dipotong.
+- Guard transaksi stok memakai `orders.stock_status` (`not_deducted`, `deducted`, `released`).
+- Admin order flow polish aktif (label status order/payment/stock lebih jelas).
+- Local backend foundation aktif (`/api/health`, `/api/menus`, `/api/orders`, patch admin minimal).
 
 ## Berjalan / Stabilizing
 
-- Admin operational flow read-only.
-- Order API pada local development.
-- Read model order untuk kebutuhan admin list/detail.
+- Admin operational flow lokal (status + payment manual + stock feedback).
+- Konsistensi read model order untuk kebutuhan admin list/detail.
+- Hardening validasi edge case local workflow.
 
 ## Hold
 
-- Admin update status order.
 - Payment verification.
+- Payment gateway / QRIS production.
+- Upload bukti pembayaran production.
+- Rekening/payment account integration production.
 - CS dashboard berbasis database.
 - User dashboard berbasis database.
 - Super Admin flow final.
-- Stock decrement/restore transaction.
-- Payment gateway.
 - Auth production.
 - Invoice/pajak production.
 
 ## Roadmap Berikutnya
 
-- Batch 7: Admin Update Status Order Minimal.
-- Payment status manual minimal (setelah flow status lebih stabil).
-- Desain stock transaction (decrement/restore) setelah status/payment flow stabil.
+- Stabilizing lanjutan admin workflow (status + payment + stock) di local development.
+- Payment verification minimal (setelah disetujui scope berikutnya).
+- Migrasi CS/User dashboard ke database secara bertahap.
 - Docs sync berikutnya setelah beberapa batch tambahan.
