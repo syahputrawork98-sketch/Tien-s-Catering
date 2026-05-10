@@ -14,6 +14,14 @@
 		subtotal: number;
 	};
 
+	type AdminOrderPayment = {
+		method: string;
+		status: string;
+		totalAmount: number;
+		paidAmount: number;
+		remainingAmount: number;
+	};
+
 	type AdminOrder = {
 		id: string;
 		orderNumber: string;
@@ -24,14 +32,19 @@
 		status: string;
 		paymentMethod: string;
 		paymentStatus: string;
+		subtotal: number;
+		taxAmount: number;
+		deliveryFee: number;
 		total: number;
 		notes: string;
+		devPersonaCode: string | null;
 		deliveryInfo: {
 			departmentOrUnit: string | null;
 			floor: string | null;
 			locationNote: string | null;
 			addressSummary: string | null;
 		};
+		payment: AdminOrderPayment;
 		items: AdminOrderItem[];
 	};
 
@@ -89,17 +102,21 @@
 		const paymentObject = isRecord(raw.payment) ? raw.payment : null;
 		const paymentMethod = getString(raw.paymentMethod, getString(paymentObject?.method, '-')).toLowerCase();
 		const paymentStatus = getString(raw.paymentStatus, getString(paymentObject?.status, 'unpaid')).toLowerCase();
+		const subtotal = getNumber(raw.subtotal);
+		const taxAmount = getNumber(raw.taxAmount);
+		const deliveryFee = getNumber(raw.deliveryFee);
 		const total = getNumber(raw.total);
 		const notes = getString(raw.notes);
+		const devPersonaCode = getString(raw.devPersonaCode) || null;
 		const deliveryInfoRaw = isRecord(raw.deliveryInfo) ? raw.deliveryInfo : {};
 		const itemsRaw = Array.isArray(raw.items) ? raw.items : [];
 
 		const items: AdminOrderItem[] = itemsRaw
-			.map((item) => {
+			.map((item, index) => {
 				if (!isRecord(item)) return null;
 
 				return {
-					id: getString(item.id, crypto.randomUUID()),
+					id: getString(item.id, `${id}-item-${index + 1}`),
 					menuId: getString(item.menuId) || null,
 					name: getString(item.name, 'Menu'),
 					quantity: Math.max(0, Math.floor(getNumber(item.quantity, 0))),
@@ -121,13 +138,24 @@
 			status,
 			paymentMethod,
 			paymentStatus,
+			subtotal,
+			taxAmount,
+			deliveryFee,
 			total,
 			notes,
+			devPersonaCode,
 			deliveryInfo: {
 				departmentOrUnit: getString(deliveryInfoRaw.departmentOrUnit) || null,
 				floor: getString(deliveryInfoRaw.floor) || null,
 				locationNote: getString(deliveryInfoRaw.locationNote) || null,
 				addressSummary: getString(deliveryInfoRaw.addressSummary) || null
+			},
+			payment: {
+				method: getString(paymentObject?.method, paymentMethod || '-'),
+				status: getString(paymentObject?.status, paymentStatus || 'unpaid'),
+				totalAmount: getNumber(paymentObject?.totalAmount, total),
+				paidAmount: getNumber(paymentObject?.paidAmount, 0),
+				remainingAmount: getNumber(paymentObject?.remainingAmount, total)
 			},
 			items
 		};
@@ -241,6 +269,18 @@
 		return map[status] ?? status.toUpperCase();
 	}
 
+	function paymentMethodLabel(value: string): string {
+		const normalized = getString(value, '-').toLowerCase();
+		const map: Record<string, string> = {
+			cash: 'Cash',
+			transfer: 'Transfer',
+			qris: 'QRIS',
+			cod: 'COD'
+		};
+
+		return map[normalized] ?? normalized.toUpperCase();
+	}
+
 	function paymentColor(status: string): string {
 		const map: Record<string, string> = {
 			unpaid: 'text-red-500',
@@ -311,6 +351,10 @@
 				<span class="w-2 h-2 rounded-full bg-blue-500"></span>
 				<span class="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest">Read Only Mode</span>
 			</div>
+			<div class="inline-flex items-center gap-2 px-4 py-1.5 bg-amber-50 dark:bg-amber-900/20 rounded-full mb-4">
+				<span class="w-2 h-2 rounded-full bg-amber-500"></span>
+				<span class="text-[10px] font-black text-amber-700 dark:text-amber-300 uppercase tracking-widest">Action Hold</span>
+			</div>
 			<h1 class="text-4xl lg:text-5xl font-black text-brand-charcoal dark:text-white tracking-tighter italic">Manajemen Pesanan Admin</h1>
 			<p class="text-zinc-500 font-medium mt-2">
 				Data order dibaca dari database lokal. Aksi update status, verifikasi pembayaran, dan cancel masih Hold.
@@ -377,7 +421,8 @@
 									<span class="text-sm font-black text-brand-charcoal dark:text-white">{order.orderNumber}</span>
 									<span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider {statusColor(order.status)}">{statusLabel(order.status)}</span>
 									<span class="text-[10px] font-black uppercase {paymentColor(order.paymentStatus)}">{paymentLabel(order.paymentStatus)}</span>
-									<span class="px-3 py-1 rounded-full text-[10px] font-black bg-zinc-100 dark:bg-zinc-800 text-zinc-500 uppercase tracking-wider">Pembayaran: {order.paymentMethod || '-'}</span>
+									<span class="px-3 py-1 rounded-full text-[10px] font-black bg-zinc-100 dark:bg-zinc-800 text-zinc-500 uppercase tracking-wider">Pembayaran: {paymentMethodLabel(order.paymentMethod)}</span>
+									<span class="px-3 py-1 rounded-full text-[10px] font-black bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 uppercase tracking-wider">Data Database Lokal</span>
 								</div>
 
 								<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -451,6 +496,12 @@
 <Modal show={showDetailModal} title="Detail Pesanan" onClose={() => (showDetailModal = false)}>
 	{#if selectedOrder}
 		<div class="space-y-6">
+			<div class="flex flex-wrap items-center gap-2">
+				<span class="px-3 py-1 rounded-full text-[10px] font-black bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 uppercase tracking-wider">Data Database Lokal</span>
+				<span class="px-3 py-1 rounded-full text-[10px] font-black bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 uppercase tracking-wider">Read-only</span>
+				<span class="px-3 py-1 rounded-full text-[10px] font-black bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 uppercase tracking-wider">Action Hold</span>
+			</div>
+
 			<div class="grid grid-cols-2 gap-4">
 				<div>
 					<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Order Number</p>
@@ -481,16 +532,51 @@
 					<p class="text-sm font-bold">{getDeliveryLabel(selectedOrder)}</p>
 				</div>
 				<div>
+					<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Bidang / Dinas / Bagian</p>
+					<p class="text-sm font-bold">{selectedOrder.deliveryInfo.departmentOrUnit ?? '-'}</p>
+				</div>
+				<div>
+					<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Lantai</p>
+					<p class="text-sm font-bold">{selectedOrder.deliveryInfo.floor ?? '-'}</p>
+				</div>
+				<div class="col-span-2">
+					<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Catatan Lokasi</p>
+					<p class="text-sm font-bold">{selectedOrder.deliveryInfo.locationNote ?? '-'}</p>
+				</div>
+				<div>
 					<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Metode Pembayaran</p>
-					<p class="text-sm font-bold uppercase">{selectedOrder.paymentMethod || '-'}</p>
+					<p class="text-sm font-bold uppercase">{paymentMethodLabel(selectedOrder.paymentMethod)}</p>
 				</div>
 				<div>
 					<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Status Pembayaran</p>
 					<p class="text-sm font-bold {paymentColor(selectedOrder.paymentStatus)}">{paymentLabel(selectedOrder.paymentStatus)}</p>
 				</div>
 				<div>
+					<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Dev Persona</p>
+					<p class="text-sm font-bold uppercase">{selectedOrder.devPersonaCode ?? '-'}</p>
+				</div>
+				<div>
 					<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Total</p>
 					<p class="text-lg font-black text-brand-charcoal dark:text-white italic">{formatPrice(selectedOrder.total)}</p>
+				</div>
+			</div>
+
+			<div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+				<div class="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-xl border border-zinc-100 dark:border-zinc-700">
+					<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Subtotal</p>
+					<p class="text-sm font-black">{formatPrice(selectedOrder.subtotal)}</p>
+				</div>
+				<div class="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-xl border border-zinc-100 dark:border-zinc-700">
+					<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Pajak</p>
+					<p class="text-sm font-black">{formatPrice(selectedOrder.taxAmount)}</p>
+				</div>
+				<div class="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-xl border border-zinc-100 dark:border-zinc-700">
+					<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Delivery Fee</p>
+					<p class="text-sm font-black">{formatPrice(selectedOrder.deliveryFee)}</p>
+				</div>
+				<div class="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-xl border border-zinc-100 dark:border-zinc-700">
+					<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Sisa Bayar</p>
+					<p class="text-sm font-black">{formatPrice(selectedOrder.payment.remainingAmount)}</p>
 				</div>
 			</div>
 
@@ -513,17 +599,29 @@
 				</div>
 			</div>
 
-			{#if selectedOrder.notes}
-				<div>
-					<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Catatan</p>
-					<p class="text-sm">{selectedOrder.notes}</p>
-				</div>
-			{/if}
+			<div>
+				<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Catatan</p>
+				<p class="text-sm">{selectedOrder.notes || '-'}</p>
+			</div>
+
+			<div class="p-4 bg-zinc-50 dark:bg-zinc-800 rounded-2xl border border-zinc-100 dark:border-zinc-700">
+				<p class="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Payment Proof</p>
+				<p class="text-xs font-semibold text-zinc-500 mt-1">
+					Belum ada workflow bukti pembayaran pada read model Batch 6 (Hold).
+				</p>
+			</div>
+
+			<div class="p-4 bg-zinc-50 dark:bg-zinc-800 rounded-2xl border border-zinc-100 dark:border-zinc-700">
+				<p class="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Completion Confirmation</p>
+				<p class="text-xs font-semibold text-zinc-500 mt-1">
+					Konfirmasi selesai User/CS/Admin belum diaktifkan untuk mode read-only (Hold).
+				</p>
+			</div>
 
 			<div class="p-4 bg-zinc-50 dark:bg-zinc-800 rounded-2xl border border-zinc-100 dark:border-zinc-700">
 				<p class="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Aksi Admin</p>
 				<p class="text-xs font-semibold text-zinc-500 mt-1">
-					Update status, verifikasi pembayaran, dan pembatalan order masih Hold di Batch 5.
+					Update status, verifikasi pembayaran, pembatalan, dan penyelesaian order masih Hold di Batch 6.
 				</p>
 			</div>
 		</div>
