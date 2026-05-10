@@ -1,11 +1,18 @@
-import { createOrderRecord, listOrderRecords } from '$lib/server/repositories/orderRepository';
+import {
+	createOrderRecord,
+	listOrderRecords,
+	updateOrderStatusRecord
+} from '$lib/server/repositories/orderRepository';
 import {
 	type OrderListRecord,
+	orderStatuses,
 	paymentMethods,
 	type CreateOrderInput,
 	type CreatedOrderSummary,
+	type OrderStatus,
 	type PaymentMethod,
-	type PaymentStatus
+	type PaymentStatus,
+	type UpdatedOrderStatusSummary
 } from '$lib/server/types/order';
 
 type CreateOrderResult =
@@ -25,6 +32,17 @@ type ParseCreateOrderPayloadResult =
 	  }
 	| {
 			ok: false;
+			message: string;
+	  };
+
+type UpdateOrderStatusResult =
+	| {
+			ok: true;
+			order: UpdatedOrderStatusSummary;
+	  }
+	| {
+			ok: false;
+			status: 400 | 404;
 			message: string;
 	  };
 
@@ -178,4 +196,39 @@ export function createOrder(payload: unknown): CreateOrderResult {
 
 export function getOrders(): OrderListRecord[] {
 	return listOrderRecords();
+}
+
+export function updateOrderStatus(orderId: string, payload: unknown): UpdateOrderStatusResult {
+	const normalizedOrderId = parseRequiredString(orderId);
+	if (!normalizedOrderId) {
+		return { ok: false, status: 400, message: 'order id wajib diisi.' };
+	}
+
+	if (!isRecord(payload)) {
+		return { ok: false, status: 400, message: 'Payload tidak valid.' };
+	}
+
+	const rawStatus = parseRequiredString(payload.status);
+	if (!rawStatus) {
+		return { ok: false, status: 400, message: 'status wajib diisi.' };
+	}
+
+	const normalizedStatus = rawStatus.toLowerCase();
+	if (!orderStatuses.includes(normalizedStatus as OrderStatus)) {
+		return {
+			ok: false,
+			status: 400,
+			message: `status harus salah satu: ${orderStatuses.join(', ')}.`
+		};
+	}
+
+	const updatedOrder = updateOrderStatusRecord(normalizedOrderId, normalizedStatus as OrderStatus);
+	if (!updatedOrder) {
+		return { ok: false, status: 404, message: 'Order tidak ditemukan.' };
+	}
+
+	return {
+		ok: true,
+		order: updatedOrder
+	};
 }

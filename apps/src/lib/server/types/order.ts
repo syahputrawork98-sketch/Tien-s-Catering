@@ -1,7 +1,17 @@
 export const paymentMethods = ['cash', 'transfer', 'qris', 'cod'] as const;
+export const orderStatuses = [
+	'new',
+	'confirmed',
+	'processing',
+	'ready',
+	'delivered',
+	'completed',
+	'cancelled'
+] as const;
 
 export type PaymentMethod = (typeof paymentMethods)[number];
 export type PaymentStatus = 'unpaid' | 'cod';
+export type OrderStatus = (typeof orderStatuses)[number];
 
 export type CreateOrderItemInput = {
 	menuId: string | null;
@@ -38,9 +48,16 @@ export type CreatedOrderSummary = {
 	id: string;
 	orderNumber: string;
 	customerName: string;
-	status: 'new';
+	status: OrderStatus;
 	paymentStatus: PaymentStatus;
 	total: number;
+};
+
+export type UpdatedOrderStatusSummary = {
+	id: string;
+	orderNumber: string;
+	status: OrderStatus;
+	updatedAt: string;
 };
 
 export type OrderListItem = {

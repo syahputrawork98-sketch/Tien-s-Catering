@@ -2,8 +2,10 @@ import { ensureDatabaseInitialized, getDatabase } from '$lib/server/db/client';
 import type {
 	CreateOrderInput,
 	CreatedOrderSummary,
+	OrderStatus,
 	OrderListItem,
-	OrderListRecord
+	OrderListRecord,
+	UpdatedOrderStatusSummary
 } from '$lib/server/types/order';
 
 function formatOrderNumberTimestamp(now: Date) {
@@ -223,6 +225,13 @@ type RawOrderItemRow = {
 	subtotal: number;
 };
 
+type RawOrderStatusRow = {
+	id: string;
+	orderNumber: string;
+	status: string;
+	updatedAt: string;
+};
+
 export function listOrderRecords(): OrderListRecord[] {
 	ensureDatabaseInitialized();
 	const db = getDatabase();
@@ -332,4 +341,52 @@ export function listOrderRecords(): OrderListRecord[] {
 			items: orderItemsByOrderId.get(row.id) ?? []
 		} satisfies OrderListRecord;
 	});
+}
+
+export function updateOrderStatusRecord(
+	orderId: string,
+	status: OrderStatus
+): UpdatedOrderStatusSummary | null {
+	ensureDatabaseInitialized();
+	const db = getDatabase();
+
+	const timestamp = new Date().toISOString();
+	const updateOrderStatus = db.prepare(
+		`UPDATE orders
+		SET status = @status,
+			updated_at = @updatedAt
+		WHERE id = @id;`
+	);
+	const selectUpdatedOrder = db.prepare(
+		`SELECT
+			id AS id,
+			order_number AS orderNumber,
+			status AS status,
+			updated_at AS updatedAt
+		FROM orders
+		WHERE id = @id
+		LIMIT 1;`
+	);
+
+	const updateResult = updateOrderStatus.run({
+		id: orderId,
+		status,
+		updatedAt: timestamp
+	});
+
+	if (updateResult.changes === 0) {
+		return null;
+	}
+
+	const updatedOrder = selectUpdatedOrder.get({ id: orderId }) as RawOrderStatusRow | undefined;
+	if (!updatedOrder) {
+		return null;
+	}
+
+	return {
+		id: updatedOrder.id,
+		orderNumber: updatedOrder.orderNumber,
+		status,
+		updatedAt: updatedOrder.updatedAt
+	};
 }

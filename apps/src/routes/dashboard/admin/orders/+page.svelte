@@ -4,6 +4,7 @@
 	import { fade, fly, scale } from 'svelte/transition';
 
 	type TabType = 'ALL' | 'NEW' | 'PROCESS' | 'DONE' | 'CANCELLED';
+	type OrderStatus = 'new' | 'confirmed' | 'processing' | 'ready' | 'delivered' | 'completed' | 'cancelled';
 
 	type AdminOrderItem = {
 		id: string;
@@ -53,12 +54,27 @@
 		message?: string;
 	};
 
+	type OrderStatusApiResponse = {
+		order?: {
+			id?: unknown;
+			orderNumber?: unknown;
+			status?: unknown;
+			updatedAt?: unknown;
+		};
+		message?: string;
+	};
+
 	let loading = $state(true);
 	let error = $state('');
 	let orders = $state<AdminOrder[]>([]);
 	let activeTab = $state<TabType>('ALL');
 	let showDetailModal = $state(false);
 	let selectedOrder = $state<AdminOrder | null>(null);
+	let statusUpdatingOrderId = $state<string | null>(null);
+	let statusActionError = $state('');
+	let statusActionSuccess = $state('');
+
+	const orderStatusFlow: OrderStatus[] = ['new', 'confirmed', 'processing', 'ready', 'delivered', 'completed'];
 
 	function isRecord(value: unknown): value is Record<string, unknown> {
 		return typeof value === 'object' && value !== null;
@@ -244,6 +260,19 @@
 		return map[status] ?? status.toUpperCase();
 	}
 
+	function getNextStatus(status: string): OrderStatus | null {
+		const index = orderStatusFlow.indexOf(status as OrderStatus);
+		if (index < 0 || index >= orderStatusFlow.length - 1) {
+			return null;
+		}
+
+		return orderStatusFlow[index + 1];
+	}
+
+	function canSetCancelled(status: string): boolean {
+		return status !== 'completed' && status !== 'cancelled';
+	}
+
 	function statusColor(status: string): string {
 		const map: Record<string, string> = {
 			new: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
@@ -326,6 +355,46 @@
 		}
 	}
 
+	async function applyOrderStatus(order: AdminOrder, nextStatus: OrderStatus) {
+		statusUpdatingOrderId = order.id;
+		statusActionError = '';
+		statusActionSuccess = '';
+
+		try {
+			const response = await fetch(`/api/orders/${encodeURIComponent(order.id)}/status`, {
+				method: 'PATCH',
+				headers: {
+					'content-type': 'application/json'
+				},
+				body: JSON.stringify({ status: nextStatus })
+			});
+
+			const body = (await response.json().catch(() => null)) as OrderStatusApiResponse | null;
+			if (!response.ok) {
+				statusActionError =
+					typeof body?.message === 'string' && body.message.trim().length > 0
+						? body.message
+						: 'Gagal memperbarui status order.';
+				return;
+			}
+
+			statusActionSuccess = `Status order ${order.orderNumber} diperbarui menjadi ${statusLabel(nextStatus)}.`;
+
+			await loadOrders();
+			if (showDetailModal && selectedOrder?.id === order.id) {
+				const refreshedOrder = orders.find((item) => item.id === order.id) ?? null;
+				selectedOrder = refreshedOrder;
+				if (!refreshedOrder) {
+					showDetailModal = false;
+				}
+			}
+		} catch {
+			statusActionError = 'Gagal terhubung ke server saat memperbarui status.';
+		} finally {
+			statusUpdatingOrderId = null;
+		}
+	}
+
 	function openDetail(order: AdminOrder) {
 		selectedOrder = order;
 		showDetailModal = true;
@@ -349,18 +418,30 @@
 		<div>
 			<div class="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-full mb-4">
 				<span class="w-2 h-2 rounded-full bg-blue-500"></span>
-				<span class="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest">Read Only Mode</span>
+				<span class="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest">Status Update Minimal Aktif</span>
 			</div>
 			<div class="inline-flex items-center gap-2 px-4 py-1.5 bg-amber-50 dark:bg-amber-900/20 rounded-full mb-4">
 				<span class="w-2 h-2 rounded-full bg-amber-500"></span>
-				<span class="text-[10px] font-black text-amber-700 dark:text-amber-300 uppercase tracking-widest">Action Hold</span>
+				<span class="text-[10px] font-black text-amber-700 dark:text-amber-300 uppercase tracking-widest">Payment & Stock Action Hold</span>
 			</div>
 			<h1 class="text-4xl lg:text-5xl font-black text-brand-charcoal dark:text-white tracking-tighter italic">Manajemen Pesanan Admin</h1>
 			<p class="text-zinc-500 font-medium mt-2">
-				Data order dibaca dari database lokal. Aksi update status, verifikasi pembayaran, dan cancel masih Hold.
+				Data order dibaca dari database lokal. Update status order minimal aktif, sementara verifikasi pembayaran dan transaksi stok tetap Hold.
 			</p>
 		</div>
 	</header>
+
+	{#if statusActionError}
+		<div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/40 rounded-2xl p-4" in:fade>
+			<p class="text-xs font-bold text-red-700 dark:text-red-300">{statusActionError}</p>
+		</div>
+	{/if}
+
+	{#if statusActionSuccess}
+		<div class="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-900/40 rounded-2xl p-4" in:fade>
+			<p class="text-xs font-bold text-emerald-700 dark:text-emerald-300">{statusActionSuccess}</p>
+		</div>
+	{/if}
 
 	{#if loading}
 		<div class="bg-white dark:bg-zinc-900 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 p-10 shadow-sm" in:fade>
@@ -459,26 +540,42 @@
 								>
 									Detail
 								</button>
-								<button
-									type="button"
-									disabled
-									class="px-5 py-2.5 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 text-[10px] font-black uppercase tracking-widest rounded-xl border border-amber-200 dark:border-amber-800 opacity-60 cursor-not-allowed"
-								>
-									Update Status (Hold)
-								</button>
+								{#if getNextStatus(order.status)}
+									<button
+										type="button"
+										disabled={statusUpdatingOrderId !== null}
+										onclick={() => applyOrderStatus(order, getNextStatus(order.status)!)}
+										class="px-5 py-2.5 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+									>
+										{statusUpdatingOrderId === order.id
+											? 'Menyimpan...'
+											: `Lanjut ke ${statusLabel(getNextStatus(order.status)!)}`}
+									</button>
+								{:else}
+									<button
+										type="button"
+										disabled
+										class="px-5 py-2.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 text-[10px] font-black uppercase tracking-widest rounded-xl border border-zinc-200 dark:border-zinc-700 opacity-70 cursor-not-allowed"
+									>
+										Status Final
+									</button>
+								{/if}
+								{#if canSetCancelled(order.status)}
+									<button
+										type="button"
+										disabled={statusUpdatingOrderId !== null}
+										onclick={() => applyOrderStatus(order, 'cancelled')}
+										class="px-5 py-2.5 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-[10px] font-black uppercase tracking-widest rounded-xl border border-red-200 dark:border-red-900/40 hover:bg-red-100 dark:hover:bg-red-900/30 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+									>
+										Set Cancelled (Tanpa Restore Stok)
+									</button>
+								{/if}
 								<button
 									type="button"
 									disabled
 									class="px-5 py-2.5 bg-sky-50 dark:bg-sky-900/20 text-sky-700 dark:text-sky-400 text-[10px] font-black uppercase tracking-widest rounded-xl border border-sky-200 dark:border-sky-800 opacity-60 cursor-not-allowed"
 								>
 									Verifikasi Payment (Hold)
-								</button>
-								<button
-									type="button"
-									disabled
-									class="px-5 py-2.5 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-[10px] font-black uppercase tracking-widest rounded-xl border border-red-200 dark:border-red-800 opacity-60 cursor-not-allowed"
-								>
-									Batalkan (Hold)
 								</button>
 							</div>
 						</div>
@@ -498,8 +595,8 @@
 		<div class="space-y-6">
 			<div class="flex flex-wrap items-center gap-2">
 				<span class="px-3 py-1 rounded-full text-[10px] font-black bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 uppercase tracking-wider">Data Database Lokal</span>
-				<span class="px-3 py-1 rounded-full text-[10px] font-black bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 uppercase tracking-wider">Read-only</span>
-				<span class="px-3 py-1 rounded-full text-[10px] font-black bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 uppercase tracking-wider">Action Hold</span>
+				<span class="px-3 py-1 rounded-full text-[10px] font-black bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 uppercase tracking-wider">Status Update Minimal</span>
+				<span class="px-3 py-1 rounded-full text-[10px] font-black bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 uppercase tracking-wider">Payment Action Hold</span>
 			</div>
 
 			<div class="grid grid-cols-2 gap-4">
@@ -621,7 +718,7 @@
 			<div class="p-4 bg-zinc-50 dark:bg-zinc-800 rounded-2xl border border-zinc-100 dark:border-zinc-700">
 				<p class="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Aksi Admin</p>
 				<p class="text-xs font-semibold text-zinc-500 mt-1">
-					Update status, verifikasi pembayaran, pembatalan, dan penyelesaian order masih Hold di Batch 6.
+					Update status order minimal aktif dari daftar order. Verifikasi pembayaran dan action lanjutan tetap Hold.
 				</p>
 			</div>
 		</div>
