@@ -9,10 +9,12 @@ export const orderStatuses = [
 	'completed',
 	'cancelled'
 ] as const;
+export const orderStockStatuses = ['not_deducted', 'deducted', 'released'] as const;
 
 export type PaymentMethod = (typeof paymentMethods)[number];
 export type PaymentStatus = (typeof paymentStatuses)[number];
 export type OrderStatus = (typeof orderStatuses)[number];
+export type OrderStockStatus = (typeof orderStockStatuses)[number];
 
 export type CreateOrderItemInput = {
 	menuId: string | null;
@@ -59,6 +61,8 @@ export type UpdatedOrderStatusSummary = {
 	orderNumber: string;
 	status: OrderStatus;
 	updatedAt: string;
+	stockStatus: OrderStockStatus;
+	stockUpdated: boolean;
 };
 
 export type UpdatedOrderPaymentStatusSummary = {
@@ -94,6 +98,9 @@ export type OrderListRecord = {
 	total: number;
 	notes: string;
 	devPersonaCode: string | null;
+	stockStatus: OrderStockStatus;
+	stockDeductedAt: string | null;
+	stockReleasedAt: string | null;
 	deliveryInfo: {
 		departmentOrUnit: string | null;
 		floor: string | null;

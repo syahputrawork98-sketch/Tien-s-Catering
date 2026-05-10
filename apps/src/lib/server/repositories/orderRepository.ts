@@ -2,6 +2,7 @@ import { ensureDatabaseInitialized, getDatabase } from '$lib/server/db/client';
 import type {
 	CreateOrderInput,
 	CreatedOrderSummary,
+	OrderStockStatus,
 	PaymentStatus,
 	OrderStatus,
 	OrderListItem,
@@ -9,6 +10,17 @@ import type {
 	UpdatedOrderPaymentStatusSummary,
 	UpdatedOrderStatusSummary
 } from '$lib/server/types/order';
+
+type UpdateOrderStatusRecordResult =
+	| {
+			ok: true;
+			order: UpdatedOrderStatusSummary;
+	  }
+	| {
+			ok: false;
+			reason: 'not_found' | 'insufficient_stock';
+			message: string;
+	  };
 
 function formatOrderNumberTimestamp(now: Date) {
 	const datePart = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(
@@ -23,9 +35,46 @@ function formatOrderNumberTimestamp(now: Date) {
 	return `TC-${datePart}-${timePart}${randomPart}`;
 }
 
+type SqliteTableColumnInfo = {
+	name: string;
+};
+
+function hasColumn(db: ReturnType<typeof getDatabase>, tableName: string, columnName: string): boolean {
+	const columns = db.prepare(`PRAGMA table_info(${tableName});`).all() as SqliteTableColumnInfo[];
+	return columns.some((column) => column.name === columnName);
+}
+
+function ensureOrderStockColumns(db: ReturnType<typeof getDatabase>) {
+	if (!hasColumn(db, 'orders', 'stock_status')) {
+		db.exec(`ALTER TABLE orders ADD COLUMN stock_status TEXT NOT NULL DEFAULT 'not_deducted';`);
+	}
+
+	if (!hasColumn(db, 'orders', 'stock_deducted_at')) {
+		db.exec(`ALTER TABLE orders ADD COLUMN stock_deducted_at TEXT;`);
+	}
+
+	if (!hasColumn(db, 'orders', 'stock_released_at')) {
+		db.exec(`ALTER TABLE orders ADD COLUMN stock_released_at TEXT;`);
+	}
+}
+
+function normalizeStockStatus(value: string | null | undefined): OrderStockStatus {
+	if (value === 'deducted' || value === 'released') return value;
+	return 'not_deducted';
+}
+
+function getStockRowStatus(remainingStock: number): 'active' | 'sold_out' {
+	return remainingStock <= 0 ? 'sold_out' : 'active';
+}
+
+function getStockRowLabel(remainingStock: number): string {
+	return remainingStock <= 0 ? 'Habis' : 'Tersedia';
+}
+
 export function createOrderRecord(input: CreateOrderInput): CreatedOrderSummary {
 	ensureDatabaseInitialized();
 	const db = getDatabase();
+	ensureOrderStockColumns(db);
 
 	const insertOrder = db.prepare(
 		`INSERT INTO orders (
@@ -206,6 +255,9 @@ type RawOrderRow = {
 	totalAmount: number;
 	notes: string;
 	devPersonaCode: string | null;
+	stockStatus: string | null;
+	stockDeductedAt: string | null;
+	stockReleasedAt: string | null;
 	departmentOrUnit: string | null;
 	floor: string | null;
 	locationNote: string | null;
@@ -230,8 +282,12 @@ type RawOrderItemRow = {
 type RawOrderStatusRow = {
 	id: string;
 	orderNumber: string;
+	deliveryDate: string;
 	status: string;
 	updatedAt: string;
+	stockStatus: string | null;
+	stockDeductedAt: string | null;
+	stockReleasedAt: string | null;
 };
 
 type RawOrderPaymentRow = {
@@ -240,9 +296,23 @@ type RawOrderPaymentRow = {
 	totalAmount: number;
 };
 
+type RawStockOrderItemRow = {
+	menuId: string | null;
+	name: string;
+	quantity: number;
+};
+
+type RawDailyStockRow = {
+	menuId: string;
+	activeDate: string;
+	dailyStock: number;
+	remainingStock: number;
+};
+
 export function listOrderRecords(): OrderListRecord[] {
 	ensureDatabaseInitialized();
 	const db = getDatabase();
+	ensureOrderStockColumns(db);
 
 	const orderQuery = db.prepare(
 		`SELECT
@@ -259,6 +329,9 @@ export function listOrderRecords(): OrderListRecord[] {
 			o.total_amount AS totalAmount,
 			o.notes AS notes,
 			o.dev_persona_code AS devPersonaCode,
+			o.stock_status AS stockStatus,
+			o.stock_deducted_at AS stockDeductedAt,
+			o.stock_released_at AS stockReleasedAt,
 			d.department_or_unit AS departmentOrUnit,
 			d.floor AS floor,
 			d.location_note AS locationNote,
@@ -333,6 +406,9 @@ export function listOrderRecords(): OrderListRecord[] {
 			total: normalizedTotal,
 			notes: row.notes ?? '',
 			devPersonaCode: row.devPersonaCode,
+			stockStatus: normalizeStockStatus(row.stockStatus),
+			stockDeductedAt: row.stockDeductedAt ?? null,
+			stockReleasedAt: row.stockReleasedAt ?? null,
 			deliveryInfo: {
 				departmentOrUnit: row.departmentOrUnit,
 				floor: row.floor,
@@ -354,49 +430,224 @@ export function listOrderRecords(): OrderListRecord[] {
 export function updateOrderStatusRecord(
 	orderId: string,
 	status: OrderStatus
-): UpdatedOrderStatusSummary | null {
+): UpdateOrderStatusRecordResult {
 	ensureDatabaseInitialized();
 	const db = getDatabase();
+	ensureOrderStockColumns(db);
 
-	const timestamp = new Date().toISOString();
-	const updateOrderStatus = db.prepare(
-		`UPDATE orders
-		SET status = @status,
-			updated_at = @updatedAt
-		WHERE id = @id;`
-	);
-	const selectUpdatedOrder = db.prepare(
+	const selectOrder = db.prepare(
 		`SELECT
 			id AS id,
 			order_number AS orderNumber,
+			delivery_date AS deliveryDate,
 			status AS status,
-			updated_at AS updatedAt
+			updated_at AS updatedAt,
+			stock_status AS stockStatus,
+			stock_deducted_at AS stockDeductedAt,
+			stock_released_at AS stockReleasedAt
 		FROM orders
 		WHERE id = @id
 		LIMIT 1;`
 	);
+	const selectOrderItems = db.prepare(
+		`SELECT
+			menu_id AS menuId,
+			name AS name,
+			quantity AS quantity
+		FROM order_items
+		WHERE order_id = @orderId;`
+	);
+	const selectDailyStock = db.prepare(
+		`SELECT
+			menu_id AS menuId,
+			active_date AS activeDate,
+			daily_stock AS dailyStock,
+			remaining_stock AS remainingStock
+		FROM menu_daily_stock
+		WHERE menu_id = @menuId
+			AND active_date = @activeDate
+		LIMIT 1;`
+	);
+	const updateDailyStock = db.prepare(
+		`UPDATE menu_daily_stock
+		SET remaining_stock = @remainingStock,
+			stock_label = @stockLabel,
+			status = @status
+		WHERE menu_id = @menuId
+			AND active_date = @activeDate;`
+	);
+	const updateOrder = db.prepare(
+		`UPDATE orders
+		SET status = @status,
+			updated_at = @updatedAt,
+			stock_status = @stockStatus,
+			stock_deducted_at = @stockDeductedAt,
+			stock_released_at = @stockReleasedAt
+		WHERE id = @id;`
+	);
 
-	const updateResult = updateOrderStatus.run({
-		id: orderId,
-		status,
-		updatedAt: timestamp
-	});
+	const runUpdate = db.transaction(
+		(input: { id: string; nextStatus: OrderStatus }): UpdateOrderStatusRecordResult => {
+			const orderRow = selectOrder.get({ id: input.id }) as RawOrderStatusRow | undefined;
+			if (!orderRow) {
+				return {
+					ok: false,
+					reason: 'not_found',
+					message: 'Order tidak ditemukan.'
+				};
+			}
 
-	if (updateResult.changes === 0) {
-		return null;
-	}
+			const timestamp = new Date().toISOString();
+			let nextStockStatus = normalizeStockStatus(orderRow.stockStatus);
+			let nextStockDeductedAt = orderRow.stockDeductedAt ?? null;
+			let nextStockReleasedAt = orderRow.stockReleasedAt ?? null;
+			let stockUpdated = false;
 
-	const updatedOrder = selectUpdatedOrder.get({ id: orderId }) as RawOrderStatusRow | undefined;
-	if (!updatedOrder) {
-		return null;
-	}
+			if (input.nextStatus === 'confirmed' && nextStockStatus !== 'deducted') {
+				const orderItems = selectOrderItems.all({ orderId: input.id }) as RawStockOrderItemRow[];
+				const stockTrackedItems = orderItems.filter((item) => {
+					const quantity = Math.max(0, Number(item.quantity));
+					return Boolean(item.menuId) && quantity > 0;
+				});
 
-	return {
-		id: updatedOrder.id,
-		orderNumber: updatedOrder.orderNumber,
-		status,
-		updatedAt: updatedOrder.updatedAt
-	};
+				if (stockTrackedItems.length > 0) {
+					const stockUpdates: Array<{
+						menuId: string;
+						activeDate: string;
+						nextRemainingStock: number;
+					}> = [];
+
+					for (const item of stockTrackedItems) {
+						const menuId = item.menuId as string;
+						const quantity = Math.max(0, Number(item.quantity));
+						const stockRow = selectDailyStock.get({
+							menuId,
+							activeDate: orderRow.deliveryDate
+						}) as RawDailyStockRow | undefined;
+
+						if (!stockRow) {
+							return {
+								ok: false,
+								reason: 'insufficient_stock',
+								message: `Stok menu ${item.name} untuk tanggal pengantaran tidak ditemukan.`
+							};
+						}
+
+						const remainingStock = Math.max(0, Number(stockRow.remainingStock));
+						if (remainingStock < quantity) {
+							return {
+								ok: false,
+								reason: 'insufficient_stock',
+								message: `Stok menu ${item.name} tidak cukup. Tersedia ${remainingStock}, diminta ${quantity}.`
+							};
+						}
+
+						stockUpdates.push({
+							menuId,
+							activeDate: orderRow.deliveryDate,
+							nextRemainingStock: remainingStock - quantity
+						});
+					}
+
+					for (const update of stockUpdates) {
+						updateDailyStock.run({
+							menuId: update.menuId,
+							activeDate: update.activeDate,
+							remainingStock: update.nextRemainingStock,
+							stockLabel: getStockRowLabel(update.nextRemainingStock),
+							status: getStockRowStatus(update.nextRemainingStock)
+						});
+					}
+
+					nextStockStatus = 'deducted';
+					nextStockDeductedAt = timestamp;
+					nextStockReleasedAt = null;
+					stockUpdated = true;
+				}
+			}
+
+			if (input.nextStatus === 'cancelled' && nextStockStatus === 'deducted') {
+				const orderItems = selectOrderItems.all({ orderId: input.id }) as RawStockOrderItemRow[];
+				const stockTrackedItems = orderItems.filter((item) => {
+					const quantity = Math.max(0, Number(item.quantity));
+					return Boolean(item.menuId) && quantity > 0;
+				});
+
+				if (stockTrackedItems.length > 0) {
+					const stockRestores: Array<{
+						menuId: string;
+						activeDate: string;
+						nextRemainingStock: number;
+					}> = [];
+
+					for (const item of stockTrackedItems) {
+						const menuId = item.menuId as string;
+						const quantity = Math.max(0, Number(item.quantity));
+						const stockRow = selectDailyStock.get({
+							menuId,
+							activeDate: orderRow.deliveryDate
+						}) as RawDailyStockRow | undefined;
+
+						if (!stockRow) {
+							return {
+								ok: false,
+								reason: 'insufficient_stock',
+								message: `Stok menu ${item.name} untuk restore tidak ditemukan.`
+							};
+						}
+
+						const dailyStock = Math.max(0, Number(stockRow.dailyStock));
+						const remainingStock = Math.max(0, Number(stockRow.remainingStock));
+						const restoredRemaining = Math.min(dailyStock, remainingStock + quantity);
+
+						stockRestores.push({
+							menuId,
+							activeDate: orderRow.deliveryDate,
+							nextRemainingStock: restoredRemaining
+						});
+					}
+
+					for (const restore of stockRestores) {
+						updateDailyStock.run({
+							menuId: restore.menuId,
+							activeDate: restore.activeDate,
+							remainingStock: restore.nextRemainingStock,
+							stockLabel: getStockRowLabel(restore.nextRemainingStock),
+							status: getStockRowStatus(restore.nextRemainingStock)
+						});
+					}
+
+					stockUpdated = true;
+				}
+
+				nextStockStatus = 'released';
+				nextStockReleasedAt = timestamp;
+			}
+
+			updateOrder.run({
+				id: input.id,
+				status: input.nextStatus,
+				updatedAt: timestamp,
+				stockStatus: nextStockStatus,
+				stockDeductedAt: nextStockDeductedAt,
+				stockReleasedAt: nextStockReleasedAt
+			});
+
+			return {
+				ok: true,
+				order: {
+					id: orderRow.id,
+					orderNumber: orderRow.orderNumber,
+					status: input.nextStatus,
+					updatedAt: timestamp,
+					stockStatus: nextStockStatus,
+					stockUpdated
+				}
+			};
+		}
+	);
+
+	return runUpdate({ id: orderId, nextStatus: status });
 }
 
 export function updateOrderPaymentStatusRecord(
@@ -405,6 +656,7 @@ export function updateOrderPaymentStatusRecord(
 ): UpdatedOrderPaymentStatusSummary | null {
 	ensureDatabaseInitialized();
 	const db = getDatabase();
+	ensureOrderStockColumns(db);
 
 	const paymentQuery = db.prepare(
 		`SELECT

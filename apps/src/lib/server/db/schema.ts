@@ -37,6 +37,9 @@ export const createTablesSql = [
 		delivery_fee INTEGER NOT NULL DEFAULT 0,
 		total_amount INTEGER NOT NULL DEFAULT 0,
 		dev_persona_code TEXT,
+		stock_status TEXT NOT NULL DEFAULT 'not_deducted',
+		stock_deducted_at TEXT,
+		stock_released_at TEXT,
 		created_at TEXT NOT NULL,
 		updated_at TEXT NOT NULL
 	);`,

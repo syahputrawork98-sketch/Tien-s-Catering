@@ -237,13 +237,17 @@ export function updateOrderStatus(orderId: string, payload: unknown): UpdateOrde
 	}
 
 	const updatedOrder = updateOrderStatusRecord(normalizedOrderId, normalizedStatus as OrderStatus);
-	if (!updatedOrder) {
-		return { ok: false, status: 404, message: 'Order tidak ditemukan.' };
+	if (!updatedOrder.ok) {
+		if (updatedOrder.reason === 'not_found') {
+			return { ok: false, status: 404, message: updatedOrder.message };
+		}
+
+		return { ok: false, status: 400, message: updatedOrder.message };
 	}
 
 	return {
 		ok: true,
-		order: updatedOrder
+		order: updatedOrder.order
 	};
 }
 
