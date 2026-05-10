@@ -1,43 +1,42 @@
 # 04 - Order and Payment Flow
 
-## Alur Menu Harian
+## Alur Order Lokal Saat Ini
 
-1. Admin input menu harian setiap pagi.
-2. Admin mengisi stok porsi per menu.
-3. Konsumen membuat pesanan.
-4. Stok berkurang saat order dibuat.
-5. Stok dapat dikembalikan jika order dibatalkan.
+1. Public katalog membaca menu dari `GET /api/menus`.
+2. Cart berjalan stock-aware di frontend (batas qty mengikuti stok yang tersedia di cart item).
+3. Checkout submit payload ke `POST /api/orders`.
+4. Order disimpan ke SQLite lokal (`orders`, `order_items`, `delivery_info`, `payment_info`).
+5. Order-success menampilkan ringkasan response order.
+6. Admin order list membaca data order dari `GET /api/orders` (read-only).
+7. Admin detail order membaca data DB-safe (read-only).
 
-## Data Lokasi Pengantaran (Fase Awal)
+## Lokasi Pengantaran (Fase Sekarang)
 
-- Bidang/dinas/bagian.
-- Lantai.
-- Catatan lokasi.
-- Gedung belum wajib pada fase awal.
+- Bidang/dinas/bagian (`departmentOrUnit`)
+- Lantai (`floor`)
+- Catatan lokasi (`locationNote`)
+- Ringkasan lokasi (`addressSummary`)
 
 ## Metode Pembayaran Awal
 
-- Cash
-- Transfer
-- QRIS
-- COD
+- `cash`
+- `transfer`
+- `qris`
+- `cod`
 
 ## Status Pembayaran Awal
 
-- Belum dibayar
-- Menunggu verifikasi
-- Sudah dibayar
-- COD
+- `unpaid`
+- `cod`
 
-## Status Pesanan Awal
+## Status Order Saat Ini
 
-- Menunggu konfirmasi
-- Diproses
-- Siap diantar
-- Dalam pengantaran
-- Selesai
-- Dibatalkan
+- Status order berasal dari backend order foundation dan masih sederhana untuk kebutuhan read-only admin.
+- Mutation status admin masih Hold (belum ada update status via API).
 
-## Catatan Role Pengantaran
+## Item Hold (Belum Aktif)
 
-Tidak ada role kurir terpisah pada fase awal. Admin dapat merangkap pengantaran.
+- Payment verification.
+- Admin update status/cancel/complete mutation.
+- Stock decrement transaction saat order dibuat.
+- Stock restore transaction saat order dibatalkan.

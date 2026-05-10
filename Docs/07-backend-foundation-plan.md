@@ -1,53 +1,48 @@
 # 07 - Backend Foundation Plan
 
-## Tujuan Batch
+## Status Terkini
 
-Batch ini membuka fondasi backend lokal untuk Tien's Catering dengan pendekatan bertahap:
+Backend foundation lokal sudah berjalan dan dipakai oleh flow order + admin read-only.
 
-- SvelteKit API routes (tanpa server terpisah).
-- SQLite lokal sebagai database awal development.
-- API read-only untuk health check dan menu harian + stok.
-
-## Status Scope Saat Ini
-
-Batch Backend 1 mencakup:
+## Endpoint Aktif
 
 - `GET /api/health`
-- Foundation database lokal (inisialisasi tabel + seed data dev)
-- `GET /api/menus` (read-only menu dan stok)
+- `GET /api/menus`
+- `POST /api/orders`
+- `GET /api/orders`
 
-## Batasan Penting
+## Struktur Data Lokal (SQLite)
 
-Batch ini **bukan production backend**.  
-Yang belum masuk scope:
+Database lokal saat ini menyimpan:
 
-- Login production
-- JWT/session/password production
-- RBAC production
-- Payment gateway / QRIS production
-- Checkout menulis order ke database
-- Admin membaca order dari database
-- Stock decrement transaction
+- `dev_personas`
+- `menus`
+- `menu_daily_stock`
+- `orders`
+- `order_items`
+- `delivery_info`
+- `payment_info`
 
 ## Persona Development
 
-Dev persona switcher frontend tetap dipakai seperti sebelumnya.  
-Database lokal hanya menyediakan seed persona awal untuk fondasi data:
+Dev persona switcher tetap dipakai pada local development:
 
 - Konsumen
 - Admin
 - Super Admin
 
-## Catatan Implementasi
+## Integrasi yang Sudah Aktif
 
-- Backend tetap berjalan dalam aplikasi `apps/` (SvelteKit).
-- Database disiapkan untuk local development, bukan deployment production.
-- Seed awal fokus pada menu harian dan stok untuk mendukung API read-only.
-- Mock data frontend belum dihapus dan belum dimigrasi penuh pada batch ini.
+- Public katalog membaca menu API.
+- Checkout menulis order ke DB lewat API.
+- Admin order list/detail membaca DB secara read-only.
 
-## Item Hold (Lanjutan Batch Berikutnya)
+## Batasan Penting (Masih Berlaku)
 
-- Integrasi frontend katalog ke API backend
-- Persist order dari checkout ke database
-- Pembacaan order database di dashboard admin/CS
-- Mekanisme transaksi pengurangan/pengembalian stok
+Backend ini belum production-ready:
+
+- Belum ada auth production (login/JWT/session/password/RBAC).
+- Belum ada payment gateway/QRIS production/upload bukti.
+- Belum ada deployment production.
+- Belum ada stock decrement/restore transaction.
+- Mutation admin order (update status/payment/cancel/complete) masih Hold.

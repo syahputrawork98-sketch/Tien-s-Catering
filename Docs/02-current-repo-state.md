@@ -1,18 +1,33 @@
 # 02 - Current Repo State
 
-## Ringkasan Kondisi Repo (Analisa Room 01)
+## Ringkasan Kondisi Repo Saat Ini
 
-- `apps/` adalah aplikasi frontend utama.
-- `kanban-master/` adalah dokumentasi teknis dan current tracking UI.
-- Project masih berada pada tahap UI-only prototype.
+- Repo tidak lagi murni UI-only.
+- `apps/` tetap menjadi aplikasi utama (SvelteKit frontend + local API routes).
+- `kanban-master/` tetap sebagai referensi teknis/current UI tracking lama.
+- Project berjalan pada mode local development.
 
 ## Status Teknis Saat Ini
 
-- Backend belum dibuat.
-- Auth masih bersifat simulasi/client-side.
-- Data masih menggunakan mock data, `localStorage`, dan `sessionStorage`.
+- Local backend foundation sudah aktif.
+- SQLite lokal dipakai untuk data awal:
+  - persona dev,
+  - menu + daily stock,
+  - orders + order_items + delivery_info + payment_info.
+- Public katalog membaca data menu dari API (`GET /api/menus`).
+- Checkout menulis order ke API (`POST /api/orders`).
+- Admin order list dan order detail membaca database secara read-only (`GET /api/orders`).
+- Auth masih simulasi/dev persona switcher (belum auth production).
+- Payment gateway belum ada (termasuk QRIS production/upload bukti).
+- Stock decrement/restore transaction belum aktif.
+
+## Technical Debt Baseline
+
+- `npm run check` baseline masih memiliki issue lama project-wide di area di luar batch backend order admin.
+- Issue tersebut perlu ditangani bertahap terpisah dari scope feature batch.
 
 ## Catatan Arah Dokumen
 
-`kanban-master/` tetap relevan sebagai referensi teknis kondisi UI lama/saat ini.  
-Namun, isi `kanban-master/` tidak otomatis menjadi keputusan produk final bila bertentangan dengan `Docs/` dan keputusan terbaru Room Chat 00.
+`Docs/` adalah acuan arah produk dan keputusan Room 00.
+`kanban-master/` tetap dipakai sebagai referensi teknis/tracking lama.
+Jika ada perbedaan arah, keputusan terbaru Room 00 menjadi acuan utama.

@@ -19,3 +19,5 @@ Dokumentasi dapat disinkronkan:
 ## Dokumen Workflow Commit
 
 - Aturan commit/push ada di `06-commit-and-push-rules.md`.
+- Progress backend foundation ada di `07-backend-foundation-plan.md`.
+- Progress order API + admin read-only ada di `08-order-api-and-admin-flow.md`.

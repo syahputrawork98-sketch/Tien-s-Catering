@@ -12,6 +12,8 @@ Dokumen di sini dipakai sebagai acuan product direction, scope, dan alur kerja l
 5. `04-order-and-payment-flow.md`
 6. `05-documentation-index.md`
 7. `06-commit-and-push-rules.md`
+8. `07-backend-foundation-plan.md`
+9. `08-order-api-and-admin-flow.md`
 
 ## Prinsip Workflow
 
