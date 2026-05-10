@@ -1,430 +1,565 @@
 <script lang="ts">
-    import { fly, fade, scale } from 'svelte/transition';
-    import { mockCatalogItems, type CatalogItem } from '$lib/mock/catalog';
-    import { mockPackageCategories, type MockPackageCategory, slugifyCategoryName } from '$lib/mock/packageCategories';
-    import Modal from '$lib/components/ui/Modal.svelte';
+	type PackageStatus = 'active' | 'inactive';
 
-    type TabType = 'ALL_PKG' | 'ACTIVE_PKG' | 'DRAFT_PKG' | 'CATEGORIES';
+	type PackageItem = {
+		id: string;
+		name: string;
+		slug: string;
+		description: string;
+		category: string;
+		packageCategory: string;
+		basePrice: number;
+		image: string;
+		images: string[];
+		minPax: number;
+		packageItems: string[];
+		features: string[];
+		suitableFor: string[];
+		status: PackageStatus;
+		isActive: boolean;
+		isAvailable: boolean;
+		updatedAt: string;
+	};
 
-    // Local state
-    let packages = $state<(CatalogItem & { adminNote?: string; updatedBy?: string })[]>(
-        mockCatalogItems.filter(i => i.type === 'package').map(i => ({ ...i }))
-    );
-    let categories = $state<MockPackageCategory[]>(
-        mockPackageCategories.map(c => ({ ...c }))
-    );
+	type PackageFormState = {
+		name: string;
+		description: string;
+		packageCategory: string;
+		basePrice: string;
+		minPax: string;
+		image: string;
+		galleryImageUrls: string;
+		packageItems: string;
+		features: string;
+		suitableFor: string;
+		status: PackageStatus;
+	};
 
-    let activeTab = $state<TabType>('ALL_PKG');
-    let categoryFilter = $state('ALL'); // Untuk filter paket berdasarkan kategori
+	type ApiListResponse = {
+		items?: unknown;
+		message?: unknown;
+	};
 
-    // Modals
-    let showPkgModal = $state(false);
-    let showCatModal = $state(false);
-    let showDetailModal = $state(false);
-    let isEditing = $state(false);
-    let selectedPkg = $state<typeof packages[0] | null>(null);
-    let selectedCat = $state<MockPackageCategory | null>(null);
+	type ApiWriteResponse = {
+		item?: unknown;
+		message?: unknown;
+	};
 
-    // Forms
-    let pkgForm = $state({
-        name: '', description: '', packageCategory: '', basePrice: 0, 
-        minPax: 0, isActive: true, image: '', suitableFor: '', 
-        features: '', packageItems: '', adminNote: ''
-    });
-    let catForm = $state({
-        name: '', description: '', status: 'active' as import('$lib/mock/packageCategories').MockPackageCategoryStatus, adminNote: ''
-    });
-    let formError = $state('');
+	let packages = $state<PackageItem[]>([]);
+	let isLoading = $state(true);
+	let loadError = $state('');
 
-    // Derived
-    const activeCategories = $derived(categories.filter(c => c.status === 'active'));
-    
-    const filteredPackages = $derived(() => {
-        let res = packages;
-        if (activeTab === 'ACTIVE_PKG') res = packages.filter(p => p.isActive);
-        else if (activeTab === 'DRAFT_PKG') res = packages.filter(p => !p.isActive);
-        
-        if (categoryFilter !== 'ALL') {
-            res = res.filter(p => (p.packageCategory ?? p.category) === categoryFilter);
-        }
-        return res;
-    });
+	let showForm = $state(false);
+	let formMode = $state<'create' | 'edit'>('create');
+	let editingPackageId = $state<string | null>(null);
+	let formError = $state('');
+	let isSubmitting = $state(false);
+	let isTogglingId = $state<string | null>(null);
 
-    const stats = $derived(() => ({
-        totalPkg: packages.length,
-        activePkg: packages.filter(p => p.isActive).length,
-        totalCat: categories.length,
-        activeCat: categories.filter(c => c.status === 'active').length
-    }));
+	let feedback = $state<{ type: 'success' | 'error'; message: string } | null>(null);
 
-    function formatPrice(n: number) {
-        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(n);
-    }
+	let form = $state<PackageFormState>({
+		name: '',
+		description: '',
+		packageCategory: '',
+		basePrice: '0',
+		minPax: '1',
+		image: '',
+		galleryImageUrls: '',
+		packageItems: '',
+		features: '',
+		suitableFor: '',
+		status: 'inactive'
+	});
 
-    // Handlers Paket
-    function openAddPkg() {
-        isEditing = false;
-        pkgForm = { name: '', description: '', packageCategory: activeCategories[0]?.name || '', basePrice: 0, minPax: 0, isActive: true, image: '', suitableFor: '', features: '', packageItems: '', adminNote: '' };
-        formError = '';
-        showPkgModal = true;
-    }
+	function safeString(value: unknown, fallback = ''): string {
+		if (typeof value !== 'string') return fallback;
+		const normalized = value.trim();
+		return normalized.length > 0 ? normalized : fallback;
+	}
 
-    function openEditPkg(pkg: typeof packages[0]) {
-        isEditing = true;
-        selectedPkg = pkg;
-        pkgForm = { 
-            name: pkg.name, description: pkg.description, packageCategory: pkg.packageCategory ?? pkg.category, 
-            basePrice: pkg.basePrice, minPax: pkg.minPax ?? 0, isActive: pkg.isActive, 
-            image: pkg.image ?? '', suitableFor: (pkg.suitableFor ?? []).join(', '), 
-            features: (pkg.features ?? []).join(', '), packageItems: (pkg.packageItems ?? []).join(', '), 
-            adminNote: (pkg as any).adminNote ?? '' 
-        };
-        formError = '';
-        showPkgModal = true;
-    }
+	function safeNumber(value: unknown, fallback = 0): number {
+		const parsed = Number(value);
+		return Number.isFinite(parsed) ? parsed : fallback;
+	}
 
-    function savePkg() {
-        if (!pkgForm.name.trim()) { formError = 'Nama paket wajib diisi.'; return; }
-        if (!pkgForm.packageCategory) { formError = 'Pilih kategori paket.'; return; }
-        if (pkgForm.basePrice <= 0) { formError = 'Harga harus lebih dari 0.'; return; }
-        if (isEditing && !pkgForm.adminNote.trim()) { formError = 'Catatan admin wajib saat mengedit.'; return; }
+	function safeBoolean(value: unknown, fallback = false): boolean {
+		if (typeof value === 'boolean') return value;
+		if (typeof value === 'number') return value !== 0;
+		if (typeof value === 'string') {
+			const normalized = value.trim().toLowerCase();
+			if (normalized === 'true' || normalized === '1') return true;
+			if (normalized === 'false' || normalized === '0') return false;
+		}
+		return fallback;
+	}
 
-        const data = {
-            name: pkgForm.name, description: pkgForm.description,
-            packageCategory: pkgForm.packageCategory, category: pkgForm.packageCategory,
-            basePrice: pkgForm.basePrice, minPax: pkgForm.minPax,
-            isActive: pkgForm.isActive, status: pkgForm.isActive ? 'active' : 'inactive' as any,
-            image: pkgForm.image,
-            suitableFor: pkgForm.suitableFor.split(',').map(s => s.trim()).filter(Boolean),
-            features: pkgForm.features.split(',').map(s => s.trim()).filter(Boolean),
-            packageItems: pkgForm.packageItems.split(',').map(s => s.trim()).filter(Boolean),
-            updatedBy: 'admin', updatedAt: new Date().toISOString().slice(0, 10),
-            adminNote: pkgForm.adminNote
-        };
+	function toStringList(value: unknown): string[] {
+		if (!Array.isArray(value)) return [];
+		return value
+			.filter((item): item is string => typeof item === 'string')
+			.map((item) => item.trim())
+			.filter((item) => item.length > 0);
+	}
 
-        if (isEditing && selectedPkg) {
-            packages = packages.map(p => p.id === selectedPkg!.id ? { ...p, ...data } : p);
-        } else {
-            const newPkg: any = { 
-                id: `pkg-${Date.now()}`, type: 'package', isAvailable: true, createdAt: new Date().toISOString().slice(0, 10), 
-                ...data, updatedBy: 'admin', adminNote: pkgForm.adminNote || 'Paket baru dibuat oleh Admin.'
-            };
-            packages = [newPkg, ...packages];
-        }
-        showPkgModal = false;
-    }
+	function normalizePackage(raw: unknown, index: number): PackageItem | null {
+		if (typeof raw !== 'object' || raw === null) return null;
+		const record = raw as Record<string, unknown>;
+		const category = safeString(record.category, 'Paket');
+		const status = safeString(record.status, safeBoolean(record.isActive, true) ? 'active' : 'inactive');
+		const normalizedStatus: PackageStatus = status === 'inactive' ? 'inactive' : 'active';
+		const image = safeString(record.image, '/images/placeholder-package.jpg');
+		const images = toStringList(record.images);
 
-    // Handlers Kategori
-    function openAddCat() {
-        isEditing = false;
-        catForm = { name: '', description: '', status: 'active', adminNote: '' };
-        formError = '';
-        showCatModal = true;
-    }
+		return {
+			id: safeString(record.id, `pkg-${index + 1}`),
+			name: safeString(record.name, 'Paket Catering'),
+			slug: safeString(record.slug, `paket-${index + 1}`),
+			description: safeString(record.description, ''),
+			category,
+			packageCategory: safeString(record.packageCategory, category),
+			basePrice: Math.max(0, Math.floor(safeNumber(record.basePrice, 0))),
+			image,
+			images: images.length > 0 ? images : [image],
+			minPax: Math.max(1, Math.floor(safeNumber(record.minPax, 1))),
+			packageItems: toStringList(record.packageItems),
+			features: toStringList(record.features),
+			suitableFor: toStringList(record.suitableFor),
+			status: normalizedStatus,
+			isActive: safeBoolean(record.isActive, normalizedStatus === 'active'),
+			isAvailable: safeBoolean(record.isAvailable, true),
+			updatedAt: safeString(record.updatedAt, '')
+		};
+	}
 
-    function openEditCat(cat: MockPackageCategory) {
-        isEditing = true;
-        selectedCat = cat;
-        catForm = { name: cat.name, description: cat.description, status: cat.status, adminNote: cat.adminNote || '' };
-        formError = '';
-        showCatModal = true;
-    }
+	async function loadPackages() {
+		isLoading = true;
+		loadError = '';
 
-    function saveCat() {
-        if (!catForm.name.trim()) { formError = 'Nama kategori wajib diisi.'; return; }
-        if (!catForm.description.trim()) { formError = 'Deskripsi wajib diisi.'; return; }
-        if (!catForm.adminNote.trim()) { formError = 'Catatan admin wajib.'; return; }
-        
-        const isDuplicate = categories.some(c => c.name.toLowerCase() === catForm.name.toLowerCase() && (!isEditing || c.id !== selectedCat?.id));
-        if (isDuplicate) { formError = 'Nama kategori sudah ada.'; return; }
+		try {
+			const response = await fetch('/api/packages');
+			const payload = (await response.json().catch(() => null)) as ApiListResponse | null;
 
-        const data = {
-            name: catForm.name, slug: slugifyCategoryName(catForm.name),
-            description: catForm.description, status: catForm.status,
-            updatedBy: 'admin' as const, updatedAt: new Date().toISOString().slice(0, 10),
-            adminNote: catForm.adminNote
-        };
+			if (!response.ok) {
+				const message = safeString(payload?.message, 'Gagal mengambil data paket.');
+				throw new Error(message);
+			}
 
-        if (isEditing && selectedCat) {
-            const oldName = selectedCat.name;
-            categories = categories.map(c => c.id === selectedCat!.id ? { ...c, ...data } : c);
-            // Update paket yang pakai kategori ini jika nama berubah
-            if (oldName !== data.name) {
-                packages = packages.map(p => (p.packageCategory ?? p.category) === oldName ? { ...p, packageCategory: data.name, category: data.name } : p);
-            }
-        } else {
-            const newCat: MockPackageCategory = {
-                id: `cat-${Date.now()}`, createdBy: 'admin' as const, createdAt: new Date().toISOString().slice(0, 10),
-                ...data
-            };
-            categories = [...categories, newCat];
-        }
-        showCatModal = false;
-    }
+			if (!Array.isArray(payload?.items)) {
+				throw new Error('Format data paket tidak valid.');
+			}
 
-    function toggleCatStatus(cat: MockPackageCategory) {
-        const newStatus = cat.status === 'active' ? 'inactive' : 'active';
-        categories = categories.map(c => c.id === cat.id ? { 
-            ...c, status: newStatus, updatedBy: 'admin', updatedAt: new Date().toISOString().slice(0, 10), 
-            adminNote: `Status kategori diubah menjadi ${newStatus} oleh Admin.` 
-        } : c);
-    }
+			packages = payload.items
+				.map((item, index) => normalizePackage(item, index))
+				.filter((item): item is PackageItem => item !== null);
+		} catch (error) {
+			loadError = error instanceof Error ? error.message : 'Gagal mengambil data paket.';
+			packages = [];
+		} finally {
+			isLoading = false;
+		}
+	}
+
+	function resetForm() {
+		form = {
+			name: '',
+			description: '',
+			packageCategory: '',
+			basePrice: '0',
+			minPax: '1',
+			image: '',
+			galleryImageUrls: '',
+			packageItems: '',
+			features: '',
+			suitableFor: '',
+			status: 'inactive'
+		};
+		formError = '';
+		editingPackageId = null;
+		formMode = 'create';
+	}
+
+	function openCreateForm() {
+		resetForm();
+		showForm = true;
+	}
+
+	function openEditForm(item: PackageItem) {
+		formMode = 'edit';
+		editingPackageId = item.id;
+		formError = '';
+		form = {
+			name: item.name,
+			description: item.description,
+			packageCategory: item.packageCategory || item.category,
+			basePrice: String(item.basePrice),
+			minPax: String(item.minPax),
+			image: item.image,
+			galleryImageUrls: item.images.join('\n'),
+			packageItems: item.packageItems.join('\n'),
+			features: item.features.join('\n'),
+			suitableFor: item.suitableFor.join('\n'),
+			status: item.status
+		};
+		showForm = true;
+	}
+
+	function closeForm() {
+		showForm = false;
+		formError = '';
+	}
+
+	function toLineList(value: string): string[] {
+		return value
+			.split(/\r?\n/)
+			.map((item) => item.trim())
+			.filter((item) => item.length > 0);
+	}
+
+	function formatMoney(value: number): string {
+		return new Intl.NumberFormat('id-ID', {
+			style: 'currency',
+			currency: 'IDR',
+			maximumFractionDigits: 0
+		}).format(value);
+	}
+
+	function statusLabel(status: PackageStatus): string {
+		return status === 'active' ? 'Aktif' : 'Nonaktif';
+	}
+
+	function validateFormInput(): string | null {
+		if (!form.name.trim()) return 'Nama paket wajib diisi.';
+		if (!form.description.trim()) return 'Deskripsi paket wajib diisi.';
+		if (!form.packageCategory.trim()) return 'Kategori paket wajib diisi.';
+
+		const basePrice = Number(form.basePrice);
+		if (!Number.isFinite(basePrice) || basePrice < 0) {
+			return 'Harga mulai dari harus angka >= 0.';
+		}
+
+		const minPax = Number(form.minPax);
+		if (!Number.isFinite(minPax) || Math.floor(minPax) < 1) {
+			return 'Minimal pax harus angka >= 1.';
+		}
+
+		if (form.status !== 'active' && form.status !== 'inactive') {
+			return 'Status paket harus active atau inactive.';
+		}
+
+		return null;
+	}
+
+	function buildFormPayload() {
+		const category = form.packageCategory.trim();
+		return {
+			name: form.name.trim(),
+			description: form.description.trim(),
+			packageCategory: category,
+			category,
+			basePrice: Math.max(0, Math.floor(Number(form.basePrice))),
+			minPax: Math.max(1, Math.floor(Number(form.minPax))),
+			image: form.image.trim() || '/images/placeholder-package.jpg',
+			images: toLineList(form.galleryImageUrls),
+			packageItems: toLineList(form.packageItems),
+			features: toLineList(form.features),
+			suitableFor: toLineList(form.suitableFor),
+			status: form.status
+		};
+	}
+
+	async function submitForm(event: SubmitEvent) {
+		event.preventDefault();
+		formError = '';
+		feedback = null;
+
+		const validationMessage = validateFormInput();
+		if (validationMessage) {
+			formError = validationMessage;
+			return;
+		}
+
+		isSubmitting = true;
+
+		try {
+			const payload = buildFormPayload();
+			const endpoint =
+				formMode === 'create' ? '/api/packages' : `/api/packages/${encodeURIComponent(editingPackageId || '')}`;
+			const method = formMode === 'create' ? 'POST' : 'PATCH';
+
+			const response = await fetch(endpoint, {
+				method,
+				headers: {
+					'content-type': 'application/json'
+				},
+				body: JSON.stringify(payload)
+			});
+
+			const body = (await response.json().catch(() => null)) as ApiWriteResponse | null;
+			if (!response.ok) {
+				formError = safeString(body?.message, 'Aksi package belum berhasil diproses.');
+				return;
+			}
+
+			showForm = false;
+			resetForm();
+			await loadPackages();
+			feedback = {
+				type: 'success',
+				message:
+					formMode === 'create'
+						? 'Paket berhasil dibuat. Status default Nonaktif.'
+						: 'Paket berhasil diperbarui.'
+			};
+		} catch (error) {
+			formError =
+				error instanceof Error ? error.message : 'Aksi package belum berhasil diproses. Coba lagi.';
+		} finally {
+			isSubmitting = false;
+		}
+	}
+
+	async function toggleStatus(item: PackageItem) {
+		isTogglingId = item.id;
+		feedback = null;
+
+		try {
+			const nextStatus: PackageStatus = item.status === 'active' ? 'inactive' : 'active';
+			const response = await fetch(`/api/packages/${encodeURIComponent(item.id)}/status`, {
+				method: 'PATCH',
+				headers: {
+					'content-type': 'application/json'
+				},
+				body: JSON.stringify({ status: nextStatus })
+			});
+
+			const body = (await response.json().catch(() => null)) as ApiWriteResponse | null;
+			if (!response.ok) {
+				throw new Error(safeString(body?.message, 'Gagal memperbarui status package.'));
+			}
+
+			await loadPackages();
+			feedback = {
+				type: 'success',
+				message: `Status paket "${item.name}" diubah ke ${statusLabel(nextStatus)}.`
+			};
+		} catch (error) {
+			feedback = {
+				type: 'error',
+				message: error instanceof Error ? error.message : 'Gagal memperbarui status package.'
+			};
+		} finally {
+			isTogglingId = null;
+		}
+	}
+
+	$effect(() => {
+		loadPackages();
+	});
 </script>
 
-<div class="space-y-10 pb-24 relative">
-    <header class="flex flex-col md:flex-row md:items-start justify-between gap-6" in:fly={{ y: -20, duration: 500 }}>
-        <div>
-            <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-red-50 dark:bg-red-900/20 rounded-full mb-4">
-                <span class="w-2 h-2 rounded-full bg-red-500"></span>
-                <span class="text-[10px] font-black text-red-600 dark:text-red-400 uppercase tracking-widest">Admin Control</span>
-            </div>
-            <h1 class="text-4xl lg:text-5xl font-black text-brand-charcoal dark:text-white tracking-tighter italic">Master Paket & Kategori 🎁</h1>
-            <p class="text-zinc-500 font-medium mt-2">Kelola paket catering dan kategori layanan secara terpusat.</p>
-        </div>
-        <div class="flex flex-wrap gap-3">
-            <button onclick={openAddCat} class="px-6 py-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-zinc-200 transition-all border border-zinc-200 dark:border-zinc-700 flex items-center gap-2">
-                <span>➕</span> Kategori Baru
-            </button>
-            <button onclick={openAddPkg} class="px-6 py-4 bg-brand-charcoal dark:bg-white text-white dark:text-brand-charcoal text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2">
-                <span>📦</span> Paket Baru
-            </button>
-        </div>
-    </header>
+<section class="space-y-6">
+	<div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+		<div>
+			<h1 class="text-3xl font-black tracking-tight text-brand-charcoal dark:text-white">
+				Admin Package Management
+			</h1>
+			<p class="text-sm text-zinc-500 mt-1">
+				Create, update, dan aktif/nonaktif paket catering. Package baru default Nonaktif.
+			</p>
+		</div>
+		<button
+			type="button"
+			class="rounded-xl bg-brand-charcoal px-4 py-3 text-xs font-black uppercase tracking-wider text-white hover:opacity-90"
+			onclick={openCreateForm}
+		>
+			Tambah Package
+		</button>
+	</div>
 
-    <!-- Stats -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4" in:fade={{ delay: 150 }}>
-        {#each [
-            { label: 'Total Paket', value: stats().totalPkg, color: 'text-brand-charcoal dark:text-white' },
-            { label: 'Paket Aktif', value: stats().activePkg, color: 'text-emerald-600' },
-            { label: 'Total Kategori', value: stats().totalCat, color: 'text-blue-600' },
-            { label: 'Kategori Aktif', value: stats().activeCat, color: 'text-purple-600' }
-        ] as s}
-            <div class="bg-white dark:bg-zinc-900 p-6 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 shadow-sm">
-                <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-2">{s.label}</p>
-                <p class="text-3xl font-black {s.color} italic">{s.value}</p>
-            </div>
-        {/each}
-    </div>
+	{#if feedback}
+		<div
+			class={`rounded-xl border px-4 py-3 text-sm ${
+				feedback.type === 'success'
+					? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+					: 'border-red-200 bg-red-50 text-red-700'
+			}`}
+		>
+			{feedback.message}
+		</div>
+	{/if}
 
-    <!-- Tabs -->
-    <div class="space-y-8" in:fade={{ delay: 250 }}>
-        <div class="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
-            {#each [
-                { id: 'ALL_PKG', label: 'Semua Paket' },
-                { id: 'ACTIVE_PKG', label: 'Paket Aktif' },
-                { id: 'DRAFT_PKG', label: 'Draft/Nonaktif' },
-                { id: 'CATEGORIES', label: 'Kategori Paket' }
-            ] as tab}
-                <button
-                    onclick={() => activeTab = tab.id as TabType}
-                    class="px-6 py-3 rounded-full text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap
-                    {activeTab === tab.id ? 'bg-brand-charcoal dark:bg-white text-white dark:text-brand-charcoal shadow-xl scale-105' : 'bg-white dark:bg-zinc-900 text-zinc-400 border border-zinc-100 dark:border-zinc-800 hover:border-zinc-300'}"
-                >{tab.label}</button>
-            {/each}
-        </div>
+	{#if showForm}
+		<form class="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm space-y-4" onsubmit={submitForm}>
+			<div class="grid gap-4 md:grid-cols-2">
+				<div class="md:col-span-2">
+					<label for="pkg-name" class="mb-1 block text-xs font-bold uppercase tracking-wider text-zinc-500">Nama Package</label>
+					<input id="pkg-name" class="w-full rounded-xl border border-zinc-200 px-3 py-2 text-sm" bind:value={form.name} />
+				</div>
+				<div class="md:col-span-2">
+					<label for="pkg-description" class="mb-1 block text-xs font-bold uppercase tracking-wider text-zinc-500">Deskripsi</label>
+					<textarea
+						id="pkg-description"
+						class="w-full rounded-xl border border-zinc-200 px-3 py-2 text-sm"
+						rows="3"
+						bind:value={form.description}
+					></textarea>
+				</div>
+				<div>
+					<label for="pkg-category" class="mb-1 block text-xs font-bold uppercase tracking-wider text-zinc-500">Kategori Package</label>
+					<input
+						id="pkg-category"
+						class="w-full rounded-xl border border-zinc-200 px-3 py-2 text-sm"
+						bind:value={form.packageCategory}
+						placeholder="Contoh: Prasmanan"
+					/>
+				</div>
+				<div>
+					<label for="pkg-status" class="mb-1 block text-xs font-bold uppercase tracking-wider text-zinc-500">Status</label>
+					<select
+						id="pkg-status"
+						class="w-full rounded-xl border border-zinc-200 px-3 py-2 text-sm"
+						bind:value={form.status}
+						disabled={formMode === 'create'}
+					>
+						<option value="inactive">Inactive</option>
+						<option value="active">Active</option>
+					</select>
+					{#if formMode === 'create'}
+						<p class="mt-1 text-xs text-zinc-500">Saat create, status default inactive.</p>
+					{/if}
+				</div>
+				<div>
+					<label for="pkg-price" class="mb-1 block text-xs font-bold uppercase tracking-wider text-zinc-500">Harga Mulai Dari</label>
+					<input id="pkg-price" class="w-full rounded-xl border border-zinc-200 px-3 py-2 text-sm" type="number" min="0" bind:value={form.basePrice} />
+				</div>
+				<div>
+					<label for="pkg-min-pax" class="mb-1 block text-xs font-bold uppercase tracking-wider text-zinc-500">Minimal Pax</label>
+					<input id="pkg-min-pax" class="w-full rounded-xl border border-zinc-200 px-3 py-2 text-sm" type="number" min="1" bind:value={form.minPax} />
+				</div>
+				<div class="md:col-span-2">
+					<label for="pkg-main-image" class="mb-1 block text-xs font-bold uppercase tracking-wider text-zinc-500">Main Image URL</label>
+					<input
+						id="pkg-main-image"
+						class="w-full rounded-xl border border-zinc-200 px-3 py-2 text-sm"
+						placeholder="https://..."
+						bind:value={form.image}
+					/>
+				</div>
+				<div class="md:col-span-2">
+					<label for="pkg-gallery-images" class="mb-1 block text-xs font-bold uppercase tracking-wider text-zinc-500">Gallery Image URLs (satu URL per baris)</label>
+					<textarea
+						id="pkg-gallery-images"
+						class="w-full rounded-xl border border-zinc-200 px-3 py-2 text-sm"
+						rows="4"
+						placeholder="https://image-1.example&#10;https://image-2.example"
+						bind:value={form.galleryImageUrls}
+					></textarea>
+				</div>
+				<div>
+					<label for="pkg-items" class="mb-1 block text-xs font-bold uppercase tracking-wider text-zinc-500">Package Items (satu per baris)</label>
+					<textarea id="pkg-items" class="w-full rounded-xl border border-zinc-200 px-3 py-2 text-sm" rows="4" bind:value={form.packageItems}></textarea>
+				</div>
+				<div>
+					<label for="pkg-features" class="mb-1 block text-xs font-bold uppercase tracking-wider text-zinc-500">Features (satu per baris)</label>
+					<textarea id="pkg-features" class="w-full rounded-xl border border-zinc-200 px-3 py-2 text-sm" rows="4" bind:value={form.features}></textarea>
+				</div>
+				<div class="md:col-span-2">
+					<label for="pkg-suitable-for" class="mb-1 block text-xs font-bold uppercase tracking-wider text-zinc-500">Suitable For (satu per baris)</label>
+					<textarea id="pkg-suitable-for" class="w-full rounded-xl border border-zinc-200 px-3 py-2 text-sm" rows="3" bind:value={form.suitableFor}></textarea>
+				</div>
+			</div>
 
-        {#if activeTab !== 'CATEGORIES'}
-            <!-- Filters for Packages -->
-            <div class="flex items-center gap-4 bg-white dark:bg-zinc-900 p-4 rounded-3xl border border-zinc-100 dark:border-zinc-800 shadow-sm">
-                <span class="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-2">Filter:</span>
-                <select bind:value={categoryFilter} class="bg-transparent border-none text-xs font-black uppercase tracking-wider focus:ring-0 cursor-pointer">
-                    <option value="ALL">Semua Kategori</option>
-                    {#each categories as cat}
-                        <option value={cat.name}>{cat.name} {cat.status === 'inactive' ? '(Nonaktif)' : ''}</option>
-                    {/each}
-                </select>
-            </div>
+			{#if formError}
+				<div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+					{formError}
+				</div>
+			{/if}
 
-            <!-- Package Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {#each filteredPackages() as pkg (pkg.id)}
-                    <div class="bg-white dark:bg-zinc-900 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col" in:scale={{ start: 0.97, duration: 300 }}>
-                        <div class="relative h-44">
-                            {#if pkg.image}
-                                <img src={pkg.image} alt={pkg.name} class="w-full h-full object-cover" />
-                            {:else}
-                                <div class="w-full h-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-4xl">📦</div>
-                            {/if}
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
-                            <div class="absolute top-4 left-4 flex gap-2">
-                                <span class="px-3 py-1 bg-white/90 dark:bg-zinc-900/90 rounded-full text-[9px] font-black uppercase text-brand-charcoal dark:text-white">{pkg.packageCategory ?? pkg.category}</span>
-                            </div>
-                            <div class="absolute bottom-4 left-5">
-                                <p class="text-2xl font-black text-white italic">{formatPrice(pkg.basePrice)}<span class="text-xs not-italic opacity-60">/pax</span></p>
-                            </div>
-                        </div>
-                        <div class="p-6 flex-1 flex flex-col space-y-4">
-                            <div class="flex justify-between items-start">
-                                <h3 class="text-sm font-black text-brand-charcoal dark:text-white leading-tight">{pkg.name}</h3>
-                                <span class="px-2 py-0.5 rounded text-[8px] font-black uppercase {pkg.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-zinc-100 text-zinc-400'}">{pkg.isActive ? 'Aktif' : 'Nonaktif'}</span>
-                            </div>
-                            <p class="text-[10px] text-zinc-500 font-medium line-clamp-2">{pkg.description}</p>
-                            <div class="grid grid-cols-2 gap-2 mt-auto pt-2">
-                                <button onclick={() => openEditPkg(pkg)} class="py-2.5 bg-zinc-50 dark:bg-zinc-800 text-zinc-500 text-[10px] font-black uppercase rounded-xl hover:bg-zinc-100 transition-all">Edit</button>
-                                <button onclick={() => { selectedPkg = pkg; showDetailModal = true; }} class="py-2.5 bg-zinc-50 dark:bg-zinc-800 text-zinc-500 text-[10px] font-black uppercase rounded-xl hover:bg-zinc-100 transition-all">Detail</button>
-                            </div>
-                        </div>
-                    </div>
-                {:else}
-                    <div class="col-span-full py-20 text-center bg-white dark:bg-zinc-900 rounded-[3rem] border border-dashed border-zinc-200 dark:border-zinc-800">
-                        <p class="text-zinc-400 font-black">Tidak ada paket dalam filter ini</p>
-                    </div>
-                {/each}
-            </div>
-        {:else}
-            <!-- Category Tab -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {#each categories as cat (cat.id)}
-                    <div class="bg-white dark:bg-zinc-900 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 shadow-sm p-6 hover:shadow-md transition-all flex flex-col space-y-4" in:scale>
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h3 class="text-lg font-black italic tracking-tighter uppercase">{cat.name}</h3>
-                                <p class="text-[10px] font-mono text-zinc-400">/{cat.slug}</p>
-                            </div>
-                            <button 
-                                onclick={() => toggleCatStatus(cat)} 
-                                aria-label="Toggle status kategori"
-                                class="px-3 py-1 rounded-full text-[9px] font-black uppercase transition-all {cat.status === 'active' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-zinc-100 text-zinc-400 border border-zinc-200'}"
-                            >
-                                {cat.status === 'active' ? 'Aktif' : 'Nonaktif'}
-                            </button>
-                        </div>
-                        <p class="text-xs text-zinc-500 font-medium leading-relaxed">{cat.description}</p>
-                        
-                        <div class="pt-4 border-t border-zinc-50 dark:border-zinc-800 grid grid-cols-2 gap-4">
-                            <div>
-                                <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Paket</p>
-                                <p class="text-sm font-black italic">{packages.filter(p => (p.packageCategory ?? p.category) === cat.name).length} Item</p>
-                            </div>
-                            <div class="flex justify-end items-end">
-                                <button onclick={() => openEditCat(cat)} class="p-2 bg-zinc-50 dark:bg-zinc-800 text-zinc-400 hover:text-brand-charcoal dark:hover:text-white rounded-lg transition-colors">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                                </button>
-                            </div>
-                        </div>
+			<div class="flex flex-wrap gap-3">
+				<button
+					type="submit"
+					class="rounded-xl bg-brand-charcoal px-4 py-3 text-xs font-black uppercase tracking-wider text-white disabled:opacity-60"
+					disabled={isSubmitting}
+				>
+					{isSubmitting ? 'Menyimpan...' : formMode === 'create' ? 'Simpan Package Baru' : 'Simpan Perubahan'}
+				</button>
+				<button
+					type="button"
+					class="rounded-xl border border-zinc-300 px-4 py-3 text-xs font-black uppercase tracking-wider text-zinc-600"
+					onclick={closeForm}
+					disabled={isSubmitting}
+				>
+					Batal
+				</button>
+			</div>
+		</form>
+	{/if}
 
-                        {#if cat.updatedBy === 'admin'}
-                            <div class="mt-2 p-3 bg-red-50/50 dark:bg-red-900/10 rounded-xl border-l-2 border-red-200">
-                                <p class="text-[8px] font-black text-red-500 uppercase mb-1">Admin Note ({cat.updatedAt})</p>
-                                <p class="text-[10px] text-zinc-500 italic">"{cat.adminNote}"</p>
-                            </div>
-                        {/if}
-                    </div>
-                {/each}
-            </div>
-        {/if}
-    </div>
-</div>
+	{#if isLoading}
+		<div class="rounded-2xl border border-zinc-200 bg-white p-6 text-sm text-zinc-500">Memuat data package...</div>
+	{:else if loadError}
+		<div class="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">{loadError}</div>
+	{:else if packages.length === 0}
+		<div class="rounded-2xl border border-zinc-200 bg-white p-6 text-sm text-zinc-500">
+			Belum ada data package.
+		</div>
+	{:else}
+		<div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+			{#each packages as item (item.id)}
+				<article class="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
+					<div class="mb-3 flex items-start justify-between gap-3">
+						<div>
+							<h2 class="text-sm font-black text-brand-charcoal">{item.name}</h2>
+							<p class="mt-1 text-xs text-zinc-500">{item.packageCategory || item.category}</p>
+						</div>
+						<span
+							class={`rounded-full px-2 py-1 text-[10px] font-black uppercase tracking-wider ${
+								item.status === 'active'
+									? 'bg-emerald-100 text-emerald-700'
+									: 'bg-zinc-100 text-zinc-600'
+							}`}
+						>
+							{statusLabel(item.status)}
+						</span>
+					</div>
 
-<!-- Modal Paket -->
-<Modal show={showPkgModal} title={isEditing ? "Edit Master Paket ✏️" : "Tambah Paket Baru 📦"} onClose={() => showPkgModal = false}>
-    <div class="space-y-5">
-        {#if isEditing}
-            <div class="p-3 bg-red-50 dark:bg-red-900/10 rounded-xl border border-red-100 dark:border-red-900/30 flex items-center gap-2">
-                <span class="text-base">⚡</span>
-                <p class="text-[10px] font-bold text-red-600">Perubahan akan dicatat sebagai aksi Admin.</p>
-            </div>
-        {/if}
+					{#if item.image}
+						<img src={item.image} alt={item.name} class="mb-3 h-28 w-full rounded-xl object-cover" />
+					{/if}
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="space-y-1 col-span-2">
-                <label for="pName" class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Nama Paket *</label>
-                <input id="pName" type="text" bind:value={pkgForm.name} class="w-full px-5 py-3.5 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary" />
-            </div>
-            <div class="space-y-1">
-                <label for="pCat" class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Kategori Paket *</label>
-                <select id="pCat" bind:value={pkgForm.packageCategory} class="w-full px-5 py-3.5 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary">
-                    {#each activeCategories as c}<option value={c.name}>{c.name}</option>{/each}
-                </select>
-            </div>
-            <div class="space-y-1">
-                <label for="pPrice" class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Harga/Pax *</label>
-                <input id="pPrice" type="number" bind:value={pkgForm.basePrice} class="w-full px-5 py-3.5 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary" />
-            </div>
-            <div class="space-y-1 col-span-2">
-                <label for="pDesc" class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Deskripsi</label>
-                <textarea id="pDesc" bind:value={pkgForm.description} rows="2" class="w-full px-5 py-3.5 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary resize-none"></textarea>
-            </div>
-            <div class="space-y-2">
-                <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Status Publik</p>
-                <button onclick={() => pkgForm.isActive = !pkgForm.isActive} class="flex items-center gap-3 px-4 py-2 rounded-xl border-2 transition-all {pkgForm.isActive ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-zinc-200 bg-zinc-50 text-zinc-400'}">
-                    <span class="text-xs font-bold">{pkgForm.isActive ? 'Aktif/Publik' : 'Draft/Internal'}</span>
-                </button>
-            </div>
-            <div class="space-y-1">
-                <label for="pMin" class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Min. Pax</label>
-                <input id="pMin" type="number" bind:value={pkgForm.minPax} class="w-full px-5 py-3.5 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary" />
-            </div>
-            <div class="space-y-1 col-span-2">
-                <label for="pNote" class="text-[10px] font-black {isEditing ? 'text-red-500' : 'text-zinc-400'} uppercase tracking-widest">Catatan Admin {isEditing ? '*' : ''}</label>
-                <textarea id="pNote" bind:value={pkgForm.adminNote} rows="2" placeholder="Catatan untuk riwayat audit..." class="w-full px-5 py-3.5 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary resize-none"></textarea>
-            </div>
-        </div>
-        {#if formError}<p class="text-[10px] font-bold text-red-500">{formError}</p>{/if}
-        <div class="flex gap-3 pt-4">
-            <button onclick={() => showPkgModal = false} class="flex-1 py-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 text-[10px] font-black uppercase rounded-2xl">Batal</button>
-            <button onclick={savePkg} class="flex-1 py-4 bg-brand-charcoal dark:bg-white text-white dark:text-brand-charcoal text-[10px] font-black uppercase rounded-2xl shadow-xl">{isEditing ? 'Update Paket' : 'Simpan Paket'}</button>
-        </div>
-    </div>
-</Modal>
+					<p class="text-xs text-zinc-600 line-clamp-2 mb-3">{item.description}</p>
+					<div class="space-y-1 text-xs text-zinc-600">
+						<p><span class="font-bold">Harga:</span> {formatMoney(item.basePrice)}</p>
+						<p><span class="font-bold">Min Pax:</span> {item.minPax}</p>
+						<p><span class="font-bold">Slug:</span> {item.slug}</p>
+					</div>
 
-<!-- Modal Kategori -->
-<Modal show={showCatModal} title={isEditing ? "Edit Kategori Paket ✏️" : "Kategori Paket Baru ➕"} onClose={() => showCatModal = false}>
-    <div class="space-y-5">
-        <div class="space-y-1">
-            <label for="cName" class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Nama Kategori *</label>
-            <input id="cName" type="text" bind:value={catForm.name} placeholder="Contoh: Paket Harian" class="w-full px-5 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary" />
-        </div>
-        <div class="space-y-1">
-            <label for="cDesc" class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Deskripsi *</label>
-            <textarea id="cDesc" bind:value={catForm.description} rows="3" class="w-full px-5 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary resize-none"></textarea>
-        </div>
-        <div class="grid grid-cols-2 gap-4">
-            <div class="space-y-2">
-                <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Status</p>
-                <select bind:value={catForm.status} class="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border-none rounded-xl text-xs font-bold focus:ring-2 focus:ring-brand-primary">
-                    <option value="active">Aktif</option>
-                    <option value="inactive">Nonaktif</option>
-                </select>
-            </div>
-        </div>
-        <div class="space-y-1">
-            <label for="cNote" class="text-[10px] font-black text-red-500 uppercase tracking-widest">Catatan Admin *</label>
-            <textarea id="cNote" bind:value={catForm.adminNote} rows="2" placeholder="Alasan perubahan/pembuatan..." class="w-full px-5 py-4 bg-red-50/30 dark:bg-red-900/10 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-red-400 resize-none"></textarea>
-        </div>
-        {#if formError}<p class="text-[10px] font-bold text-red-500">{formError}</p>{/if}
-        <div class="flex gap-3 pt-4">
-            <button onclick={() => showCatModal = false} class="flex-1 py-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 text-[10px] font-black uppercase rounded-2xl">Batal</button>
-            <button onclick={saveCat} class="flex-1 py-4 bg-brand-charcoal dark:bg-white text-white dark:text-brand-charcoal text-[10px] font-black uppercase rounded-2xl shadow-xl">Simpan Kategori</button>
-        </div>
-    </div>
-</Modal>
-
-<!-- Modal Detail Pkg (Existing) -->
-<Modal show={showDetailModal} title="Detail Paket 🎁" onClose={() => showDetailModal = false}>
-    {#if selectedPkg}
-        <div class="space-y-6">
-            {#if selectedPkg.image}<img src={selectedPkg.image} alt={selectedPkg.name} class="w-full h-48 object-cover rounded-2xl" />{/if}
-            <div class="grid grid-cols-2 gap-4">
-                <div class="col-span-2"><p class="text-[9px] font-black text-zinc-400 uppercase mb-1">Nama</p><p class="font-black text-lg italic">{selectedPkg.name}</p></div>
-                <div><p class="text-[9px] font-black text-zinc-400 uppercase mb-1">Kategori</p><p class="text-sm font-bold">{selectedPkg.packageCategory ?? selectedPkg.category}</p></div>
-                <div><p class="text-[9px] font-black text-zinc-400 uppercase mb-1">Harga/Pax</p><p class="text-sm font-black text-brand-charcoal dark:text-white">{formatPrice(selectedPkg.basePrice)}</p></div>
-            </div>
-            <div class="p-4 bg-zinc-50 dark:bg-zinc-800 rounded-2xl">
-                <p class="text-[9px] font-black text-zinc-400 uppercase mb-2">Deskripsi</p>
-                <p class="text-sm font-medium">{selectedPkg.description}</p>
-            </div>
-            {#if (selectedPkg as any).adminNote}
-                <div class="p-4 bg-red-50 dark:bg-red-900/10 rounded-2xl border-l-4 border-red-500">
-                    <p class="text-[9px] font-black text-red-500 uppercase mb-1">Admin Log ({selectedPkg.updatedAt})</p>
-                    <p class="text-xs italic">"{selectedPkg.adminNote}"</p>
-                </div>
-            {/if}
-        </div>
-    {/if}
-</Modal>
-
-<style>
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-</style>
+					<div class="mt-4 flex flex-wrap gap-2">
+						<button
+							type="button"
+							class="rounded-lg border border-zinc-300 px-3 py-2 text-[10px] font-black uppercase tracking-wider text-zinc-600"
+							onclick={() => openEditForm(item)}
+						>
+							Edit
+						</button>
+						<button
+							type="button"
+							class={`rounded-lg px-3 py-2 text-[10px] font-black uppercase tracking-wider text-white ${
+								item.status === 'active' ? 'bg-zinc-600' : 'bg-emerald-600'
+							} disabled:opacity-60`}
+							onclick={() => toggleStatus(item)}
+							disabled={isTogglingId === item.id}
+						>
+							{isTogglingId === item.id
+								? 'Memproses...'
+								: item.status === 'active'
+									? 'Nonaktifkan'
+									: 'Aktifkan'}
+						</button>
+					</div>
+				</article>
+			{/each}
+		</div>
+	{/if}
+</section>

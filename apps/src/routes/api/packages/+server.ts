@@ -1,5 +1,5 @@
 import { json } from '@sveltejs/kit';
-import { getReadOnlyPackages } from '$lib/server/services/packageService';
+import { createPackage, getReadOnlyPackages } from '$lib/server/services/packageService';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async () => {
@@ -9,5 +9,27 @@ export const GET: RequestHandler = async () => {
 	} catch (error) {
 		console.error('Failed to fetch local packages.', error);
 		return json({ message: 'Gagal mengambil data paket.' }, { status: 500 });
+	}
+};
+
+export const POST: RequestHandler = async ({ request }) => {
+	let payload: unknown;
+
+	try {
+		payload = await request.json();
+	} catch {
+		return json({ message: 'Invalid JSON payload.' }, { status: 400 });
+	}
+
+	try {
+		const result = createPackage(payload);
+		if (!result.ok) {
+			return json({ message: result.message }, { status: result.status });
+		}
+
+		return json({ item: result.item }, { status: 201 });
+	} catch (error) {
+		console.error('Failed to create package.', error);
+		return json({ message: 'Gagal membuat paket.' }, { status: 500 });
 	}
 };
