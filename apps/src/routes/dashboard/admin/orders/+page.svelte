@@ -5,6 +5,7 @@
 
 	type TabType = 'ALL' | 'NEW' | 'PROCESS' | 'DONE' | 'CANCELLED';
 	type OrderStatus = 'new' | 'confirmed' | 'processing' | 'ready' | 'delivered' | 'completed' | 'cancelled';
+	type PaymentStatus = 'unpaid' | 'waiting_verification' | 'paid' | 'cod';
 
 	type AdminOrderItem = {
 		id: string;
@@ -64,6 +65,17 @@
 		message?: string;
 	};
 
+	type OrderPaymentStatusApiResponse = {
+		payment?: {
+			orderId?: unknown;
+			orderNumber?: unknown;
+			paymentStatus?: unknown;
+			paidAmount?: unknown;
+			remainingAmount?: unknown;
+		};
+		message?: string;
+	};
+
 	let loading = $state(true);
 	let error = $state('');
 	let orders = $state<AdminOrder[]>([]);
@@ -73,8 +85,13 @@
 	let statusUpdatingOrderId = $state<string | null>(null);
 	let statusActionError = $state('');
 	let statusActionSuccess = $state('');
+	let paymentUpdatingOrderId = $state<string | null>(null);
+	let paymentActionError = $state('');
+	let paymentActionSuccess = $state('');
+	let paymentStatusDraftByOrderId = $state<Record<string, PaymentStatus>>({});
 
 	const orderStatusFlow: OrderStatus[] = ['new', 'confirmed', 'processing', 'ready', 'delivered', 'completed'];
+	const manualPaymentStatuses: PaymentStatus[] = ['unpaid', 'waiting_verification', 'paid', 'cod'];
 
 	function isRecord(value: unknown): value is Record<string, unknown> {
 		return typeof value === 'object' && value !== null;
@@ -310,6 +327,17 @@
 		return map[normalized] ?? normalized.toUpperCase();
 	}
 
+	function normalizeManualPaymentStatus(status: string): PaymentStatus {
+		return manualPaymentStatuses.includes(status as PaymentStatus) ? (status as PaymentStatus) : 'unpaid';
+	}
+
+	function setPaymentStatusDraft(orderId: string, rawStatus: string) {
+		paymentStatusDraftByOrderId = {
+			...paymentStatusDraftByOrderId,
+			[orderId]: normalizeManualPaymentStatus(rawStatus.toLowerCase())
+		};
+	}
+
 	function paymentColor(status: string): string {
 		const map: Record<string, string> = {
 			unpaid: 'text-red-500',
@@ -347,6 +375,11 @@
 			orders = body.items
 				.map((item) => normalizeOrder(item))
 				.filter((item): item is AdminOrder => item !== null);
+
+			paymentStatusDraftByOrderId = orders.reduce<Record<string, PaymentStatus>>((acc, item) => {
+				acc[item.id] = normalizeManualPaymentStatus(item.paymentStatus);
+				return acc;
+			}, {});
 		} catch {
 			error = 'Gagal terhubung ke server. Silakan coba lagi.';
 			orders = [];
@@ -395,6 +428,49 @@
 		}
 	}
 
+	async function applyPaymentStatus(order: AdminOrder) {
+		const nextPaymentStatus =
+			paymentStatusDraftByOrderId[order.id] ?? normalizeManualPaymentStatus(order.paymentStatus);
+
+		paymentUpdatingOrderId = order.id;
+		paymentActionError = '';
+		paymentActionSuccess = '';
+
+		try {
+			const response = await fetch(`/api/orders/${encodeURIComponent(order.id)}/payment-status`, {
+				method: 'PATCH',
+				headers: {
+					'content-type': 'application/json'
+				},
+				body: JSON.stringify({ paymentStatus: nextPaymentStatus })
+			});
+
+			const body = (await response.json().catch(() => null)) as OrderPaymentStatusApiResponse | null;
+			if (!response.ok) {
+				paymentActionError =
+					typeof body?.message === 'string' && body.message.trim().length > 0
+						? body.message
+						: 'Gagal memperbarui status pembayaran.';
+				return;
+			}
+
+			paymentActionSuccess = `Status pembayaran ${order.orderNumber} diperbarui menjadi ${paymentLabel(nextPaymentStatus)}.`;
+
+			await loadOrders();
+			if (showDetailModal && selectedOrder?.id === order.id) {
+				const refreshedOrder = orders.find((item) => item.id === order.id) ?? null;
+				selectedOrder = refreshedOrder;
+				if (!refreshedOrder) {
+					showDetailModal = false;
+				}
+			}
+		} catch {
+			paymentActionError = 'Gagal terhubung ke server saat memperbarui status pembayaran.';
+		} finally {
+			paymentUpdatingOrderId = null;
+		}
+	}
+
 	function openDetail(order: AdminOrder) {
 		selectedOrder = order;
 		showDetailModal = true;
@@ -440,6 +516,18 @@
 	{#if statusActionSuccess}
 		<div class="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-900/40 rounded-2xl p-4" in:fade>
 			<p class="text-xs font-bold text-emerald-700 dark:text-emerald-300">{statusActionSuccess}</p>
+		</div>
+	{/if}
+
+	{#if paymentActionError}
+		<div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/40 rounded-2xl p-4" in:fade>
+			<p class="text-xs font-bold text-red-700 dark:text-red-300">{paymentActionError}</p>
+		</div>
+	{/if}
+
+	{#if paymentActionSuccess}
+		<div class="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-900/40 rounded-2xl p-4" in:fade>
+			<p class="text-xs font-bold text-emerald-700 dark:text-emerald-300">{paymentActionSuccess}</p>
 		</div>
 	{/if}
 
@@ -570,13 +658,34 @@
 										Set Cancelled (Tanpa Restore Stok)
 									</button>
 								{/if}
-								<button
-									type="button"
-									disabled
-									class="px-5 py-2.5 bg-sky-50 dark:bg-sky-900/20 text-sky-700 dark:text-sky-400 text-[10px] font-black uppercase tracking-widest rounded-xl border border-sky-200 dark:border-sky-800 opacity-60 cursor-not-allowed"
-								>
-									Verifikasi Payment (Hold)
-								</button>
+								<div class="p-3 bg-sky-50 dark:bg-sky-900/20 border border-sky-200 dark:border-sky-900/40 rounded-xl space-y-2">
+									<p class="text-[9px] font-black text-sky-700 dark:text-sky-300 uppercase tracking-widest">
+										Payment Manual
+									</p>
+									<select
+										value={paymentStatusDraftByOrderId[order.id] ?? normalizeManualPaymentStatus(order.paymentStatus)}
+										disabled={paymentUpdatingOrderId !== null}
+										onchange={(event) =>
+											setPaymentStatusDraft(order.id, (event.currentTarget as HTMLSelectElement).value)}
+										class="w-full rounded-lg border border-sky-200 dark:border-sky-800 bg-white dark:bg-zinc-900 px-3 py-2 text-[11px] font-bold text-zinc-700 dark:text-zinc-200 disabled:opacity-60"
+									>
+										<option value="unpaid">Belum Dibayar</option>
+										<option value="waiting_verification">Menunggu Verifikasi</option>
+										<option value="paid">Sudah Dibayar</option>
+										<option value="cod">COD</option>
+									</select>
+									<button
+										type="button"
+										disabled={paymentUpdatingOrderId !== null}
+										onclick={() => applyPaymentStatus(order)}
+										class="w-full px-3 py-2 bg-sky-600 text-white text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-sky-700 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+									>
+										{paymentUpdatingOrderId === order.id ? 'Menyimpan Payment...' : 'Simpan Payment Status'}
+									</button>
+									<p class="text-[9px] font-semibold text-sky-700/80 dark:text-sky-300/80">
+										Tanpa gateway/upload bukti. Workflow manual lokal.
+									</p>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -704,7 +813,7 @@
 			<div class="p-4 bg-zinc-50 dark:bg-zinc-800 rounded-2xl border border-zinc-100 dark:border-zinc-700">
 				<p class="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Payment Proof</p>
 				<p class="text-xs font-semibold text-zinc-500 mt-1">
-					Belum ada workflow bukti pembayaran pada read model Batch 6 (Hold).
+					Belum ada workflow bukti pembayaran/gateway. Update payment saat ini masih manual dari admin list.
 				</p>
 			</div>
 
@@ -718,7 +827,7 @@
 			<div class="p-4 bg-zinc-50 dark:bg-zinc-800 rounded-2xl border border-zinc-100 dark:border-zinc-700">
 				<p class="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Aksi Admin</p>
 				<p class="text-xs font-semibold text-zinc-500 mt-1">
-					Update status order minimal aktif dari daftar order. Verifikasi pembayaran dan action lanjutan tetap Hold.
+					Update status order minimal dan payment status manual aktif dari daftar order. Payment gateway/upload bukti tetap Hold.
 				</p>
 			</div>
 		</div>

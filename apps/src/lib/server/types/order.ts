@@ -1,4 +1,5 @@
 export const paymentMethods = ['cash', 'transfer', 'qris', 'cod'] as const;
+export const paymentStatuses = ['unpaid', 'waiting_verification', 'paid', 'cod'] as const;
 export const orderStatuses = [
 	'new',
 	'confirmed',
@@ -10,7 +11,7 @@ export const orderStatuses = [
 ] as const;
 
 export type PaymentMethod = (typeof paymentMethods)[number];
-export type PaymentStatus = 'unpaid' | 'cod';
+export type PaymentStatus = (typeof paymentStatuses)[number];
 export type OrderStatus = (typeof orderStatuses)[number];
 
 export type CreateOrderItemInput = {
@@ -58,6 +59,14 @@ export type UpdatedOrderStatusSummary = {
 	orderNumber: string;
 	status: OrderStatus;
 	updatedAt: string;
+};
+
+export type UpdatedOrderPaymentStatusSummary = {
+	orderId: string;
+	orderNumber: string;
+	paymentStatus: PaymentStatus;
+	paidAmount: number;
+	remainingAmount: number;
 };
 
 export type OrderListItem = {

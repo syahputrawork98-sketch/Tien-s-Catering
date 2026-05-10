@@ -1,17 +1,20 @@
 import {
 	createOrderRecord,
 	listOrderRecords,
+	updateOrderPaymentStatusRecord,
 	updateOrderStatusRecord
 } from '$lib/server/repositories/orderRepository';
 import {
 	type OrderListRecord,
 	orderStatuses,
 	paymentMethods,
+	paymentStatuses,
 	type CreateOrderInput,
 	type CreatedOrderSummary,
 	type OrderStatus,
 	type PaymentMethod,
 	type PaymentStatus,
+	type UpdatedOrderPaymentStatusSummary,
 	type UpdatedOrderStatusSummary
 } from '$lib/server/types/order';
 
@@ -39,6 +42,17 @@ type UpdateOrderStatusResult =
 	| {
 			ok: true;
 			order: UpdatedOrderStatusSummary;
+	  }
+	| {
+			ok: false;
+			status: 400 | 404;
+			message: string;
+	  };
+
+type UpdateOrderPaymentStatusResult =
+	| {
+			ok: true;
+			payment: UpdatedOrderPaymentStatusSummary;
 	  }
 	| {
 			ok: false;
@@ -230,5 +244,46 @@ export function updateOrderStatus(orderId: string, payload: unknown): UpdateOrde
 	return {
 		ok: true,
 		order: updatedOrder
+	};
+}
+
+export function updateOrderPaymentStatus(
+	orderId: string,
+	payload: unknown
+): UpdateOrderPaymentStatusResult {
+	const normalizedOrderId = parseRequiredString(orderId);
+	if (!normalizedOrderId) {
+		return { ok: false, status: 400, message: 'order id wajib diisi.' };
+	}
+
+	if (!isRecord(payload)) {
+		return { ok: false, status: 400, message: 'Payload tidak valid.' };
+	}
+
+	const rawPaymentStatus = parseRequiredString(payload.paymentStatus);
+	if (!rawPaymentStatus) {
+		return { ok: false, status: 400, message: 'paymentStatus wajib diisi.' };
+	}
+
+	const normalizedPaymentStatus = rawPaymentStatus.toLowerCase();
+	if (!paymentStatuses.includes(normalizedPaymentStatus as PaymentStatus)) {
+		return {
+			ok: false,
+			status: 400,
+			message: `paymentStatus harus salah satu: ${paymentStatuses.join(', ')}.`
+		};
+	}
+
+	const updatedPayment = updateOrderPaymentStatusRecord(
+		normalizedOrderId,
+		normalizedPaymentStatus as PaymentStatus
+	);
+	if (!updatedPayment) {
+		return { ok: false, status: 404, message: 'Order/payment info tidak ditemukan.' };
+	}
+
+	return {
+		ok: true,
+		payment: updatedPayment
 	};
 }

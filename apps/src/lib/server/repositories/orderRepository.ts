@@ -2,9 +2,11 @@ import { ensureDatabaseInitialized, getDatabase } from '$lib/server/db/client';
 import type {
 	CreateOrderInput,
 	CreatedOrderSummary,
+	PaymentStatus,
 	OrderStatus,
 	OrderListItem,
 	OrderListRecord,
+	UpdatedOrderPaymentStatusSummary,
 	UpdatedOrderStatusSummary
 } from '$lib/server/types/order';
 
@@ -232,6 +234,12 @@ type RawOrderStatusRow = {
 	updatedAt: string;
 };
 
+type RawOrderPaymentRow = {
+	orderId: string;
+	orderNumber: string;
+	totalAmount: number;
+};
+
 export function listOrderRecords(): OrderListRecord[] {
 	ensureDatabaseInitialized();
 	const db = getDatabase();
@@ -388,5 +396,60 @@ export function updateOrderStatusRecord(
 		orderNumber: updatedOrder.orderNumber,
 		status,
 		updatedAt: updatedOrder.updatedAt
+	};
+}
+
+export function updateOrderPaymentStatusRecord(
+	orderId: string,
+	paymentStatus: PaymentStatus
+): UpdatedOrderPaymentStatusSummary | null {
+	ensureDatabaseInitialized();
+	const db = getDatabase();
+
+	const paymentQuery = db.prepare(
+		`SELECT
+			o.id AS orderId,
+			o.order_number AS orderNumber,
+			p.total_amount AS totalAmount
+		FROM orders o
+		INNER JOIN payment_info p ON p.order_id = o.id
+		WHERE o.id = @orderId
+		LIMIT 1;`
+	);
+
+	const paymentRow = paymentQuery.get({ orderId }) as RawOrderPaymentRow | undefined;
+	if (!paymentRow) {
+		return null;
+	}
+
+	const totalAmount = Math.max(0, Number(paymentRow.totalAmount));
+	const paidAmount = paymentStatus === 'paid' ? totalAmount : 0;
+	const remainingAmount = paymentStatus === 'paid' ? 0 : totalAmount;
+
+	const paymentUpdate = db.prepare(
+		`UPDATE payment_info
+		SET payment_status = @paymentStatus,
+			paid_amount = @paidAmount,
+			remaining_amount = @remainingAmount
+		WHERE order_id = @orderId;`
+	);
+
+	const updateResult = paymentUpdate.run({
+		orderId,
+		paymentStatus,
+		paidAmount,
+		remainingAmount
+	});
+
+	if (updateResult.changes === 0) {
+		return null;
+	}
+
+	return {
+		orderId: paymentRow.orderId,
+		orderNumber: paymentRow.orderNumber,
+		paymentStatus,
+		paidAmount,
+		remainingAmount
 	};
 }
