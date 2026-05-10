@@ -10,6 +10,7 @@
 	}>();
 
 	let quantity = $state(1);
+	let stockWarning = $state('');
 
 	function formatPrice(val: number | string) {
 		const parsedVal = typeof val === 'string' ? parseFloat(val) : val;
@@ -20,19 +21,88 @@
 		}).format(parsedVal);
 	}
 
+	function normalizeStock(val: unknown) {
+		const parsedVal = Number(val);
+		if (!Number.isFinite(parsedVal)) return 0;
+		return Math.max(0, Math.floor(parsedVal));
+	}
+
+	function normalizePrice(val: unknown) {
+		const parsedVal = Number(val);
+		return Number.isFinite(parsedVal) ? parsedVal : 0;
+	}
+
+	const itemStock = $derived(item ? normalizeStock(item.stock) : 0);
+	const currentCartQty = $derived(
+		item ? (cart.items.find((i) => i.id === item.id && i.deliveryDate === deliveryDate)?.quantity ?? 0) : 0
+	);
+	const remainingStock = $derived(Math.max(0, itemStock - currentCartQty));
+	const maxSelectableQuantity = $derived(Math.max(0, remainingStock));
+
+	$effect(() => {
+		if (!isOpen || !item) {
+			stockWarning = '';
+			return;
+		}
+
+		stockWarning = '';
+	});
+
+	$effect(() => {
+		if (!isOpen || !item) return;
+
+		if (maxSelectableQuantity <= 0) {
+			quantity = 0;
+			return;
+		}
+
+		if (quantity <= 0) {
+			quantity = 1;
+			return;
+		}
+
+		if (quantity > maxSelectableQuantity) {
+			quantity = maxSelectableQuantity;
+		}
+	});
+
 	function handleAddToCart() {
 		if (!item) return;
+		if (maxSelectableQuantity <= 0 || quantity <= 0) {
+			stockWarning = 'Stok untuk menu ini sudah habis di keranjang Anda.';
+			return;
+		}
+
+		let addedCount = 0;
+		const stockInfo = normalizeStock(item.stock);
+
 		for (let i = 0; i < quantity; i++) {
-			cart.addItem({
+			const result = cart.addItem({
 				id: item.id,
 				name: item.name,
-				price: item.price,
-				image: item.image,
-				category: item.category
+				price: normalizePrice(item.price),
+				image: item.image || '/images/placeholder-menu.jpg',
+				category: item.category,
+				stock: stockInfo
 			}, deliveryDate);
+
+			if (result === 'added') {
+				addedCount += 1;
+				continue;
+			}
+
+			if (result === 'stock_limit_reached') {
+				stockWarning = `Maksimal ${stockInfo} porsi untuk menu ini.`;
+			} else {
+				stockWarning = 'Stok menu ini sedang tidak tersedia.';
+			}
+			break;
 		}
-		onClose();
-		cart.toggleDrawer();
+
+		if (addedCount > 0) {
+			stockWarning = '';
+			onClose();
+		}
 	}
 </script>
 
@@ -73,9 +143,9 @@
 						<span class="text-[10px] font-black uppercase tracking-[0.2em] text-brand-primary bg-brand-primary/10 px-4 py-2 rounded-full border border-brand-primary/20">
 							{item.category}
 						</span>
-						{#if item.stock > 0}
+						{#if itemStock > 0}
 							<span class="text-[10px] font-black uppercase tracking-[0.2em] text-green-600 bg-green-50 px-4 py-2 rounded-full border border-green-100">
-								Stok Tersedia
+								Sisa {remainingStock} Porsi
 							</span>
 						{/if}
 					</div>
@@ -107,20 +177,36 @@
 						<!-- Quantity Selector -->
 						<div class="flex items-center bg-zinc-50 border border-zinc-100 rounded-2xl overflow-hidden p-1 shadow-inner">
 							<button 
+								disabled={quantity <= 1 || maxSelectableQuantity <= 0}
 								onclick={() => quantity = Math.max(1, quantity - 1)}
-								class="w-10 h-10 flex items-center justify-center hover:bg-white text-zinc-400 hover:text-brand-charcoal transition-all font-bold text-xl rounded-xl"
+								class="w-10 h-10 flex items-center justify-center hover:bg-white text-zinc-400 hover:text-brand-charcoal transition-all font-bold text-xl rounded-xl disabled:opacity-40 disabled:cursor-not-allowed"
 							>-</button>
 							<span class="w-12 text-center text-sm font-black text-brand-charcoal">{quantity}</span>
 							<button 
-								onclick={() => quantity++}
-								class="w-10 h-10 flex items-center justify-center hover:bg-white text-zinc-400 hover:text-brand-charcoal transition-all font-bold text-xl rounded-xl"
+								disabled={maxSelectableQuantity <= 0 || quantity >= maxSelectableQuantity}
+								onclick={() => quantity = Math.min(maxSelectableQuantity, quantity + 1)}
+								class="w-10 h-10 flex items-center justify-center hover:bg-white text-zinc-400 hover:text-brand-charcoal transition-all font-bold text-xl rounded-xl disabled:opacity-40 disabled:cursor-not-allowed"
 							>+</button>
 						</div>
 					</div>
 
+					{#if maxSelectableQuantity <= 0}
+						<p class="text-[11px] font-bold text-red-500">
+							Stok tidak tersedia untuk ditambahkan dari modal ini.
+						</p>
+					{:else}
+						<p class="text-[11px] font-bold text-zinc-500">
+							Maksimal tambah dari modal: {maxSelectableQuantity} porsi.
+						</p>
+					{/if}
+
+					{#if stockWarning}
+						<p class="text-[11px] font-bold text-orange-600">{stockWarning}</p>
+					{/if}
+
 					<button 
 						onclick={handleAddToCart}
-						disabled={item.stock === 0}
+						disabled={itemStock === 0 || maxSelectableQuantity <= 0}
 						class="w-full bg-brand-charcoal text-white py-5 rounded-2xl font-black text-sm uppercase tracking-[0.2em] shadow-2xl hover:bg-brand-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed"
 					>
 						Tambahkan Ke Keranjang

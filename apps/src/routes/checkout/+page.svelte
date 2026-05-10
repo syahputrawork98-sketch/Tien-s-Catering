@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { cart } from '$lib/stores/cartStore.svelte';
+	import { cart, type CartItem } from '$lib/stores/cartStore.svelte';
 	import { goto } from '$app/navigation';
 	import { fade, fly } from 'svelte/transition';
 
@@ -12,6 +12,7 @@
 	}
 
 	let loading = $state(false);
+	let stockValidationError = $state('');
 	
 	// Form State
 	let customerName = $state('');
@@ -20,9 +21,83 @@
 	let deliveryDate = $state('');
 	let notes = $state('');
 
+	type StockIssue = {
+		id: string;
+		name: string;
+		deliveryDate: string;
+		quantity: number;
+		availableStock: number;
+	};
+
+	function getStockLimit(item: Pick<CartItem, 'availableStock'>) {
+		const parsed = Number(item.availableStock);
+		if (!Number.isFinite(parsed)) return undefined;
+		return Math.max(0, Math.floor(parsed));
+	}
+
+	function getStockIssues(items: CartItem[]): StockIssue[] {
+		return items
+			.map((item) => {
+				const stockLimit = getStockLimit(item);
+				if (stockLimit === undefined || item.quantity <= stockLimit) return null;
+
+				return {
+					id: item.id,
+					name: item.name,
+					deliveryDate: item.deliveryDate,
+					quantity: item.quantity,
+					availableStock: stockLimit
+				} satisfies StockIssue;
+			})
+			.filter((issue): issue is StockIssue => issue !== null);
+	}
+
+	function getStockIssueMessage(issues: StockIssue[]) {
+		if (issues.length === 0) return '';
+		if (issues.length === 1) {
+			const issue = issues[0];
+			return `Stok menu "${issue.name}" tidak cukup. Maksimal ${issue.availableStock} porsi untuk tanggal ${issue.deliveryDate}.`;
+		}
+
+		return `Ada ${issues.length} item yang melebihi stok. Silakan sesuaikan jumlah porsi sebelum checkout.`;
+	}
+
+	function getItemStockWarning(item: CartItem) {
+		const stockLimit = getStockLimit(item);
+		if (stockLimit === undefined) return '';
+		if (item.quantity > stockLimit) {
+			return `Melebihi stok. Maksimal ${stockLimit} porsi.`;
+		}
+		if (item.quantity === stockLimit) {
+			return `Mencapai batas stok: ${stockLimit} porsi.`;
+		}
+		return '';
+	}
+
+	const stockIssues = $derived(getStockIssues(cart.items));
+	const hasStockIssue = $derived(stockIssues.length > 0);
+	const unknownStockCount = $derived(
+		cart.items.reduce((total, item) => total + (getStockLimit(item) === undefined ? 1 : 0), 0)
+	);
+
+	$effect(() => {
+		if (hasStockIssue) return;
+		if (!stockValidationError) return;
+
+		stockValidationError = '';
+	});
+
 	function handleCheckout(e: SubmitEvent) {
 		e.preventDefault();
 		if (cart.items.length === 0) return;
+
+		const issues = getStockIssues(cart.items);
+		if (issues.length > 0) {
+			stockValidationError = getStockIssueMessage(issues);
+			return;
+		}
+
+		stockValidationError = '';
 		
 		loading = true;
 		
@@ -124,6 +199,9 @@
 										<h3 class="font-black text-brand-charcoal text-lg">{item.name}</h3>
 										<p class="text-zinc-400 text-sm font-medium">{item.quantity} porsi x {formatPrice(item.price)}</p>
 										<span class="inline-block mt-2 px-2 py-0.5 bg-zinc-100 text-zinc-500 text-[9px] font-bold uppercase rounded-md tracking-wider">Kirim: {item.deliveryDate}</span>
+										{#if getItemStockWarning(item)}
+											<p class="mt-2 text-[10px] font-bold text-orange-500">{getItemStockWarning(item)}</p>
+										{/if}
 									</div>
 								</div>
 								<div class="text-right">
@@ -160,10 +238,36 @@
 						</div>
 					</div>
 
+					{#if stockValidationError || hasStockIssue}
+						<div class="mb-6 p-4 bg-orange-500/10 border border-orange-500/20 rounded-2xl">
+							<p class="text-[11px] text-orange-300 font-bold leading-relaxed">
+								{stockValidationError || 'Stok beberapa item tidak mencukupi. Kurangi jumlah porsi terlebih dahulu.'}
+							</p>
+							{#if hasStockIssue}
+								<div class="mt-3 space-y-1">
+									{#each stockIssues as issue}
+										<p class="text-[10px] text-orange-200 font-semibold">
+											{issue.name}: {issue.quantity} porsi, maksimal {issue.availableStock}
+										</p>
+									{/each}
+								</div>
+							{/if}
+						</div>
+					{/if}
+
+					{#if unknownStockCount > 0}
+						<div class="mb-6 p-4 bg-white/5 border border-white/10 rounded-2xl">
+							<p class="text-[10px] text-zinc-300 font-semibold leading-relaxed">
+								{unknownStockCount} item di keranjang belum memiliki info stok tersimpan (cart lama).
+								Checkout tetap diizinkan pada fase UI-only.
+							</p>
+						</div>
+					{/if}
+
 					<button 
 						form="checkout-form"
 						type="submit"
-						disabled={loading}
+						disabled={loading || hasStockIssue}
 						class="w-full bg-brand-primary text-white py-6 rounded-[1.5rem] font-black text-xs uppercase tracking-widest shadow-xl shadow-brand-primary/20 hover:scale-[1.03] active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
 					>
 						{#if loading}

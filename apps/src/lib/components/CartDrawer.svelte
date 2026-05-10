@@ -1,6 +1,8 @@
 <script lang="ts">
-	import { cart } from '$lib/stores/cartStore.svelte';
+	import { cart, type CartItem } from '$lib/stores/cartStore.svelte';
 	import { fade, fly } from 'svelte/transition';
+
+	let stockFeedback = $state<Record<string, string>>({});
 
 	function formatPrice(val: number | string) {
 		const price = typeof val === 'string' ? parseFloat(val) : val;
@@ -9,6 +11,74 @@
 			currency: 'IDR',
 			minimumFractionDigits: 0
 		}).format(price);
+	}
+
+	function getItemKey(item: Pick<CartItem, 'id' | 'deliveryDate'>) {
+		return `${item.id}::${item.deliveryDate}`;
+	}
+
+	function getStockLimit(item: Pick<CartItem, 'availableStock'>) {
+		const parsed = Number(item.availableStock);
+		if (!Number.isFinite(parsed)) return undefined;
+		return Math.max(0, Math.floor(parsed));
+	}
+
+	function clearStockFeedback(item: Pick<CartItem, 'id' | 'deliveryDate'>) {
+		const key = getItemKey(item);
+		if (!stockFeedback[key]) return;
+
+		const next = { ...stockFeedback };
+		delete next[key];
+		stockFeedback = next;
+	}
+
+	function setStockFeedback(item: Pick<CartItem, 'id' | 'deliveryDate'>, message: string) {
+		stockFeedback = { ...stockFeedback, [getItemKey(item)]: message };
+	}
+
+	function canIncrease(item: CartItem) {
+		const limit = getStockLimit(item);
+		if (limit === undefined) return true;
+		return item.quantity < limit;
+	}
+
+	function getStockHint(item: CartItem) {
+		const key = getItemKey(item);
+		if (stockFeedback[key]) return stockFeedback[key];
+
+		const limit = getStockLimit(item);
+		if (limit === undefined) return '';
+		if (item.quantity > limit) {
+			return `Jumlah melebihi stok, kurangi ke maksimal ${limit} porsi`;
+		}
+		if (item.quantity >= limit) {
+			return `Maksimal ${limit} porsi tersedia`;
+		}
+		return '';
+	}
+
+	function handleIncrease(item: CartItem) {
+		const result = cart.updateQuantity(item.id, item.deliveryDate, 1);
+		if (result === 'stock_limit_reached') {
+			const limit = getStockLimit(item);
+			setStockFeedback(
+				item,
+				limit === undefined ? 'Stok maksimal tercapai' : `Maksimal ${limit} porsi tersedia`
+			);
+			return;
+		}
+
+		clearStockFeedback(item);
+	}
+
+	function handleDecrease(item: CartItem) {
+		cart.updateQuantity(item.id, item.deliveryDate, -1);
+		clearStockFeedback(item);
+	}
+
+	function handleRemove(item: CartItem) {
+		cart.removeItem(item.id, item.deliveryDate);
+		clearStockFeedback(item);
 	}
 </script>
 
@@ -69,7 +139,7 @@
 									<button 
 										type="button"
 										aria-label="Hapus menu dari keranjang"
-										onclick={() => cart.removeItem(item.id, item.deliveryDate)}
+										onclick={() => handleRemove(item)}
 										class="text-zinc-300 hover:text-red-500 transition-colors"
 									>
 										<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -86,7 +156,7 @@
 										<button 
 											type="button"
 											aria-label="Kurangi jumlah porsi"
-											onclick={() => cart.updateQuantity(item.id, item.deliveryDate, -1)}
+											onclick={() => handleDecrease(item)}
 											class="w-8 h-8 flex items-center justify-center hover:bg-white text-zinc-500 transition-colors"
 										>
 											-
@@ -95,13 +165,20 @@
 										<button 
 											type="button"
 											aria-label="Tambah jumlah porsi"
-											onclick={() => cart.updateQuantity(item.id, item.deliveryDate, 1)}
-											class="w-8 h-8 flex items-center justify-center hover:bg-white text-zinc-500 transition-colors"
+											disabled={!canIncrease(item)}
+											onclick={() => handleIncrease(item)}
+											class="w-8 h-8 flex items-center justify-center hover:bg-white text-zinc-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
 										>
 											+
 										</button>
 									</div>
 								</div>
+
+								{#if getStockHint(item)}
+									<p class="text-[10px] mt-2 font-bold text-orange-500">
+										{getStockHint(item)}
+									</p>
+								{/if}
 							</div>
 						</div>
 					{/each}

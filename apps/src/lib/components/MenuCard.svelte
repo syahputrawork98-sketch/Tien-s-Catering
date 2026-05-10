@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { cart } from '$lib/stores/cartStore.svelte';
+
 	let { 
 		id = "", 
 		name = "Nama Menu", 
@@ -27,6 +28,27 @@
 			currency: 'IDR',
 			minimumFractionDigits: 0
 		}).format(parsedVal);
+	}
+
+	function normalizePrice(val: number | string) {
+		const parsedVal = typeof val === 'string' ? parseFloat(val) : val;
+		return Number.isFinite(parsedVal) ? parsedVal : 0;
+	}
+
+	const currentCartQty = $derived(
+		cart.items.find((i) => i.id === id && i.deliveryDate === deliveryDate)?.quantity ?? 0
+	);
+
+	const isStockLimitReached = $derived(stock > 0 && currentCartQty >= stock);
+	const isAddDisabled = $derived(stock === 0 || isStockLimitReached);
+
+	function handleAddToCart() {
+		if (isAddDisabled) return;
+
+		cart.addItem(
+			{ id, name, price: normalizePrice(price), image: image || '/images/placeholder-menu.jpg', category, stock },
+			deliveryDate
+		);
 	}
 </script>
 
@@ -85,6 +107,12 @@
 			{/if}
 		</div>
 
+		{#if isStockLimitReached}
+			<p class="mb-4 text-[11px] text-orange-600 font-bold uppercase tracking-wide">
+				Maksimal {stock} porsi sudah ada di keranjang
+			</p>
+		{/if}
+
 		<div class="flex items-center justify-between mt-auto pt-2">
 			<div class="flex flex-col">
 				<div class="text-brand-primary font-extrabold text-xl">
@@ -99,11 +127,11 @@
 			</div>
 			
 			<button 
-				disabled={stock === 0}
-				onclick={() => cart.addItem({ id, name, price, image, category }, deliveryDate)}
-				class="w-10 h-10 {stock === 0 ? 'bg-zinc-200 text-zinc-400 cursor-not-allowed' : 'bg-brand-primary text-white shadow-lg shadow-brand-primary/20 hover:bg-brand-charcoal'} rounded-2xl flex items-center justify-center transition-all group-active:scale-95"
+				disabled={isAddDisabled}
+				onclick={handleAddToCart}
+				class="w-10 h-10 {isAddDisabled ? 'bg-zinc-200 text-zinc-400 cursor-not-allowed' : 'bg-brand-primary text-white shadow-lg shadow-brand-primary/20 hover:bg-brand-charcoal'} rounded-2xl flex items-center justify-center transition-all group-active:scale-95"
 			>
-				{#if stock > 0}
+				{#if !isAddDisabled}
 					<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
 					</svg>
