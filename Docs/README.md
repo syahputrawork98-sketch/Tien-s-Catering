@@ -14,6 +14,7 @@ Dokumen di sini dipakai sebagai acuan product direction, scope, dan alur kerja l
 7. `06-commit-and-push-rules.md`
 8. `07-backend-foundation-plan.md`
 9. `08-order-api-and-admin-flow.md`
+10. `09-package-catering-request-flow.md`
 
 ## Prinsip Workflow
 

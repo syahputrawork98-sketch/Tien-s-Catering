@@ -19,28 +19,38 @@ Dokumen ini merangkum progres fitur project pada fase local development.
 - Guard transaksi stok memakai `orders.stock_status` (`not_deducted`, `deducted`, `released`).
 - Admin order flow polish aktif (label status order/payment/stock lebih jelas).
 - Local backend foundation aktif (`/api/health`, `/api/menus`, `/api/orders`, patch admin minimal).
+- Package catalog membaca API (`GET /api/packages`) dengan fallback mock.
+- Package request tersimpan ke database (`POST /api/package-requests`).
+- Admin package request list read-only aktif (`GET /api/package-requests`).
+- Admin package request review minimal aktif (`PATCH /api/package-requests/[id]/status`):
+  - update status request,
+  - update estimasi harga manual,
+  - update catatan admin.
 
 ## Berjalan / Stabilizing
 
-- Admin operational flow lokal (status + payment manual + stock feedback).
-- Konsistensi read model order untuk kebutuhan admin list/detail.
-- Hardening validasi edge case local workflow.
+- Admin operational flow order lokal (status + payment manual + stock feedback).
+- Admin operational flow package request lokal (review status + estimasi + catatan).
+- Konsistensi read model untuk halaman admin list/detail.
 
 ## Hold
 
+- Convert package request ke order.
+- Admin package CRUD.
+- Super Admin flow final.
 - Payment verification.
 - Payment gateway / QRIS production.
 - Upload bukti pembayaran production.
 - Rekening/payment account integration production.
+- Package payment/invoice production.
 - CS dashboard berbasis database.
 - User dashboard berbasis database.
-- Super Admin flow final.
 - Auth production.
 - Invoice/pajak production.
 
 ## Roadmap Berikutnya
 
-- Stabilizing lanjutan admin workflow (status + payment + stock) di local development.
+- Admin Package CRUD minimal.
+- User Dashboard database-backed untuk history order/request.
+- Super Admin local role management (tahap berikutnya).
 - Payment verification minimal (setelah disetujui scope berikutnya).
-- Migrasi CS/User dashboard ke database secara bertahap.
-- Docs sync berikutnya setelah beberapa batch tambahan.

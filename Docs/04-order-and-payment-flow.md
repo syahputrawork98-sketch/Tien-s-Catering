@@ -52,3 +52,10 @@
 - Payment gateway/QRIS production.
 - Upload bukti pembayaran production.
 - Auth production (login/JWT/session/password/RBAC).
+
+## Catatan Package Catering
+
+- Package request flow terpisah dari order menu harian.
+- Package request belum masuk checkout standar.
+- Package request belum langsung menjadi order pada `orders`.
+- Convert package request ke order masih Hold.

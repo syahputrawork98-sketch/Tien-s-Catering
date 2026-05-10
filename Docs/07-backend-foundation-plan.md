@@ -2,7 +2,12 @@
 
 ## Status Terkini
 
-Backend foundation lokal sudah berjalan dan dipakai oleh flow order + admin operational minimal.
+Backend foundation lokal sudah berjalan dan sekarang dipakai oleh:
+
+- flow order harian,
+- flow admin order minimal,
+- flow package catalog,
+- flow package request + review minimal.
 
 ## Endpoint Aktif
 
@@ -12,6 +17,10 @@ Backend foundation lokal sudah berjalan dan dipakai oleh flow order + admin oper
 - `GET /api/orders`
 - `PATCH /api/orders/[id]/status`
 - `PATCH /api/orders/[id]/payment-status`
+- `GET /api/packages`
+- `POST /api/package-requests`
+- `GET /api/package-requests`
+- `PATCH /api/package-requests/[id]/status`
 
 ## Struktur Data Lokal (SQLite)
 
@@ -24,12 +33,20 @@ Database lokal saat ini menyimpan:
 - `order_items`
 - `delivery_info`
 - `payment_info`
+- `packages`
+- `package_requests`
 
 Kolom penting tambahan pada `orders`:
 
 - `stock_status`
 - `stock_deducted_at`
 - `stock_released_at`
+
+Kolom penting tambahan pada `package_requests`:
+
+- `admin_note`
+- `estimated_price`
+- `reviewed_at`
 
 ## Persona Development
 
@@ -50,6 +67,10 @@ Dev persona switcher tetap dipakai pada local development:
   - potong stok saat `confirmed`,
   - restore stok saat `cancelled` (jika sebelumnya deducted),
   - guard via `orders.stock_status`.
+- Public package catalog membaca data dari API package.
+- Public package request submit ke database lokal.
+- Admin package request membaca list request dari database (read model).
+- Admin package request review minimal (status + estimasi + catatan).
 
 ## Batasan Penting (Masih Berlaku)
 
@@ -61,3 +82,5 @@ Backend ini belum production-ready:
 - Belum ada payment verification final workflow.
 - Belum ada stock reservation/timeout.
 - Belum ada admin stock adjustment UI.
+- Belum ada convert package request ke order.
+- Belum ada admin package CRUD production flow.

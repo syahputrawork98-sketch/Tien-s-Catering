@@ -63,6 +63,12 @@ Dokumen ini merangkum alur order lokal setelah status admin, payment manual, dan
 - Tidak ada auth production (login/JWT/session/password/RBAC).
 - Tidak ada deployment production.
 
+## Batas Alur dengan Package Request
+
+- Flow order admin di dokumen ini fokus pada `orders`.
+- Flow package request memakai endpoint dan halaman admin terpisah.
+- Package request belum otomatis dikonversi ke order.
+
 ## Arah Setelah Batch 10
 
 - Payment verification minimal (setelah ada keputusan scope berikutnya).

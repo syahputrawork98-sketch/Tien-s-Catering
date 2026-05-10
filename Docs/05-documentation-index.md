@@ -21,3 +21,4 @@ Dokumentasi dapat disinkronkan:
 - Aturan commit/push ada di `06-commit-and-push-rules.md`.
 - Progress backend foundation ada di `07-backend-foundation-plan.md`.
 - Progress order API + admin read-only ada di `08-order-api-and-admin-flow.md`.
+- Progress package request flow ada di `09-package-catering-request-flow.md`.
