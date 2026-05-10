@@ -23,6 +23,26 @@ export const createTablesSql = [
 		PRIMARY KEY (menu_id, active_date),
 		FOREIGN KEY (menu_id) REFERENCES menus (id) ON DELETE CASCADE
 	);`,
+	`CREATE TABLE IF NOT EXISTS packages (
+		id TEXT PRIMARY KEY,
+		name TEXT NOT NULL,
+		slug TEXT NOT NULL UNIQUE,
+		description TEXT NOT NULL,
+		category TEXT NOT NULL,
+		package_category TEXT,
+		base_price INTEGER NOT NULL,
+		image TEXT NOT NULL,
+		images_json TEXT NOT NULL DEFAULT '[]',
+		min_pax INTEGER NOT NULL DEFAULT 1,
+		package_items_json TEXT NOT NULL DEFAULT '[]',
+		features_json TEXT NOT NULL DEFAULT '[]',
+		suitable_for_json TEXT NOT NULL DEFAULT '[]',
+		status TEXT NOT NULL DEFAULT 'active',
+		is_active INTEGER NOT NULL DEFAULT 1,
+		is_available INTEGER NOT NULL DEFAULT 1,
+		created_at TEXT NOT NULL,
+		updated_at TEXT NOT NULL
+	);`,
 	`CREATE TABLE IF NOT EXISTS orders (
 		id TEXT PRIMARY KEY,
 		order_number TEXT NOT NULL UNIQUE,
