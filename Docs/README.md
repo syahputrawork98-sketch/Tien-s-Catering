@@ -11,6 +11,7 @@ Dokumen di sini dipakai sebagai acuan product direction, scope, dan alur kerja l
 4. `03-role-and-scope.md`
 5. `04-order-and-payment-flow.md`
 6. `05-documentation-index.md`
+7. `06-commit-and-push-rules.md`
 
 ## Prinsip Workflow
 

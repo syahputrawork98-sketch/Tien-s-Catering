@@ -15,3 +15,7 @@ Dokumentasi dapat disinkronkan:
 
 - Setelah beberapa batch fitur selesai.
 - Saat ada perubahan keputusan penting dari Room Chat 00.
+
+## Dokumen Workflow Commit
+
+- Aturan commit/push ada di `06-commit-and-push-rules.md`.
