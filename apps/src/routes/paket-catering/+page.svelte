@@ -1,7 +1,7 @@
 <script lang="ts">
 	import PublicNavbar from "$lib/components/PublicNavbar.svelte";
 	import PackageDetailModal from "$lib/components/PackageDetailModal.svelte";
-	import { fade, fly } from "svelte/transition";
+	import { fly } from "svelte/transition";
 	
 	let { data } = $props();
 
@@ -28,8 +28,8 @@
 			<span class="text-brand-primary font-black uppercase text-xs tracking-[0.3em] mb-4 block">Our Special Services</span>
 			<h1 class="text-6xl font-black text-brand-charcoal tracking-tighter mb-6">Paket Catering<br><span class="text-brand-primary italic">Profesional</span></h1>
 			<p class="text-zinc-500 text-xl leading-relaxed">
-				Kami menyediakan berbagai pilihan paket yang dirancang khusus untuk memenuhi kebutuhan acara Anda, 
-				mulai dari rapat kantor harian hingga pesta pernikahan megah.
+				Kami menyediakan pilihan paket untuk berbagai acara. Semua paket diproses melalui pengajuan request terlebih dahulu,
+				dengan harga <span class="font-bold">mulai dari</span> yang akan dikonfirmasi admin setelah review kebutuhan acara.
 			</p>
 		</div>
 
@@ -126,8 +126,8 @@
 				<a href="/kontak" class="bg-brand-primary text-white px-12 py-5 rounded-2xl font-black shadow-2xl shadow-brand-primary/30 hover:scale-105 transition-all">
 					Hubungi Konsultan Kami
 				</a>
-				<button onclick={() => alert("Fitur brosur PDF menyusul")} class="px-12 py-5 rounded-2xl border border-white/20 font-black hover:bg-white/10 transition-all">
-					Download Katalog PDF
+				<button type="button" disabled class="px-12 py-5 rounded-2xl border border-white/20 font-black text-white/60 cursor-not-allowed">
+					Katalog PDF (Menyusul)
 				</button>
 			</div>
 		</section>
