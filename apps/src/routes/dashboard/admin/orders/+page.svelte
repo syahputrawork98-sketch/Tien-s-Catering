@@ -6,6 +6,7 @@
 	type TabType = 'ALL' | 'NEW' | 'PROCESS' | 'DONE' | 'CANCELLED';
 	type OrderStatus = 'new' | 'confirmed' | 'processing' | 'ready' | 'delivered' | 'completed' | 'cancelled';
 	type PaymentStatus = 'unpaid' | 'waiting_verification' | 'paid' | 'cod';
+	type OrderStockStatus = 'not_deducted' | 'deducted' | 'released';
 
 	type AdminOrderItem = {
 		id: string;
@@ -40,6 +41,9 @@
 		total: number;
 		notes: string;
 		devPersonaCode: string | null;
+		stockStatus: OrderStockStatus;
+		stockDeductedAt: string | null;
+		stockReleasedAt: string | null;
 		deliveryInfo: {
 			departmentOrUnit: string | null;
 			floor: string | null;
@@ -61,6 +65,8 @@
 			orderNumber?: unknown;
 			status?: unknown;
 			updatedAt?: unknown;
+			stockStatus?: unknown;
+			stockUpdated?: unknown;
 		};
 		message?: string;
 	};
@@ -141,6 +147,9 @@
 		const total = getNumber(raw.total);
 		const notes = getString(raw.notes);
 		const devPersonaCode = getString(raw.devPersonaCode) || null;
+		const stockStatus = normalizeStockStatus(getString(raw.stockStatus, 'not_deducted').toLowerCase());
+		const stockDeductedAt = getString(raw.stockDeductedAt) || null;
+		const stockReleasedAt = getString(raw.stockReleasedAt) || null;
 		const deliveryInfoRaw = isRecord(raw.deliveryInfo) ? raw.deliveryInfo : {};
 		const itemsRaw = Array.isArray(raw.items) ? raw.items : [];
 
@@ -177,6 +186,9 @@
 			total,
 			notes,
 			devPersonaCode,
+			stockStatus,
+			stockDeductedAt,
+			stockReleasedAt,
 			deliveryInfo: {
 				departmentOrUnit: getString(deliveryInfoRaw.departmentOrUnit) || null,
 				floor: getString(deliveryInfoRaw.floor) || null,
@@ -265,11 +277,11 @@
 
 	function statusLabel(status: string): string {
 		const map: Record<string, string> = {
-			new: 'Pesanan Baru',
+			new: 'Menunggu Konfirmasi',
 			confirmed: 'Dikonfirmasi',
 			processing: 'Diproses',
-			ready: 'Siap Antar',
-			delivered: 'Dalam Pengantaran',
+			ready: 'Siap Diantar',
+			delivered: 'Dalam/Sudah Diantar',
 			completed: 'Selesai',
 			cancelled: 'Dibatalkan'
 		};
@@ -331,6 +343,11 @@
 		return manualPaymentStatuses.includes(status as PaymentStatus) ? (status as PaymentStatus) : 'unpaid';
 	}
 
+	function normalizeStockStatus(status: string): OrderStockStatus {
+		if (status === 'deducted' || status === 'released') return status;
+		return 'not_deducted';
+	}
+
 	function setPaymentStatusDraft(orderId: string, rawStatus: string) {
 		paymentStatusDraftByOrderId = {
 			...paymentStatusDraftByOrderId,
@@ -347,6 +364,26 @@
 		};
 
 		return map[status] ?? 'text-zinc-500';
+	}
+
+	function stockStatusLabel(status: OrderStockStatus): string {
+		const map: Record<OrderStockStatus, string> = {
+			not_deducted: 'Belum Potong Stok',
+			deducted: 'Stok Sudah Dipotong',
+			released: 'Stok Sudah Dikembalikan'
+		};
+
+		return map[status];
+	}
+
+	function stockStatusColor(status: OrderStockStatus): string {
+		const map: Record<OrderStockStatus, string> = {
+			not_deducted: 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300',
+			deducted: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
+			released: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+		};
+
+		return map[status];
 	}
 
 	async function loadOrders() {
@@ -411,7 +448,19 @@
 				return;
 			}
 
-			statusActionSuccess = `Status order ${order.orderNumber} diperbarui menjadi ${statusLabel(nextStatus)}.`;
+			const responseStockStatus = normalizeStockStatus(
+				getString(body?.order?.stockStatus, 'not_deducted').toLowerCase()
+			);
+			const responseStockUpdated = Boolean(body?.order?.stockUpdated);
+			const stockFeedback = responseStockUpdated
+				? nextStatus === 'confirmed'
+					? 'Stok berhasil dipotong.'
+					: nextStatus === 'cancelled'
+						? 'Stok berhasil dikembalikan.'
+						: `Perubahan stok diterapkan (${stockStatusLabel(responseStockStatus)}).`
+				: 'Status berubah tanpa perubahan stok.';
+
+			statusActionSuccess = `Status order ${order.orderNumber} diperbarui menjadi ${statusLabel(nextStatus)}. ${stockFeedback}`;
 
 			await loadOrders();
 			if (showDetailModal && selectedOrder?.id === order.id) {
@@ -482,7 +531,7 @@
 
 	const tabs: { id: TabType; label: string; count: () => number }[] = [
 		{ id: 'ALL', label: 'Semua', count: () => stats().total },
-		{ id: 'NEW', label: 'Pesanan Baru', count: () => stats().new },
+		{ id: 'NEW', label: 'Menunggu Konfirmasi', count: () => stats().new },
 		{ id: 'PROCESS', label: 'Diproses', count: () => stats().process },
 		{ id: 'DONE', label: 'Selesai', count: () => stats().done },
 		{ id: 'CANCELLED', label: 'Dibatalkan', count: () => stats().cancelled }
@@ -498,11 +547,11 @@
 			</div>
 			<div class="inline-flex items-center gap-2 px-4 py-1.5 bg-amber-50 dark:bg-amber-900/20 rounded-full mb-4">
 				<span class="w-2 h-2 rounded-full bg-amber-500"></span>
-				<span class="text-[10px] font-black text-amber-700 dark:text-amber-300 uppercase tracking-widest">Payment & Stock Action Hold</span>
+				<span class="text-[10px] font-black text-amber-700 dark:text-amber-300 uppercase tracking-widest">Payment Gateway/Proof Hold</span>
 			</div>
 			<h1 class="text-4xl lg:text-5xl font-black text-brand-charcoal dark:text-white tracking-tighter italic">Manajemen Pesanan Admin</h1>
 			<p class="text-zinc-500 font-medium mt-2">
-				Data order dibaca dari database lokal. Update status order minimal aktif, sementara verifikasi pembayaran dan transaksi stok tetap Hold.
+				Data order dibaca dari database lokal. Status order + transaksi stok aktif, payment masih manual tanpa gateway/upload bukti.
 			</p>
 		</div>
 	</header>
@@ -550,7 +599,7 @@
 		<div class="grid grid-cols-2 lg:grid-cols-5 gap-4" in:fade={{ delay: 120 }}>
 			{#each [
 				{ label: 'Total Pesanan', value: stats().total, color: 'text-brand-charcoal dark:text-white' },
-				{ label: 'Pesanan Baru', value: stats().new, color: 'text-blue-600' },
+				{ label: 'Menunggu Konfirmasi', value: stats().new, color: 'text-blue-600' },
 				{ label: 'Diproses', value: stats().process, color: 'text-amber-600' },
 				{ label: 'Selesai', value: stats().done, color: 'text-emerald-600' },
 				{ label: 'Dibatalkan', value: stats().cancelled, color: 'text-red-500' }
@@ -590,6 +639,7 @@
 									<span class="text-sm font-black text-brand-charcoal dark:text-white">{order.orderNumber}</span>
 									<span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider {statusColor(order.status)}">{statusLabel(order.status)}</span>
 									<span class="text-[10px] font-black uppercase {paymentColor(order.paymentStatus)}">{paymentLabel(order.paymentStatus)}</span>
+									<span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider {stockStatusColor(order.stockStatus)}">{stockStatusLabel(order.stockStatus)}</span>
 									<span class="px-3 py-1 rounded-full text-[10px] font-black bg-zinc-100 dark:bg-zinc-800 text-zinc-500 uppercase tracking-wider">Pembayaran: {paymentMethodLabel(order.paymentMethod)}</span>
 									<span class="px-3 py-1 rounded-full text-[10px] font-black bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 uppercase tracking-wider">Data Database Lokal</span>
 								</div>
@@ -704,8 +754,9 @@
 		<div class="space-y-6">
 			<div class="flex flex-wrap items-center gap-2">
 				<span class="px-3 py-1 rounded-full text-[10px] font-black bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 uppercase tracking-wider">Data Database Lokal</span>
-				<span class="px-3 py-1 rounded-full text-[10px] font-black bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 uppercase tracking-wider">Status Update Minimal</span>
-				<span class="px-3 py-1 rounded-full text-[10px] font-black bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 uppercase tracking-wider">Payment Action Hold</span>
+				<span class="px-3 py-1 rounded-full text-[10px] font-black bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 uppercase tracking-wider">Status + Payment Manual</span>
+				<span class="px-3 py-1 rounded-full text-[10px] font-black bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 uppercase tracking-wider">Gateway/Upload Bukti Hold</span>
+				<span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider {stockStatusColor(selectedOrder.stockStatus)}">{stockStatusLabel(selectedOrder.stockStatus)}</span>
 			</div>
 
 			<div class="grid grid-cols-2 gap-4">
@@ -716,6 +767,10 @@
 				<div>
 					<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Status</p>
 					<span class="px-3 py-1 rounded-full text-[10px] font-black {statusColor(selectedOrder.status)}">{statusLabel(selectedOrder.status)}</span>
+				</div>
+				<div>
+					<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Status Stok Order</p>
+					<span class="px-3 py-1 rounded-full text-[10px] font-black {stockStatusColor(selectedOrder.stockStatus)}">{stockStatusLabel(selectedOrder.stockStatus)}</span>
 				</div>
 				<div>
 					<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Customer</p>
@@ -760,6 +815,14 @@
 				<div>
 					<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Dev Persona</p>
 					<p class="text-sm font-bold uppercase">{selectedOrder.devPersonaCode ?? '-'}</p>
+				</div>
+				<div>
+					<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Waktu Potong Stok</p>
+					<p class="text-sm font-bold">{selectedOrder.stockDeductedAt ? formatDate(selectedOrder.stockDeductedAt) : '-'}</p>
+				</div>
+				<div>
+					<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Waktu Restore Stok</p>
+					<p class="text-sm font-bold">{selectedOrder.stockReleasedAt ? formatDate(selectedOrder.stockReleasedAt) : '-'}</p>
 				</div>
 				<div>
 					<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Total</p>
