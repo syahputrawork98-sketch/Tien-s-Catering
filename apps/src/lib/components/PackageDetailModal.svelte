@@ -18,7 +18,8 @@
 	};
 
 	type PackageRequestSummary = {
-		requestId: string;
+		id: string;
+		requestNumber: string;
 		packageId: string;
 		packageName: string;
 		basePrice: number;
@@ -29,7 +30,26 @@
 		eventLocation: string;
 		specialNotes: string;
 		submittedAt: string;
-		source: 'ui-only';
+		status: string;
+		source: 'api';
+	};
+
+	type ApiPackageRequestResponse = {
+		request?: {
+			id?: unknown;
+			requestNumber?: unknown;
+			packageId?: unknown;
+			packageName?: unknown;
+			customerName?: unknown;
+			whatsapp?: unknown;
+			eventDate?: unknown;
+			pax?: unknown;
+			location?: unknown;
+			notes?: unknown;
+			status?: unknown;
+			createdAt?: unknown;
+		};
+		message?: unknown;
 	};
 
 	const REQUEST_STORAGE_KEY = 'lastPackageRequest';
@@ -81,6 +101,18 @@
 
 	function sanitizeWhatsapp(value: string) {
 		return value.replace(/\s+/g, '').replace(/-/g, '');
+	}
+
+	function getSafeString(value: unknown, fallback = '') {
+		if (typeof value !== 'string') return fallback;
+		const normalized = value.trim();
+		return normalized.length > 0 ? normalized : fallback;
+	}
+
+	function getSafeNumber(value: unknown, fallback = 0) {
+		const parsed = Number(value);
+		if (!Number.isFinite(parsed)) return fallback;
+		return parsed;
 	}
 
 	function formatDateLabel(value: string) {
@@ -165,19 +197,53 @@
 		isSubmitting = true;
 
 		try {
-			const summary: PackageRequestSummary = {
-				requestId: `PKG-${Date.now()}`,
-				packageId: pkg.id,
-				packageName: pkg.name,
-				basePrice: pkg.basePrice,
+			const payload = {
+				packageId: getSafeString(pkg.id),
+				packageName: getSafeString(pkg.name),
 				customerName: requestForm.customerName.trim(),
 				whatsapp: sanitizeWhatsapp(requestForm.whatsapp),
 				eventDate: requestForm.eventDate,
 				pax: Number(requestForm.pax),
-				eventLocation: requestForm.eventLocation.trim(),
-				specialNotes: requestForm.specialNotes.trim(),
-				submittedAt: new Date().toISOString(),
-				source: 'ui-only'
+				location: requestForm.eventLocation.trim(),
+				notes: requestForm.specialNotes.trim()
+			};
+
+			const response = await fetch('/api/package-requests', {
+				method: 'POST',
+				headers: {
+					'content-type': 'application/json'
+				},
+				body: JSON.stringify(payload)
+			});
+
+			const body = (await response.json().catch(() => null)) as ApiPackageRequestResponse | null;
+			if (!response.ok) {
+				const message = getSafeString(body?.message, 'Request belum berhasil diproses. Coba lagi beberapa saat.');
+				submitError = message;
+				return;
+			}
+
+			const requestPayload = body?.request;
+			if (!requestPayload) {
+				submitError = 'Response request paket tidak valid.';
+				return;
+			}
+
+			const summary: PackageRequestSummary = {
+				id: getSafeString(requestPayload.id, `PR-${Date.now()}`),
+				requestNumber: getSafeString(requestPayload.requestNumber, `PR-${Date.now()}`),
+				packageId: getSafeString(requestPayload.packageId, payload.packageId),
+				packageName: getSafeString(requestPayload.packageName, payload.packageName),
+				basePrice: pkg.basePrice,
+				customerName: getSafeString(requestPayload.customerName, payload.customerName),
+				whatsapp: getSafeString(requestPayload.whatsapp, payload.whatsapp),
+				eventDate: getSafeString(requestPayload.eventDate, payload.eventDate),
+				pax: Math.max(1, Math.floor(getSafeNumber(requestPayload.pax, payload.pax))),
+				eventLocation: getSafeString(requestPayload.location, payload.location),
+				specialNotes: getSafeString(requestPayload.notes, payload.notes),
+				submittedAt: getSafeString(requestPayload.createdAt, new Date().toISOString()),
+				status: getSafeString(requestPayload.status, 'new'),
+				source: 'api'
 			};
 
 			persistRequest(summary);
@@ -308,7 +374,7 @@
 							Request untuk <span class="font-bold">{submitSuccess.packageName}</span> sudah dicatat.
 						</p>
 						<div class="text-xs text-emerald-800 space-y-1">
-							<p><span class="font-bold">ID Request:</span> {submitSuccess.requestId}</p>
+							<p><span class="font-bold">Nomor Request:</span> {submitSuccess.requestNumber}</p>
 							<p><span class="font-bold">Tanggal Acara:</span> {formatDateLabel(submitSuccess.eventDate)}</p>
 							<p><span class="font-bold">Jumlah Pax:</span> {submitSuccess.pax}</p>
 						</div>
@@ -430,7 +496,7 @@
 					Konsultasi via WhatsApp
 				</a>
 				<p class="mt-3 text-[10px] text-zinc-400 leading-relaxed">
-					Alur ini masih UI-only. Request paket belum masuk cart, checkout, atau order database.
+					Request paket sudah masuk database lokal, tetapi tetap belum masuk cart, checkout, atau order.
 				</p>
 			</div>
 		</div>

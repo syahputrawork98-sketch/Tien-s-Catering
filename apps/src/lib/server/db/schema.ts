@@ -43,6 +43,21 @@ export const createTablesSql = [
 		created_at TEXT NOT NULL,
 		updated_at TEXT NOT NULL
 	);`,
+	`CREATE TABLE IF NOT EXISTS package_requests (
+		id TEXT PRIMARY KEY,
+		request_number TEXT NOT NULL UNIQUE,
+		package_id TEXT NOT NULL,
+		package_name_snapshot TEXT NOT NULL,
+		customer_name TEXT NOT NULL,
+		whatsapp TEXT NOT NULL,
+		event_date TEXT NOT NULL,
+		pax INTEGER NOT NULL,
+		location TEXT NOT NULL,
+		notes TEXT NOT NULL DEFAULT '',
+		status TEXT NOT NULL DEFAULT 'new',
+		created_at TEXT NOT NULL,
+		updated_at TEXT NOT NULL
+	);`,
 	`CREATE TABLE IF NOT EXISTS orders (
 		id TEXT PRIMARY KEY,
 		order_number TEXT NOT NULL UNIQUE,
