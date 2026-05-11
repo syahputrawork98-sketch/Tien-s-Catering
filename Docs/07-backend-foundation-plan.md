@@ -10,6 +10,12 @@ Backend foundation lokal sudah berjalan dan sekarang dipakai oleh:
 - flow package request + review minimal,
 - flow admin package CRUD minimal.
 
+## Status Package Batch 5-7 (Accepted)
+
+- Batch 5: admin package CRUD minimal aktif + package tetap by request.
+- Batch 6: feedback edit package benar + search/filter admin package aktif.
+- Batch 7: search/filter/status summary admin package request aktif, convert ke order tetap Hold.
+
 ## Endpoint Aktif
 
 - `GET /api/health`
@@ -72,14 +78,18 @@ Dev persona switcher tetap dipakai pada local development:
   - restore stok saat `cancelled` (jika sebelumnya deducted),
   - guard via `orders.stock_status`.
 - Public package catalog membaca data dari API package.
-- Public package request submit ke database lokal.
+- Public `/paket-catering` hanya menampilkan package `active/available`.
+- Public package request submit ke database lokal (`POST /api/package-requests`).
 - Admin package request membaca list request dari database (read model).
 - Admin package request review minimal (status + estimasi + catatan).
 - Admin package create/update/toggle status aktif (tanpa hard delete).
+- Admin package page punya search/filter sederhana.
+- Admin package request page punya search/filter client-side + summary count + no-result state setelah filter.
 - Batasan alur package tetap by request:
   - package tidak masuk cart,
   - package tidak masuk checkout,
-  - package tidak langsung menjadi order.
+  - package tidak langsung menjadi order,
+  - convert package request ke order tetap Hold/disabled.
 
 ## Batasan Penting (Masih Berlaku)
 
@@ -92,7 +102,16 @@ Backend ini belum production-ready:
 - Belum ada stock reservation/timeout.
 - Belum ada admin stock adjustment UI.
 - Belum ada convert package request ke order.
-- Belum ada hard delete package.
+- Belum ada hard delete package/request.
 - Belum ada Super Admin flow final.
 - Belum ada role management.
 - Belum ada package payment/invoice.
+
+## Known Issue (Project-wide)
+
+- `npm run check` masih gagal karena technical debt lama di luar package batch.
+- Area yang masih dilaporkan:
+  - `dashboard/admin/reports`
+  - `dashboard/cs/menu`
+  - `dashboard/cs/orders`
+  - `dashboard/orders`

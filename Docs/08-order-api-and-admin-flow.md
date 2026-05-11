@@ -69,6 +69,40 @@ Dokumen ini merangkum alur order lokal setelah status admin, payment manual, dan
 - Flow package request memakai endpoint dan halaman admin terpisah.
 - Package request belum otomatis dikonversi ke order.
 
+## Sinkronisasi Package Flow (Batch 5-7)
+
+- Public package catalog:
+  - `/paket-catering` membaca `GET /api/packages`,
+  - hanya menampilkan package `active/available`,
+  - package tetap by request (bukan cart/checkout/order instan).
+- Admin package management:
+  - `/dashboard/admin/packages` aktif untuk create/update/toggle active-inactive,
+  - package baru default `inactive`,
+  - slug auto-generate dari name,
+  - multiple images via textarea URL per baris,
+  - search/filter sederhana di admin page.
+- Package request flow:
+  - public submit request via `POST /api/package-requests`,
+  - admin membaca list via `GET /api/package-requests`,
+  - admin review minimal via `PATCH /api/package-requests/[id]/status` (status + estimasi + catatan),
+  - admin page request punya search/filter/status summary/no-result state.
+- Hold tetap berlaku:
+  - convert package request ke order masih disabled/Hold,
+  - package tidak masuk cart/checkout dan tidak langsung menjadi order,
+  - package payment/invoice masih Hold,
+  - hard delete package/request tidak ada,
+  - Super Admin dan role management tidak ada,
+  - auth production (login/JWT/session/password/RBAC) belum ada.
+
+## Known Issue (Project-wide)
+
+- `npm run check` masih gagal karena technical debt lama di luar package batch.
+- Area yang masih dilaporkan:
+  - `dashboard/admin/reports`
+  - `dashboard/cs/menu`
+  - `dashboard/cs/orders`
+  - `dashboard/orders`
+
 ## Arah Setelah Batch 10
 
 - Payment verification minimal (setelah ada keputusan scope berikutnya).
