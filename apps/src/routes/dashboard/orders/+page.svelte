@@ -82,6 +82,17 @@
                 dpRequired: false
             },
             paymentProofs: [],
+            paymentProof: apiOrder.paymentProof ? {
+                id: apiOrder.paymentProof.id,
+                fileName: apiOrder.paymentProof.fileName,
+                uploadedAt: apiOrder.paymentProof.uploadedAt,
+                status: apiOrder.paymentProof.status,
+                imageUrl: apiOrder.paymentProof.filePath, // filePath is data URL in this simulation
+                method: apiOrder.paymentMethod === 'qris' ? 'qris' : 'bank_transfer',
+                amount: apiOrder.total, // Simplified for now
+                stage: 'full', // Default for simulation
+                uploadedBy: 'user' // Default for simulation
+            } : undefined,
             paymentPlan: apiOrder.paymentMethod === 'cod' ? 'cod_full' : 'full_prepaid',
             deliveryInfo: apiOrder.deliveryInfo ? {
                 departmentOrUnit: apiOrder.deliveryInfo.departmentOrUnit || null,
@@ -129,12 +140,16 @@
         };
     }
 
-    function getOrderProofHistory(order: Order): MockPaymentProof[] {
+    function getOrderProofHistory(order: any): MockPaymentProof[] {
         if (order.paymentProofs && order.paymentProofs.length > 0) {
             return order.paymentProofs;
         }
 
-        return order.paymentProof ? [order.paymentProof] : [];
+        if (order.paymentProof) {
+            return [order.paymentProof];
+        }
+
+        return [];
     }
 
     function hasPackageItem(order: Order): boolean {
@@ -220,84 +235,55 @@
         if (!input.files || input.files.length === 0 || !selectedOrder) return;
 
         const selectedOrderId = selectedOrder.id;
-        const currentOrder = getOrderById(selectedOrderId);
-        if (!currentOrder) return;
-
         const file = input.files[0];
-        if (!file.type.startsWith('image/')) {
-            alert('File harus berupa gambar.');
+
+        // Validations
+        if (!['image/jpeg', 'image/png', 'image/webp', 'application/pdf'].includes(file.type)) {
+            alert('Harap unggah gambar (JPG/PNG/WEBP) atau PDF.');
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Ukuran file maksimal 5MB.');
             return;
         }
 
         isUploading = true;
 
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            const img = new Image();
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                let width = img.width;
-                let height = img.height;
-                const maxWidth = 800;
+        try {
+            const formData = new FormData();
+            formData.append('proof', file);
+            if (uploadNote) {
+                formData.append('note', uploadNote);
+            }
 
-                if (width > maxWidth) {
-                    height = (maxWidth / width) * height;
-                    width = maxWidth;
-                }
+            const response = await fetch(`/api/orders/${selectedOrderId}/payment-proof`, {
+                method: 'POST',
+                body: formData
+            });
 
-                canvas.width = width;
-                canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx?.drawImage(img, 0, 0, width, height);
+            const result = await response.json();
 
-                const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-                
-                // Determine stage
-                let stage: 'full' | 'dp' | 'remaining' = 'full';
-                if (currentOrder.paymentPlan === 'dp_then_remaining') {
-                    stage = currentOrder.paymentStatus === 'unpaid' ? 'dp' : 'remaining';
-                }
+            if (!response.ok) {
+                throw new Error(result.message || 'Gagal mengunggah bukti pembayaran.');
+            }
 
-                const currentBreakdown = getPaymentBreakdown(currentOrder);
-
-                const newProof: MockPaymentProof = {
-                    id: `PROOF-${Date.now()}`,
-                    stage,
-                    imageUrl: dataUrl,
-                    fileName: file.name,
-                    uploadedAt: new Date().toISOString(),
-                    uploadedBy: 'user',
-                    amount: stage === 'dp' ? (currentBreakdown.dpAmount ?? 0) : currentBreakdown.remainingAmount,
-                    method: currentOrder.paymentMethod === 'qris' ? 'qris' : 'bank_transfer',
-                    status: 'uploaded',
-                    note: uploadNote,
-                    originalSizeKb: Math.round(file.size / 1024),
-                    compressedSizeKb: Math.round(dataUrl.length * 0.75 / 1024),
-                    resizedWidth: width,
-                    resizedHeight: height
-                };
-
-                // Update local state
-                orders = orders.map((order) => {
-                    if (order.id === selectedOrderId) {
-                        const existingProofs = order.paymentProofs || [];
-                        return {
-                            ...order,
-                            paymentStatus: 'waiting_verification',
-                            paymentProofs: [...existingProofs, newProof],
-                            paymentProof: newProof // legacy
-                        };
-                    }
-                    return order;
-                });
-
-                selectedOrder = getOrderById(selectedOrderId);
-                isUploading = false;
-                uploadNote = '';
-            };
-            img.src = e.target?.result as string;
-        };
-        reader.readAsDataURL(file);
+            alert(result.message || 'Bukti pembayaran berhasil diunggah.');
+            
+            // Reload all orders to get updated status and proof metadata
+            await loadOrders();
+            
+            // Refresh selected order in modal
+            selectedOrder = getOrderById(selectedOrderId);
+            uploadNote = '';
+        } catch (e: any) {
+            console.error(e);
+            alert(e.message || 'Terjadi kesalahan saat mengunggah bukti pembayaran.');
+        } finally {
+            isUploading = false;
+            // Clear input
+            input.value = '';
+        }
     }
 </script>
 
@@ -617,7 +603,11 @@
                                         {#each selectedOrderProofHistory as proof}
                                             <div class="bg-white dark:bg-zinc-900 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800 flex items-center gap-4 group/proof hover:border-zinc-300 transition-all">
                                                 <div class="w-16 h-20 bg-zinc-50 dark:bg-zinc-800 rounded-xl overflow-hidden shadow-inner flex-shrink-0 relative">
-                                                    <img src={proof.imageUrl} alt="Proof" class="w-full h-full object-cover" />
+                                                    {#if proof.imageUrl}
+                                                        <img src={proof.imageUrl} alt="Proof" class="w-full h-full object-cover" />
+                                                    {:else}
+                                                        <div class="w-full h-full flex items-center justify-center text-zinc-300 text-xs font-black italic">No Image</div>
+                                                    {/if}
                                                     <div class="absolute inset-0 bg-black/40 opacity-0 group-hover/proof:opacity-100 transition-opacity flex items-center justify-center">
                                                         <span class="text-[8px] font-black text-white uppercase tracking-tighter">View</span>
                                                     </div>

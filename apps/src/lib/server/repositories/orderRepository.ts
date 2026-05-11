@@ -64,6 +64,22 @@ function ensureOrderStockColumns(db: ReturnType<typeof getDatabase>) {
 	if (!hasColumn(db, 'orders', 'source_id')) {
 		db.exec(`ALTER TABLE orders ADD COLUMN source_id TEXT;`);
 	}
+
+	// Add order_payment_proofs table
+	db.exec(`
+		CREATE TABLE IF NOT EXISTS order_payment_proofs (
+			id TEXT PRIMARY KEY,
+			order_id TEXT NOT NULL,
+			file_name TEXT NOT NULL,
+			file_path TEXT NOT NULL,
+			mime_type TEXT,
+			file_size INTEGER,
+			uploaded_at TEXT NOT NULL,
+			status TEXT DEFAULT 'pending',
+			FOREIGN KEY (order_id) REFERENCES orders(id)
+		);
+		CREATE INDEX IF NOT EXISTS idx_payment_proofs_order_id ON order_payment_proofs(order_id);
+	`);
 }
 
 function normalizeStockStatus(value: string | null | undefined): OrderStockStatus {
@@ -378,8 +394,17 @@ export function listOrderRecords(): OrderListRecord[] {
 		ORDER BY rowid ASC;`
 	);
 
+	const paymentProofQuery = db.prepare(
+		`SELECT 
+			id, order_id AS orderId, file_name AS fileName, 
+			file_path AS filePath, status, uploaded_at AS uploadedAt
+		FROM order_payment_proofs 
+		ORDER BY uploaded_at DESC;`
+	);
+
 	const orderRows = orderQuery.all() as RawOrderRow[];
 	const orderItemRows = orderItemQuery.all() as RawOrderItemRow[];
+	const paymentProofRows = paymentProofQuery.all() as any[];
 
 	const orderItemsByOrderId = new Map<string, OrderListItem[]>();
 	for (const row of orderItemRows) {
@@ -397,6 +422,19 @@ export function listOrderRecords(): OrderListRecord[] {
 			existingItems.push(orderItem);
 		} else {
 			orderItemsByOrderId.set(row.orderId, [orderItem]);
+		}
+	}
+
+	const paymentProofsByOrderId = new Map<string, any>();
+	for (const row of paymentProofRows) {
+		if (!paymentProofsByOrderId.has(row.orderId)) {
+			paymentProofsByOrderId.set(row.orderId, {
+				id: row.id,
+				fileName: row.fileName,
+				filePath: row.filePath,
+				status: row.status,
+				uploadedAt: row.uploadedAt
+			});
 		}
 	}
 
@@ -442,7 +480,8 @@ export function listOrderRecords(): OrderListRecord[] {
 				paidAmount,
 				remainingAmount
 			},
-			items: orderItemsByOrderId.get(row.id) ?? []
+			items: orderItemsByOrderId.get(row.id) ?? [],
+			paymentProof: paymentProofsByOrderId.get(row.id) ?? null
 		} satisfies OrderListRecord;
 	});
 }
@@ -724,4 +763,67 @@ export function updateOrderPaymentStatusRecord(
 		paidAmount,
 		remainingAmount
 	};
+}
+
+export type PaymentProofRecord = {
+	id: string;
+	orderId: string;
+	fileName: string;
+	filePath: string;
+	mimeType: string | null;
+	fileSize: number | null;
+	uploadedAt: string;
+	status: 'pending' | 'verified' | 'rejected';
+};
+
+export function savePaymentProofRecord(payload: Omit<PaymentProofRecord, 'id' | 'uploadedAt' | 'status'>): PaymentProofRecord {
+	ensureDatabaseInitialized();
+	const db = getDatabase();
+	const timestamp = new Date().toISOString();
+	const id = crypto.randomUUID();
+
+	db.prepare(`
+		INSERT INTO order_payment_proofs (
+			id, order_id, file_name, file_path, mime_type, file_size, uploaded_at, status
+		) VALUES (
+			@id, @orderId, @fileName, @filePath, @mimeType, @fileSize, @uploadedAt, 'pending'
+		)
+	`).run({
+		id,
+		orderId: payload.orderId,
+		fileName: payload.fileName,
+		filePath: payload.filePath,
+		mimeType: payload.mimeType,
+		fileSize: payload.fileSize,
+		uploadedAt: timestamp
+	});
+
+	return {
+		id,
+		orderId: payload.orderId,
+		fileName: payload.fileName,
+		filePath: payload.filePath,
+		mimeType: payload.mimeType,
+		fileSize: payload.fileSize,
+		uploadedAt: timestamp,
+		status: 'pending'
+	};
+}
+
+export function getLatestPaymentProofByOrderId(orderId: string): PaymentProofRecord | null {
+	ensureDatabaseInitialized();
+	const db = getDatabase();
+
+	const row = db.prepare(`
+		SELECT 
+			id, order_id AS orderId, file_name AS fileName, 
+			file_path AS filePath, mime_type AS mimeType, 
+			file_size AS fileSize, uploaded_at AS uploadedAt, status
+		FROM order_payment_proofs 
+		WHERE order_id = ? 
+		ORDER BY uploaded_at DESC 
+		LIMIT 1
+	`).get(orderId) as PaymentProofRecord | undefined;
+
+	return row || null;
 }

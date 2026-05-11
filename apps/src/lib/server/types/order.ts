@@ -119,4 +119,22 @@ export type OrderListRecord = {
 		remainingAmount: number;
 	};
 	items: OrderListItem[];
+	paymentProof?: {
+		id: string;
+		fileName: string;
+		filePath: string;
+		status: string;
+		uploadedAt: string;
+	} | null;
+};
+
+export type OrderPaymentProof = {
+	id: string;
+	orderId: string;
+	fileName: string;
+	filePath: string;
+	mimeType: string | null;
+	fileSize: number | null;
+	uploadedAt: string;
+	status: 'pending' | 'verified' | 'rejected';
 };

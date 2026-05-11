@@ -2,7 +2,9 @@ import {
 	createOrderRecord,
 	listOrderRecords,
 	updateOrderPaymentStatusRecord,
-	updateOrderStatusRecord
+	updateOrderStatusRecord,
+	savePaymentProofRecord,
+	getLatestPaymentProofByOrderId
 } from '$lib/server/repositories/orderRepository';
 import {
 	type OrderListRecord,
@@ -15,7 +17,8 @@ import {
 	type PaymentMethod,
 	type PaymentStatus,
 	type UpdatedOrderPaymentStatusSummary,
-	type UpdatedOrderStatusSummary
+	type UpdatedOrderStatusSummary,
+	type OrderPaymentProof
 } from '$lib/server/types/order';
 
 type CreateOrderResult =
@@ -248,6 +251,62 @@ export function updateOrderStatus(orderId: string, payload: unknown): UpdateOrde
 	return {
 		ok: true,
 		order: updatedOrder.order
+	};
+}
+
+export type UploadPaymentProofResult =
+	| {
+			ok: true;
+			paymentStatus: PaymentStatus;
+			proof: any;
+	  }
+	| {
+			ok: false;
+			status: number;
+			message: string;
+	  };
+
+export function uploadPaymentProof(
+	orderId: string,
+	fileData: { fileName: string; filePath: string; mimeType: string; fileSize: number }
+): UploadPaymentProofResult {
+	const normalizedOrderId = orderId.trim();
+	if (!normalizedOrderId) {
+		return { ok: false, status: 400, message: 'order id wajib diisi.' };
+	}
+
+	// 1. Get existing orders to verify
+	const allOrders = listOrderRecords();
+	const order = allOrders.find((o) => o.id === normalizedOrderId);
+
+	if (!order) {
+		return { ok: false, status: 404, message: 'Order tidak ditemukan.' };
+	}
+
+	if (order.paymentStatus === 'paid') {
+		return { ok: false, status: 400, message: 'Order sudah lunas, tidak perlu upload bukti bayar.' };
+	}
+
+	// 2. Save proof record
+	const proof = savePaymentProofRecord({
+		orderId: normalizedOrderId,
+		fileName: fileData.fileName,
+		filePath: fileData.filePath,
+		mimeType: fileData.mimeType,
+		fileSize: fileData.fileSize
+	});
+
+	// 3. Update payment status to waiting_verification
+	const updateResult = updateOrderPaymentStatusRecord(normalizedOrderId, 'waiting_verification');
+
+	if (!updateResult) {
+		return { ok: false, status: 500, message: 'Gagal memperbarui status pembayaran order.' };
+	}
+
+	return {
+		ok: true,
+		paymentStatus: 'waiting_verification',
+		proof
 	};
 }
 
