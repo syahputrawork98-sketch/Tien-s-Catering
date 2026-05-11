@@ -1,6 +1,7 @@
 <script lang="ts">
+    import { onMount } from 'svelte';
     import { mockAdminMetrics, mockAdminSalesReports } from '$lib/mock/reports';
-    import { mockOrders, getTotalRevenue, type MockOrderStatus, type MockPaymentStatus } from '$lib/mock/orders';
+    import { mockOrders, type MockOrderStatus, type MockPaymentStatus } from '$lib/mock/orders';
     import { mockAccounts } from '$lib/mock/accounts';
     import { mockCatalogItems } from '$lib/mock/catalog';
     import { fade } from 'svelte/transition';
@@ -14,7 +15,11 @@
     let activeTab = $state<ReportTabId>('overview');
     let searchQuery = $state('');
     let periodFilter = $state<PeriodFilter>('month');
-    const reportsSourceLabel = 'Data laporan ini masih simulasi lokal (mock), bukan reporting engine production.';
+    let dbOrders = $state<any[]>([]);
+    let isLoading = $state(true);
+    let fetchError = $state('');
+
+    const reportsSourceLabel = 'Beberapa data laporan kini bersumber dari database lokal (SQLite).';
     const exportHoldLabel = 'Export PDF/CSV production masih Hold.';
 
     // Helper: format rupiah
@@ -25,6 +30,47 @@
             maximumFractionDigits: 0
         }).format(value);
     }
+
+    async function fetchDbOrders() {
+        isLoading = true;
+        fetchError = '';
+        try {
+            const response = await fetch('/api/orders');
+            if (!response.ok) throw new Error('Gagal memuat data dari database.');
+            const data = await response.json();
+            dbOrders = Array.isArray(data.items) ? data.items : [];
+        } catch (err: any) {
+            console.error('Fetch error:', err);
+            fetchError = err.message || 'Terjadi kesalahan saat memuat data.';
+        } finally {
+            isLoading = false;
+        }
+    }
+
+    onMount(() => {
+        fetchDbOrders();
+    });
+
+    // Derived stats from DB
+    const dbStats = $derived({
+        totalRevenue: dbOrders.reduce((sum, o) => sum + (o.total || 0), 0),
+        orderCount: dbOrders.length,
+        statusCounts: {
+            new: dbOrders.filter(o => o.status === 'new').length,
+            confirmed: dbOrders.filter(o => o.status === 'confirmed').length,
+            processing: dbOrders.filter(o => o.status === 'processing').length,
+            ready: dbOrders.filter(o => o.status === 'ready').length,
+            delivered: dbOrders.filter(o => o.status === 'delivered').length,
+            completed: dbOrders.filter(o => o.status === 'completed').length,
+            cancelled: dbOrders.filter(o => o.status === 'cancelled').length,
+        },
+        paymentCounts: {
+            unpaid: dbOrders.filter(o => o.paymentStatus === 'unpaid').length,
+            waiting: dbOrders.filter(o => o.paymentStatus === 'waiting_verification').length,
+            paid: dbOrders.filter(o => o.paymentStatus === 'paid').length,
+            cod: dbOrders.filter(o => o.paymentStatus === 'cod').length,
+        }
+    });
 
     // Tab items configuration
     const tabs: ReadonlyArray<{ id: ReportTabId; label: string; icon: string }> = [
@@ -85,26 +131,34 @@
         return true;
     }
 
-    function orderMatchesSearch(order: (typeof mockOrders)[number], keyword: string): boolean {
+    function orderMatchesSearch(order: any, keyword: string): boolean {
         if (!keyword) return true;
 
         const searchableValues = [
             order.id,
-            order.orderNumber,
-            order.customerName,
-            order.whatsapp,
-            order.paymentStatus,
-            order.status,
-            ...order.items.map((item) => item.name)
+            order.orderNumber || '',
+            order.customerName || '',
+            order.whatsapp || '',
+            order.paymentStatus || '',
+            order.status || '',
+            ...(Array.isArray(order.items) ? order.items.map((item: any) => item.name) : [])
         ];
 
-        return searchableValues.some((value) => value.toLowerCase().includes(keyword));
+        return searchableValues.some((value) => String(value).toLowerCase().includes(keyword));
     }
 
     const normalizedSearchQuery = $derived(searchQuery.trim().toLowerCase());
 
-    // Filtered data based on search and period (Simulasi lokal)
+    // Filtered data based on search and period (Prioritaskan DB if overview/orders/finance)
     let filteredOrders = $derived(
+        dbOrders.filter((order) =>
+            isDateInSelectedPeriod(order.orderDate, periodFilter) &&
+            orderMatchesSearch(order, normalizedSearchQuery)
+        )
+    );
+
+    // Fallback filtered mock orders for other tabs
+    let filteredMockOrders = $derived(
         mockOrders.filter((order) =>
             isDateInSelectedPeriod(order.orderDate, periodFilter) &&
             orderMatchesSearch(order, normalizedSearchQuery)
@@ -127,25 +181,25 @@
     );
 
     const orderSummaryCards = $derived<SummaryCard[]>([
-        { label: 'Menunggu', count: mockOrders.filter((o) => o.status === 'new').length, color: 'text-orange-500' },
-        { label: 'Diproses', count: mockOrders.filter((o) => o.status === 'processing').length, color: 'text-blue-500' },
+        { label: 'Menunggu', count: dbOrders.filter((o) => o.status === 'new').length, color: 'text-orange-500' },
+        { label: 'Diproses', count: dbOrders.filter((o) => o.status === 'processing' || o.status === 'confirmed').length, color: 'text-blue-500' },
         {
             label: 'Selesai',
-            count: mockOrders.filter((o) => o.status === 'completed' || o.status === 'delivered').length,
+            count: dbOrders.filter((o) => o.status === 'completed' || o.status === 'delivered' || o.status === 'ready').length,
             color: 'text-emerald-500'
         },
-        { label: 'Dibatalkan', count: mockOrders.filter((o) => o.status === 'cancelled').length, color: 'text-red-500' }
+        { label: 'Dibatalkan', count: dbOrders.filter((o) => o.status === 'cancelled').length, color: 'text-red-500' }
     ]);
 
-    function orderStatusBadgeClass(status: MockOrderStatus): string {
+    function orderStatusBadgeClass(status: string): string {
         if (status === 'completed' || status === 'delivered') return 'bg-emerald-100 text-emerald-600';
         if (status === 'new') return 'bg-orange-100 text-orange-600';
         if (status === 'cancelled') return 'bg-red-100 text-red-600';
         return 'bg-blue-100 text-blue-600';
     }
 
-    function orderStatusLabel(status: MockOrderStatus): string {
-        const map: Record<MockOrderStatus, string> = {
+    function orderStatusLabel(status: string): string {
+        const map: Record<string, string> = {
             new: 'Menunggu Konfirmasi',
             confirmed: 'Dikonfirmasi',
             processing: 'Diproses',
@@ -155,26 +209,27 @@
             cancelled: 'Dibatalkan'
         };
 
-        return map[status];
+        return map[status] || status;
     }
 
-    function paymentStatusLabel(status: ReportPaymentStatus): string {
-        const map: Record<ReportPaymentStatus, string> = {
+    function paymentStatusLabel(status: string): string {
+        const map: Record<string, string> = {
             unpaid: 'Belum Dibayar',
             waiting_verification: 'Menunggu Verifikasi',
             partially_paid: 'DP Terbayar',
             cod_pending: 'COD Pending',
             paid: 'Lunas',
-            refunded: 'Refunded'
+            refunded: 'Refunded',
+            cod: 'COD'
         };
 
-        return map[status];
+        return map[status] || status;
     }
 
-    function paymentStatusBadgeClass(status: ReportPaymentStatus): string {
+    function paymentStatusBadgeClass(status: string): string {
         if (status === 'paid') return 'bg-emerald-100 text-emerald-600';
         if (status === 'waiting_verification' || status === 'partially_paid') return 'bg-amber-100 text-amber-700';
-        if (status === 'cod_pending') return 'bg-sky-100 text-sky-700';
+        if (status === 'cod_pending' || status === 'cod') return 'bg-sky-100 text-sky-700';
         if (status === 'refunded') return 'bg-indigo-100 text-indigo-700';
         return 'bg-red-100 text-red-600';
     }
@@ -193,6 +248,7 @@
     }
 
     function paymentMethodLabel(method: string): string {
+        if (!method) return '-';
         const normalized = method.toLowerCase();
         const map: Record<string, string> = {
             bank_transfer: 'Transfer',
@@ -322,19 +378,40 @@
 
     <!-- Tab Contents -->
     <div class="space-y-10" in:fade>
-        {#if activeTab === 'overview'}
+        {#if isLoading}
+            <div class="bg-white dark:bg-zinc-900 rounded-[3rem] border border-zinc-100 dark:border-zinc-800 p-20 text-center shadow-sm" in:fade>
+                <div class="w-12 h-12 border-4 border-brand-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <p class="text-sm font-bold text-zinc-500 uppercase tracking-widest">Menyusun laporan dari database lokal...</p>
+            </div>
+        {:else if fetchError}
+            <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/40 rounded-[3rem] p-20 text-center shadow-sm" in:fade>
+                <p class="text-sm font-bold text-red-600 dark:text-red-400 mb-6">{fetchError}</p>
+                <button onclick={fetchDbOrders} class="px-8 py-4 bg-brand-charcoal text-white rounded-2xl font-black text-xs uppercase tracking-widest">Coba Lagi</button>
+            </div>
+        {:else}
+            {#if activeTab === 'overview'}
             <!-- Tab: Ringkasan -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {#each mockAdminMetrics as metric}
-                    <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm relative overflow-hidden group hover:border-brand-primary/30 transition-all">
-                        <div class="absolute top-0 right-0 w-24 h-24 bg-brand-primary/5 -mr-8 -mt-8 rounded-full transition-transform group-hover:scale-150"></div>
-                        <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">{metric.label}</p>
-                        <p class="text-3xl font-black text-brand-charcoal dark:text-white italic mb-2 tracking-tighter">{metric.value}</p>
-                        <p class="text-[10px] font-bold {metric.tone === 'positive' ? 'text-emerald-500' : 'text-zinc-400'} uppercase tracking-widest">
-                            {metric.change}
-                        </p>
-                    </div>
-                {/each}
+                <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm relative overflow-hidden group hover:border-brand-primary/30 transition-all">
+                    <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">Total Revenue (DB)</p>
+                    <p class="text-3xl font-black text-brand-charcoal dark:text-white italic mb-2 tracking-tighter">{formatRupiah(dbStats.totalRevenue)}</p>
+                    <p class="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">Database Lokal</p>
+                </div>
+                <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm relative overflow-hidden group hover:border-brand-primary/30 transition-all">
+                    <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">Total Orders (DB)</p>
+                    <p class="text-3xl font-black text-brand-charcoal dark:text-white italic mb-2 tracking-tighter">{dbStats.orderCount}</p>
+                    <p class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Database Lokal</p>
+                </div>
+                <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm relative overflow-hidden group hover:border-brand-primary/30 transition-all">
+                    <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">Avg. Order (DB)</p>
+                    <p class="text-3xl font-black text-brand-charcoal dark:text-white italic mb-2 tracking-tighter">{formatRupiah(dbStats.orderCount > 0 ? Math.round(dbStats.totalRevenue / dbStats.orderCount) : 0)}</p>
+                    <p class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Database Lokal</p>
+                </div>
+                <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm relative overflow-hidden group hover:border-brand-primary/30 transition-all">
+                    <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">Pending Verify (DB)</p>
+                    <p class="text-3xl font-black text-orange-600 italic mb-2 tracking-tighter">{dbStats.paymentCounts.waiting}</p>
+                    <p class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Database Lokal</p>
+                </div>
             </div>
 
             <section class="bg-white dark:bg-zinc-900 rounded-[3rem] border border-zinc-100 dark:border-zinc-800 shadow-sm overflow-hidden">
@@ -388,16 +465,16 @@
             <!-- Tab: Penjualan -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="bg-emerald-50 dark:bg-emerald-900/20 p-8 rounded-[2.5rem] border border-emerald-100 dark:border-emerald-800/30 shadow-sm">
-                    <p class="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-2">Total Revenue</p>
-                    <p class="text-3xl font-black text-emerald-700 dark:text-emerald-300 italic tracking-tighter">{formatRupiah(getTotalRevenue())}</p>
+                    <p class="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-2">Total Revenue (DB)</p>
+                    <p class="text-3xl font-black text-emerald-700 dark:text-emerald-300 italic tracking-tighter">{formatRupiah(dbStats.totalRevenue)}</p>
                 </div>
                 <div class="bg-blue-50 dark:bg-blue-900/20 p-8 rounded-[2.5rem] border border-blue-100 dark:border-blue-800/30 shadow-sm">
-                    <p class="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2">Total Transactions</p>
-                    <p class="text-3xl font-black text-blue-700 dark:text-blue-300 italic tracking-tighter">{mockOrders.length}</p>
+                    <p class="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2">Total Transactions (DB)</p>
+                    <p class="text-3xl font-black text-blue-700 dark:text-blue-300 italic tracking-tighter">{dbStats.orderCount}</p>
                 </div>
                 <div class="bg-indigo-50 dark:bg-indigo-900/20 p-8 rounded-[2.5rem] border border-indigo-100 dark:border-indigo-800/30 shadow-sm">
-                    <p class="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mb-2">Avg. Order Value</p>
-                    <p class="text-3xl font-black text-indigo-700 dark:text-indigo-300 italic tracking-tighter">{formatRupiah(mockOrders.length > 0 ? Math.round(getTotalRevenue() / mockOrders.length) : 0)}</p>
+                    <p class="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mb-2">Avg. Value (DB)</p>
+                    <p class="text-3xl font-black text-indigo-700 dark:text-indigo-300 italic tracking-tighter">{formatRupiah(dbStats.orderCount > 0 ? Math.round(dbStats.totalRevenue / dbStats.orderCount) : 0)}</p>
                 </div>
             </div>
 
@@ -613,20 +690,20 @@
             <!-- Tab: Keuangan -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div class="bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-800 shadow-sm text-white">
-                    <p class="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">Gross Revenue</p>
-                    <p class="text-2xl font-black text-brand-primary italic tracking-tighter">{formatRupiah(getTotalRevenue())}</p>
+                    <p class="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">Gross Revenue (DB)</p>
+                    <p class="text-2xl font-black text-brand-primary italic tracking-tighter">{formatRupiah(dbStats.totalRevenue)}</p>
                 </div>
                 <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm">
-                    <p class="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-2">Paid Amount</p>
-                    <p class="text-2xl font-black text-emerald-600 italic tracking-tighter">{formatRupiah(mockOrders.filter(o => o.paymentStatus === 'paid').reduce((sum, o) => sum + o.total, 0))}</p>
+                    <p class="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-2">Paid Amount (DB)</p>
+                    <p class="text-2xl font-black text-emerald-600 italic tracking-tighter">{formatRupiah(dbOrders.filter(o => o.paymentStatus === 'paid').reduce((sum, o) => sum + (o.total || 0), 0))}</p>
                 </div>
                 <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm">
-                    <p class="text-[10px] font-black text-orange-400 uppercase tracking-widest mb-2">Unpaid / Pending</p>
-                    <p class="text-2xl font-black text-orange-600 italic tracking-tighter">{formatRupiah(mockOrders.filter(o => o.paymentStatus === 'unpaid' || o.paymentStatus === 'waiting_verification').reduce((sum, o) => sum + o.total, 0))}</p>
+                    <p class="text-[10px] font-black text-orange-400 uppercase tracking-widest mb-2">Unpaid / Pending (DB)</p>
+                    <p class="text-2xl font-black text-orange-600 italic tracking-tighter">{formatRupiah(dbOrders.filter(o => o.paymentStatus === 'unpaid' || o.paymentStatus === 'waiting_verification').reduce((sum, o) => sum + (o.total || 0), 0))}</p>
                 </div>
                 <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm">
-                    <p class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2">Refunded</p>
-                    <p class="text-2xl font-black text-indigo-600 italic tracking-tighter">{formatRupiah(mockOrders.filter(o => o.paymentStatus === 'refunded').reduce((sum, o) => sum + o.total, 0))}</p>
+                    <p class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2">COD Count (DB)</p>
+                    <p class="text-2xl font-black text-indigo-600 italic tracking-tighter">{dbStats.paymentCounts.cod} Order</p>
                 </div>
             </div>
 
@@ -668,24 +745,25 @@
                 </div>
             </section>
         {/if}
-    </div>
 
-    <!-- Empty Search State -->
-    {#if normalizedSearchQuery.length > 0 && !hasSearchResultInActiveTab}
-        <div class="px-8 py-20 text-center">
-            <div class="max-w-xs mx-auto space-y-4">
-                <div class="text-4xl">🔍</div>
-                <h3 class="text-lg font-black text-brand-charcoal dark:text-white uppercase tracking-tighter">Data tidak ditemukan</h3>
-                <p class="text-zinc-500 text-sm font-medium">Tidak ada hasil yang cocok dengan kata kunci "{searchQuery}" pada tab ini.</p>
-                <button 
-                    onclick={resetFilters}
-                    class="text-brand-primary font-black text-[10px] uppercase tracking-widest hover:underline"
-                >
-                    Hapus Filter Pencarian
-                </button>
+        <!-- Empty Search State -->
+        {#if normalizedSearchQuery.length > 0 && !hasSearchResultInActiveTab}
+            <div class="px-8 py-20 text-center">
+                <div class="max-w-xs mx-auto space-y-4">
+                    <div class="text-4xl">🔍</div>
+                    <h3 class="text-lg font-black text-brand-charcoal dark:text-white uppercase tracking-tighter">Data tidak ditemukan</h3>
+                    <p class="text-zinc-500 text-sm font-medium">Tidak ada hasil yang cocok dengan kata kunci "{searchQuery}" pada tab ini.</p>
+                    <button 
+                        onclick={resetFilters}
+                        class="text-brand-primary font-black text-[10px] uppercase tracking-widest hover:underline"
+                    >
+                        Hapus Filter Pencarian
+                    </button>
+                </div>
             </div>
-        </div>
+        {/if}
     {/if}
+    </div>
 </div>
 
 <style>
