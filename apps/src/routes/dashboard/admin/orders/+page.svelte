@@ -1062,7 +1062,16 @@
 				</div>
 				<div>
 					<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Total</p>
-					<p class="text-lg font-black text-brand-charcoal dark:text-white italic">{formatPrice(selectedOrder.total)}</p>
+					<div class="flex items-center gap-4">
+						<p class="text-lg font-black text-brand-charcoal dark:text-white italic">{formatPrice(selectedOrder.total)}</p>
+						<a 
+							href="/invoice/{selectedOrder.id}" 
+							target="_blank"
+							class="px-4 py-1.5 bg-zinc-100 dark:bg-zinc-800 text-[9px] font-black uppercase tracking-widest text-zinc-500 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all border border-zinc-200 dark:border-zinc-700"
+						>
+							📄 Lihat Invoice
+						</a>
+					</div>
 				</div>
 			</div>
 

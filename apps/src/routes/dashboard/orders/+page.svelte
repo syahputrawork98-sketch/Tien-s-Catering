@@ -355,9 +355,16 @@
                     <h3 class="text-2xl font-black text-brand-charcoal dark:text-white italic tracking-tighter">#{selectedOrder.orderNumber}</h3>
                     <p class="text-sm text-zinc-500 font-medium">{selectedOrder.menuName}</p>
                 </div>
-                <div class="text-right">
+                <div class="text-right flex flex-col items-end gap-2">
                     <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Total Tagihan</p>
                     <p class="text-2xl font-black text-brand-charcoal dark:text-white italic">{formatRupiah(selectedOrder.total)}</p>
+                    <a 
+                        href="/invoice/{selectedOrder.id}" 
+                        target="_blank"
+                        class="px-4 py-1.5 bg-brand-primary/10 text-brand-primary text-[9px] font-black uppercase tracking-widest rounded-lg hover:bg-brand-primary/20 transition-all flex items-center gap-2"
+                    >
+                        📄 Lihat Invoice
+                    </a>
                 </div>
             </div>
 

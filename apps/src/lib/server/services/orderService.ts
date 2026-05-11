@@ -417,3 +417,7 @@ export function updateOrderPaymentStatus(
 		payment: updatedPayment
 	};
 }
+export function getOrder(id: string): OrderListRecord | null {
+	const orders = getOrders();
+	return orders.find((o) => o.id === id) || null;
+}
