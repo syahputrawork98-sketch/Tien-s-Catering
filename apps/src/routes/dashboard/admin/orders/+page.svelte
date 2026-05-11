@@ -388,10 +388,10 @@
 
 	function paymentLabel(status: PaymentStatus): string {
 		const map: Record<PaymentStatus, string> = {
-			unpaid: 'Belum Dibayar',
+			unpaid: 'Belum Bayar',
 			waiting_verification: 'Menunggu Verifikasi',
-			paid: 'Sudah Dibayar',
-			cod: 'COD'
+			paid: 'Lunas',
+			cod: 'COD / Bayar di Tempat'
 		};
 
 		return map[status];
@@ -439,7 +439,7 @@
 
 	function paymentColor(status: PaymentStatus): string {
 		const map: Record<PaymentStatus, string> = {
-			unpaid: 'text-red-500',
+			unpaid: 'text-zinc-500',
 			waiting_verification: 'text-amber-600',
 			paid: 'text-emerald-600',
 			cod: 'text-sky-600'
@@ -858,10 +858,10 @@
 											setPaymentStatusDraft(order.id, (event.currentTarget as HTMLSelectElement).value)}
 										class="w-full rounded-lg border border-sky-200 dark:border-sky-800 bg-white dark:bg-zinc-900 px-3 py-2 text-[11px] font-bold text-zinc-700 dark:text-zinc-200 disabled:opacity-60"
 									>
-										<option value="unpaid">Belum Dibayar</option>
+										<option value="unpaid">Belum Bayar</option>
 										<option value="waiting_verification">Menunggu Verifikasi</option>
-										<option value="paid">Sudah Dibayar</option>
-										<option value="cod">COD</option>
+										<option value="paid">Lunas</option>
+										<option value="cod">COD / Bayar di Tempat</option>
 										</select>
 										<button
 											type="button"
@@ -1024,9 +1024,9 @@
 			</div>
 
 			<div class="p-4 bg-zinc-50 dark:bg-zinc-800 rounded-2xl border border-zinc-100 dark:border-zinc-700">
-				<p class="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Payment Proof</p>
-				<p class="text-xs font-semibold text-zinc-500 mt-1">
-					Belum ada workflow bukti pembayaran/gateway. Update payment saat ini masih manual dari admin list.
+				<p class="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Simulasi Payment Proof</p>
+				<p class="text-xs font-semibold text-zinc-500 mt-1 italic">
+					Workflow upload bukti/gateway belum aktif (Hold). Update status pembayaran dilakukan secara manual melalui daftar order.
 				</p>
 			</div>
 

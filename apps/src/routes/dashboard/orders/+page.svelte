@@ -508,7 +508,7 @@
                                                 {selectedOrder.paymentStatus === 'paid' ? 'Lunas' : 
                                                  selectedOrder.paymentStatus === 'partially_paid' ? 'DP Terbayar' : 
                                                  selectedOrder.paymentStatus === 'waiting_verification' ? 'Menunggu Verifikasi' : 
-                                                 selectedOrder.paymentStatus === 'cod_pending' ? 'COD Pending' : 'Belum Bayar'}
+                                                 selectedOrder.paymentStatus === 'cod_pending' ? 'COD / Bayar di Tempat' : 'Belum Bayar'}
                                             </p>
                                         </div>
                                         <div class="text-right">
@@ -541,8 +541,8 @@
                                     <div class="flex items-center gap-4">
                                         <span class="text-4xl">🚚</span>
                                         <div>
-                                            <h5 class="text-base font-black text-amber-700 dark:text-amber-400 uppercase tracking-tighter">Metode COD Aktif</h5>
-                                            <p class="text-[10px] text-amber-600/70 font-bold uppercase tracking-widest italic">Bayar saat pesanan sampai</p>
+                                            <h5 class="text-base font-black text-amber-700 dark:text-amber-400 uppercase tracking-tighter">COD / Bayar di Tempat</h5>
+                                            <p class="text-[10px] text-amber-600/70 font-bold uppercase tracking-widest italic">Bayar tunai/transfer saat pesanan sampai</p>
                                         </div>
                                     </div>
                                     <p class="text-xs text-amber-700 dark:text-amber-500 font-medium leading-relaxed bg-white/50 dark:bg-black/20 p-4 rounded-2xl border-l-4 border-amber-400">
@@ -581,7 +581,7 @@
 
                                     <div class="space-y-4 pt-6 border-t border-zinc-100 dark:border-zinc-800">
                                         <div class="flex items-center justify-between">
-                                            <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Upload Bukti {selectedOrder.paymentStatus === 'partially_paid' ? 'Pelunasan' : 'Pembayaran'}</p>
+                                            <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Simulasi Bukti {selectedOrder.paymentStatus === 'partially_paid' ? 'Pelunasan' : 'Pembayaran'}</p>
                                             <p class="text-[10px] font-black text-brand-primary italic uppercase tracking-widest">
                                                 {formatRupiah(selectedOrderUploadAmount)}
                                             </p>
@@ -594,10 +594,10 @@
                                             <div class="w-full py-5 bg-brand-charcoal dark:bg-brand-primary text-white rounded-2xl flex items-center justify-center gap-4 cursor-pointer group-hover:scale-[1.02] transition-all shadow-2xl overflow-hidden relative">
                                                 {#if isUploading}
                                                     <span class="animate-spin text-2xl">🌀</span>
-                                                    <span class="text-xs font-black uppercase tracking-widest italic">Memproses Bukti...</span>
+                                                    <span class="text-xs font-black uppercase tracking-widest italic">Memproses (Simulasi)...</span>
                                                 {:else}
                                                     <span class="text-2xl">📤</span>
-                                                    <span class="text-xs font-black uppercase tracking-widest italic">Kirim Bukti Pembayaran</span>
+                                                    <span class="text-xs font-black uppercase tracking-widest italic">Simulasi Kirim Bukti</span>
                                                 {/if}
                                             </div>
                                         </label>

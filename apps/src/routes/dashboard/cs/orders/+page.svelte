@@ -16,16 +16,17 @@
         if (isDetailed) {
             switch (status) {
                 case 'paid': return 'bg-emerald-100 text-emerald-700';
-                case 'partially_paid': return 'bg-blue-100 text-blue-700';
+                case 'partially_paid': return 'bg-indigo-100 text-indigo-700';
                 case 'waiting_verification': return 'bg-amber-100 text-amber-700';
-                case 'cod_pending': return 'bg-zinc-100 text-zinc-400';
+                case 'cod_pending': return 'bg-sky-100 text-sky-700';
                 default: return 'bg-zinc-100 text-zinc-400';
             }
         } else {
             switch (status) {
                 case 'paid': return 'bg-emerald-50 text-emerald-600 border border-emerald-100';
+                case 'partially_paid': return 'bg-indigo-50 text-indigo-600 border border-indigo-100';
                 case 'waiting_verification': return 'bg-amber-50 text-amber-600 border border-amber-100 animate-pulse';
-                case 'cod_pending': return 'bg-zinc-50 text-zinc-400 border border-zinc-100';
+                case 'cod_pending': return 'bg-sky-50 text-sky-600 border border-sky-100';
                 default: return 'bg-zinc-50 text-zinc-400 border border-zinc-100';
             }
         }
@@ -33,8 +34,11 @@
 
     function getPaymentStatusText(status: string) {
         if (!status) return '-';
-        if (status === 'cod_pending') return 'COD';
-        if (status === 'waiting_verification') return 'VERIFIKASI BAYAR';
+        if (status === 'cod_pending') return 'COD / Bayar di Tempat';
+        if (status === 'waiting_verification') return 'Menunggu Verifikasi';
+        if (status === 'paid') return 'Lunas';
+        if (status === 'unpaid') return 'Belum Bayar';
+        if (status === 'partially_paid') return 'DP Terbayar';
         return status.replace('_', ' ').toUpperCase();
     }
 
@@ -840,8 +844,8 @@
                             <div class="flex items-center gap-4">
                                 <span class="text-4xl">🚚</span>
                                 <div>
-                                    <h5 class="text-base font-black text-amber-700 dark:text-amber-400 uppercase tracking-tighter italic">Mode COD Aktif</h5>
-                                    <p class="text-[9px] text-amber-600/70 font-bold uppercase tracking-widest">Bayar saat antar</p>
+                                    <h5 class="text-base font-black text-amber-700 dark:text-amber-400 uppercase tracking-tighter italic">COD / Bayar di Tempat</h5>
+                                    <p class="text-[9px] text-amber-600/70 font-bold uppercase tracking-widest">Bayar tunai/transfer saat antar</p>
                                 </div>
                             </div>
                             <button 
@@ -866,9 +870,9 @@
                             </div>
 
                             <div class="space-y-4">
-                                <p class="text-[9px] font-black text-blue-500 uppercase tracking-widest text-center bg-blue-50 dark:bg-blue-900/20 py-2 rounded-lg">Verifikasi Proof Simulation Mode</p>
+                                <p class="text-[9px] font-black text-blue-500 uppercase tracking-widest text-center bg-blue-50 dark:bg-blue-900/20 py-2 rounded-lg">Mode Simulasi Verifikasi Bukti</p>
                                 <div class="bg-white dark:bg-zinc-900 p-6 rounded-2xl border-2 border-dashed border-zinc-100 dark:border-zinc-800 text-center">
-                                    <p class="text-[10px] font-black text-zinc-300 uppercase tracking-widest">No Proof Available in DB yet</p>
+                                    <p class="text-[10px] font-black text-zinc-300 uppercase tracking-widest italic">Penyimpanan bukti (proof) sedang Hold</p>
                                 </div>
                                 <button 
                                     onclick={() => handleVerifyPayment()}

@@ -15,12 +15,14 @@
             <OrderStatusBadge status={order.status} />
             <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest
                 {order.paymentStatus === 'paid' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 
+                 order.paymentStatus === 'partially_paid' ? 'bg-blue-50 text-blue-600 border border-blue-100' : 
                  order.paymentStatus === 'waiting_verification' ? 'bg-amber-50 text-amber-600 border border-amber-100 animate-pulse' : 
+                 order.paymentStatus === 'cod_pending' ? 'bg-sky-50 text-sky-600 border border-sky-100' :
                  'bg-zinc-50 text-zinc-400 border border-zinc-100'}">
                 {order.paymentStatus === 'paid' ? 'Lunas' : 
                  order.paymentStatus === 'partially_paid' ? 'DP Terbayar' : 
-                 order.paymentStatus === 'waiting_verification' ? 'Verifikasi' : 
-                 order.paymentStatus === 'cod_pending' ? 'COD' : 'Belum Bayar'}
+                 order.paymentStatus === 'waiting_verification' ? 'Menunggu Verifikasi' : 
+                 order.paymentStatus === 'cod_pending' ? 'COD / Bayar di Tempat' : 'Belum Bayar'}
             </span>
         </div>
         
