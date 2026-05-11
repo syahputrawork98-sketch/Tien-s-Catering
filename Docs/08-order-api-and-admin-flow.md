@@ -2,7 +2,7 @@
 
 ## Ringkasan
 
-Dokumen ini merangkum alur order lokal setelah status admin, payment manual, dan transaksi stok aktif.
+Dokumen ini merangkum alur order lokal setelah payment manual, transaksi stok, dan stabilisasi dashboard/admin pada Batch 8-10.
 
 ## Alur Order Lokal Saat Ini
 
@@ -24,6 +24,18 @@ Dokumen ini merangkum alur order lokal setelah status admin, payment manual, dan
 - `GET /api/orders`
 - `PATCH /api/orders/[id]/status`
 - `PATCH /api/orders/[id]/payment-status`
+
+## Status Stabilisasi Batch 8-10 (Accepted)
+
+- Batch 8:
+  - Customer order dashboard (`/dashboard/orders`) stabil untuk active/history/detail/payment breakdown/proof history.
+  - CS orders (`/dashboard/cs/orders`) stabil untuk tab/filter/detail/proof verification/COD collection.
+- Batch 9:
+  - Admin order management (`/dashboard/admin/orders`) konsisten pada list/detail/action status+payment.
+  - Aksi admin tetap memakai endpoint existing (`PATCH /api/orders/[id]/status`, `PATCH /api/orders/[id]/payment-status`).
+- Batch 10:
+  - Admin reports (`/dashboard/admin/reports`) diperjelas sebagai simulasi lokal/mock.
+  - Export laporan production masih Hold/disabled.
 
 ## Data yang Sudah Database-Backed
 
@@ -49,11 +61,13 @@ Dokumen ini merangkum alur order lokal setelah status admin, payment manual, dan
 
 ## Data/Flow yang Masih Mock atau Hold
 
+- Customer dashboard order masih local/mock-compatible (belum DB-backed penuh).
+- CS dashboard order masih local/mock-compatible (belum DB-backed penuh).
+- Admin reports masih simulasi lokal/mock (bukan reporting engine production).
 - Payment verification workflow.
 - Payment gateway/QRIS production.
 - Upload bukti pembayaran production.
-- CS dashboard berbasis database.
-- User dashboard berbasis database.
+- User dashboard berbasis database penuh.
 - Super Admin flow final.
 
 ## Batasan Saat Ini
@@ -96,12 +110,14 @@ Dokumen ini merangkum alur order lokal setelah status admin, payment manual, dan
 
 ## Known Issue (Project-wide)
 
-- `npm run check` masih gagal karena technical debt lama di luar package batch.
-- Area yang masih dilaporkan:
-  - `dashboard/admin/reports`
-  - `dashboard/cs/menu`
-  - `dashboard/cs/orders`
-  - `dashboard/orders`
+- `npm run check` sudah `0 errors` dan masih `18 warnings` (a11y/css debt non-blocking).
+- Area warning utama:
+  - `src/lib/components/ModalMenuDetail.svelte`
+  - `src/routes/+page.svelte`
+  - `src/routes/dashboard/admin/settings/+page.svelte`
+  - `src/routes/dashboard/admin/tax/+page.svelte`
+  - `src/routes/dashboard/admin/users/+page.svelte`
+  - `src/routes/dashboard/cs/customers/+page.svelte`
 
 ## Arah Setelah Batch 10
 

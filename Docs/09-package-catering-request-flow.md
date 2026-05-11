@@ -61,18 +61,27 @@
 - `GET /api/package-requests`
 - `PATCH /api/package-requests/[id]/status`
 
+## Status Implemented
+
+- Admin package management minimal sudah aktif di `/dashboard/admin/packages`:
+  - `POST /api/packages`
+  - `PATCH /api/packages/[id]`
+  - `PATCH /api/packages/[id]/status`
+  - create/update/toggle active-inactive, tanpa hard delete.
+- Admin package request page sudah punya search/filter/status summary/no-result state (client-side).
+- Convert package request ke order tetap Hold/disabled.
+
 ## Fitur Hold
 
 - Convert package request to order.
-- Admin package CRUD.
 - Super Admin package management.
 - Package payment/invoice.
 - Package masuk checkout/cart.
 - Upload bukti pembayaran/payment gateway.
 - Auth/RBAC production.
+- Hard delete package/request.
 
 ## Roadmap Berikutnya
 
-- Admin Package CRUD Minimal.
 - User Dashboard DB untuk history order/request.
 - Super Admin local role management (tahap berikutnya).

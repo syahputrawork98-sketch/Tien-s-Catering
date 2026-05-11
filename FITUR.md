@@ -18,6 +18,20 @@ Dokumen ini merangkum progres fitur project pada fase local development.
   - Admin package request sudah punya search client-side, status filter, summary count, dan no-result state setelah filter.
   - Convert ke order tetap Hold/disabled.
 
+## Status Order Batch (Accepted)
+
+- Batch 8:
+  - Customer order dashboard (`/dashboard/orders`) sudah distabilkan.
+  - CS orders handling (`/dashboard/cs/orders`) sudah distabilkan.
+  - Konsistensi mock/type ringan antar customer dan CS orders sudah dirapikan.
+- Batch 9:
+  - Admin order management (`/dashboard/admin/orders`) sudah distabilkan.
+  - Konsistensi list/detail/action status+payment mengikuti endpoint existing.
+- Batch 10:
+  - Admin reports clarity (`/dashboard/admin/reports`) sudah dirapikan.
+  - Reports ditegaskan sebagai simulasi/lokal (mock), bukan reporting engine production.
+  - Export laporan production tetap Hold/disabled.
+
 ## Selesai
 
 - Public katalog membaca menu dari API (`GET /api/menus`).
@@ -57,16 +71,29 @@ Dokumen ini merangkum progres fitur project pada fase local development.
   - status filter client-side,
   - summary count,
   - no-result state setelah filter.
+- Customer order dashboard stabil:
+  - active/history/empty state lebih jelas,
+  - payment breakdown dan proof history aman untuk optional data.
+- CS orders handling stabil:
+  - tab/filter/status lebih konsisten,
+  - proof verification dan COD collection display selaras shape mock.
+- Admin order management stabil:
+  - list/detail/action status pembayaran lebih konsisten,
+  - hanya memakai endpoint order yang sudah ada.
+- Admin reports clarity:
+  - wording menegaskan mode simulasi/lokal,
+  - no-result state dan status badge lebih jelas,
+  - export production tetap Hold.
 - Batas flow package:
   - package tidak masuk cart,
   - package tidak masuk checkout,
   - package tidak langsung menjadi order.
 
-## Berjalan / Stabilizing
+## Berjalan / Local-Compatible
 
-- Admin operational flow order lokal (status + payment manual + stock feedback).
-- Admin operational flow package request lokal (review status + estimasi + catatan).
-- Konsistensi read model untuk halaman admin list/detail.
+- Customer dashboard order masih local/mock-compatible (belum DB-backed penuh).
+- CS dashboard order masih local/mock-compatible (belum DB-backed penuh).
+- Admin operational package request masih fokus review minimal (status + estimasi + catatan).
 
 ## Hold
 
@@ -86,12 +113,14 @@ Dokumen ini merangkum progres fitur project pada fase local development.
 
 ## Known Issue (Project-wide)
 
-- `npm run check` masih gagal karena technical debt lama di luar package batch.
-- Area yang masih dilaporkan:
-  - `dashboard/admin/reports`
-  - `dashboard/cs/menu`
-  - `dashboard/cs/orders`
-  - `dashboard/orders`
+- `npm run check` sudah `0 errors` dan masih `18 warnings` (technical debt a11y/css non-blocking).
+- Area warning utama saat ini:
+  - `src/lib/components/ModalMenuDetail.svelte`
+  - `src/routes/+page.svelte`
+  - `src/routes/dashboard/admin/settings/+page.svelte`
+  - `src/routes/dashboard/admin/tax/+page.svelte`
+  - `src/routes/dashboard/admin/users/+page.svelte`
+  - `src/routes/dashboard/cs/customers/+page.svelte`
 
 ## Roadmap Berikutnya
 
