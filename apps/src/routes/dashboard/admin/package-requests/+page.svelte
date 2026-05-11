@@ -28,6 +28,7 @@
 		adminNote: string | null;
 		estimatedPrice: number | null;
 		reviewedAt: string | null;
+		convertedOrderId: string | null;
 		createdAt: string;
 		updatedAt: string;
 	};
@@ -186,6 +187,7 @@
 					? null
 					: Math.max(0, Math.floor(getNumber(raw.estimatedPrice, 0))),
 			reviewedAt: getString(raw.reviewedAt) || null,
+			convertedOrderId: getString(raw.convertedOrderId) || null,
 			createdAt: getString(raw.createdAt, '-'),
 			updatedAt: getString(raw.updatedAt, '-')
 		};
@@ -376,6 +378,39 @@
 		}
 	}
 
+	async function convertRequestToOrder(request: AdminPackageRequest) {
+		if (request.status === 'converted_to_order' || request.convertedOrderId) return;
+		if (request.status !== 'quoted') {
+			reviewError = 'Hanya request dengan status "Penawaran Diberikan" (quoted) yang bisa dikonversi.';
+			return;
+		}
+
+		if (!confirm(`Konversi Request #${request.requestNumber} menjadi Order aktif?`)) return;
+
+		reviewSavingId = request.id;
+		reviewError = '';
+		reviewSuccess = '';
+
+		try {
+			const response = await fetch(`/api/package-requests/${encodeURIComponent(request.id)}/convert`, {
+				method: 'POST'
+			});
+
+			const body = (await response.json().catch(() => null)) as { message?: string; orderNumber?: string } | null;
+			if (!response.ok) {
+				reviewError = body?.message || 'Gagal mengonversi request paket.';
+				return;
+			}
+
+			reviewSuccess = `Berhasil! Request telah menjadi Order #${body?.orderNumber}.`;
+			await loadPackageRequests();
+		} catch {
+			reviewError = 'Gagal terhubung ke server saat proses konversi.';
+		} finally {
+			reviewSavingId = null;
+		}
+	}
+
 	onMount(() => {
 		void loadPackageRequests();
 	});
@@ -390,7 +425,7 @@
 			</div>
 			<div class="inline-flex items-center gap-2 px-4 py-1.5 bg-brand-primary/5 rounded-full border border-brand-primary/10">
 				<span class="w-2 h-2 rounded-full bg-brand-primary"></span>
-				<span class="text-[10px] font-black text-brand-primary uppercase tracking-widest">Conversion Flow Hold</span>
+				<span class="text-[10px] font-black text-brand-primary uppercase tracking-widest">Conversion Flow Active (Phase A)</span>
 			</div>
 		</div>
 		<h1 class="text-4xl lg:text-5xl font-black text-brand-charcoal dark:text-white tracking-tighter italic uppercase">
@@ -629,16 +664,29 @@
 									</div>
 
 									<div class="space-y-3 pt-6 border-t border-zinc-100 dark:border-zinc-800/50">
-										<button
-											type="button"
-											disabled
-											class="w-full py-3.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-[9px] font-black uppercase tracking-[0.2em] rounded-xl border border-zinc-200 dark:border-zinc-700 opacity-60 cursor-not-allowed"
-										>
-											Convert ke Order (Hold)
-										</button>
+										{#if request.status === 'converted_to_order' || request.convertedOrderId}
+											<div class="w-full py-3.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-[9px] font-black uppercase tracking-[0.2em] rounded-xl border border-emerald-100 dark:border-emerald-800 flex items-center justify-center gap-2">
+												<span>✅</span> Sudah Menjadi Order
+											</div>
+										{:else}
+											<button
+												type="button"
+												disabled={reviewSavingId !== null || request.status !== 'quoted'}
+												onclick={() => convertRequestToOrder(request)}
+												class="w-full py-3.5 {request.status === 'quoted' ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 border border-zinc-200 dark:border-zinc-700 opacity-60 cursor-not-allowed'} text-[9px] font-black uppercase tracking-[0.2em] rounded-xl transition-all"
+											>
+												{reviewSavingId === request.id ? 'Memproses...' : 'Convert ke Order'}
+											</button>
+										{/if}
 										<div class="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800 text-center">
 											<p class="text-[8px] font-black text-zinc-400 uppercase tracking-tighter italic">
-												Demo: Aksi lanjut (convert order) tetap Hold sesuai aturan local-development.
+												{#if request.status === 'quoted'}
+													Penawaran disetujui? Klik Convert untuk menjadikannya pesanan aktif.
+												{:else if request.status === 'converted_to_order'}
+													Alur konversi Fase A selesai. Order dapat dipantau di manajemen pesanan.
+												{:else}
+													Beri penawaran (status: quoted) terlebih dahulu sebelum konversi.
+												{/if}
 											</p>
 										</div>
 									</div>

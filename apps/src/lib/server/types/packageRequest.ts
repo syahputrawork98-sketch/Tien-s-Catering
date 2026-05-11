@@ -58,6 +58,7 @@ export type PackageRequestRecord = {
 	adminNote: string | null;
 	estimatedPrice: number | null;
 	reviewedAt: string | null;
+	convertedOrderId: string | null;
 };
 
 export type UpdatePackageRequestReviewInput = {

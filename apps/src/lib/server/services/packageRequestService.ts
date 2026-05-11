@@ -1,8 +1,10 @@
 import {
 	createPackageRequestRecord,
 	listPackageRequestRecords,
-	updatePackageRequestReviewRecord
+	updatePackageRequestReviewRecord,
+	linkPackageRequestToOrderRecord
 } from '$lib/server/repositories/packageRequestRepository';
+import { createOrder } from '$lib/server/services/orderService';
 import { packageRequestReviewStatuses } from '$lib/server/types/packageRequest';
 import type {
 	CreatePackageRequestInput,
@@ -229,5 +231,84 @@ export function updatePackageRequestReview(
 	return {
 		ok: true,
 		request: updated
+	};
+}
+
+export function convertPackageRequestToOrder(requestId: string): {
+	ok: true;
+	orderId: string;
+	orderNumber: string;
+} | {
+	ok: false;
+	message: string;
+	status: number;
+} {
+	const normalizedRequestId = parseRequiredString(requestId);
+	if (!normalizedRequestId) {
+		return { ok: false, status: 400, message: 'request id wajib diisi.' };
+	}
+
+	const requests = getPackageRequests();
+	const request = requests.find((r) => r.id === normalizedRequestId);
+
+	if (!request) {
+		return { ok: false, status: 404, message: 'Request paket tidak ditemukan.' };
+	}
+
+	if (request.status === 'converted_to_order' || request.convertedOrderId) {
+		return { ok: false, status: 400, message: 'Request paket sudah dikonversi menjadi order.' };
+	}
+
+	if (request.status !== 'quoted') {
+		return { ok: false, status: 400, message: 'Hanya request dengan status "quoted" yang bisa dikonversi.' };
+	}
+
+	const estimatedPrice = request.estimatedPrice ?? 0;
+	if (estimatedPrice <= 0) {
+		return { ok: false, status: 400, message: 'Estimasi harga harus lebih dari 0 untuk dikonversi.' };
+	}
+
+	const subtotal = estimatedPrice * request.pax;
+	const total = subtotal; // Sementara tax dan delivery fee 0 untuk konversi paket
+
+	const orderPayload = {
+		customerName: request.customerName,
+		whatsapp: request.whatsapp,
+		deliveryDate: request.eventDate,
+		paymentMethod: 'transfer', // Default untuk paket
+		notes: `Konversi dari Request Paket #${request.requestNumber}. ${request.notes}`,
+		deliveryInfo: {
+			addressSummary: request.location
+		},
+		items: [
+			{
+				name: `Paket Catering - ${request.packageName}`,
+				quantity: request.pax,
+				price: estimatedPrice
+			}
+		],
+		totals: {
+			subtotal,
+			taxAmount: 0,
+			deliveryFee: 0,
+			total
+		},
+		devPersonaCode: 'admin' // Dikonversi oleh admin
+	};
+
+	const result = createOrder(orderPayload);
+	if (!result.ok) {
+		return { ok: false, status: 500, message: `Gagal membuat order: ${result.message}` };
+	}
+
+	const linked = linkPackageRequestToOrderRecord(normalizedRequestId, result.order.id);
+	if (!linked) {
+		return { ok: false, status: 500, message: 'Gagal memperbarui status request paket.' };
+	}
+
+	return {
+		ok: true,
+		orderId: result.order.id,
+		orderNumber: result.order.orderNumber
 	};
 }

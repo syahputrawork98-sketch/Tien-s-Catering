@@ -25,6 +25,7 @@ type RawPackageRequestRow = {
 	adminNote: string | null;
 	estimatedPrice: number | null;
 	reviewedAt: string | null;
+	convertedOrderId: string | null;
 	createdAt: string;
 	updatedAt: string;
 };
@@ -94,6 +95,35 @@ function ensurePackageRequestReviewColumns(db: ReturnType<typeof getDatabase>) {
 	if (!hasColumn(db, 'package_requests', 'reviewed_at')) {
 		db.exec(`ALTER TABLE package_requests ADD COLUMN reviewed_at TEXT;`);
 	}
+
+	if (!hasColumn(db, 'package_requests', 'converted_order_id')) {
+		db.exec(`ALTER TABLE package_requests ADD COLUMN converted_order_id TEXT;`);
+	}
+}
+
+export function linkPackageRequestToOrderRecord(
+	requestId: string,
+	orderId: string
+): boolean {
+	ensureDatabaseInitialized();
+	const db = getDatabase();
+	ensurePackageRequestReviewColumns(db);
+
+	const updateQuery = db.prepare(
+		`UPDATE package_requests
+		SET status = 'converted_to_order',
+			converted_order_id = @orderId,
+			updated_at = @updatedAt
+		WHERE id = @id;`
+	);
+
+	const result = updateQuery.run({
+		id: requestId,
+		orderId,
+		updatedAt: new Date().toISOString()
+	});
+
+	return result.changes > 0;
 }
 
 export function createPackageRequestRecord(
@@ -206,6 +236,7 @@ export function listPackageRequestRecords(): PackageRequestRecord[] {
 			admin_note AS adminNote,
 			estimated_price AS estimatedPrice,
 			reviewed_at AS reviewedAt,
+			converted_order_id AS convertedOrderId,
 			created_at AS createdAt,
 			updated_at AS updatedAt
 		FROM package_requests
@@ -228,6 +259,7 @@ export function listPackageRequestRecords(): PackageRequestRecord[] {
 		adminNote: row.adminNote ?? null,
 		estimatedPrice: row.estimatedPrice !== null ? Math.max(0, Number(row.estimatedPrice)) : null,
 		reviewedAt: row.reviewedAt ?? null,
+		convertedOrderId: row.convertedOrderId ?? null,
 		createdAt: row.createdAt,
 		updatedAt: row.updatedAt
 	}));
