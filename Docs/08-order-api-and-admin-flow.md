@@ -25,17 +25,12 @@ Dokumen ini merangkum alur order lokal setelah payment manual, transaksi stok, d
 - `PATCH /api/orders/[id]/status`
 - `PATCH /api/orders/[id]/payment-status`
 
-## Status Stabilisasi Batch 8-10 (Accepted)
+## Status Stabilisasi Batch 11-14 (Accepted)
 
-- Batch 8:
-  - Customer order dashboard (`/dashboard/orders`) stabil untuk active/history/detail/payment breakdown/proof history.
-  - CS orders (`/dashboard/cs/orders`) stabil untuk tab/filter/detail/proof verification/COD collection.
-- Batch 9:
-  - Admin order management (`/dashboard/admin/orders`) konsisten pada list/detail/action status+payment.
-  - Aksi admin tetap memakai endpoint existing (`PATCH /api/orders/[id]/status`, `PATCH /api/orders/[id]/payment-status`).
-- Batch 10:
-  - Admin reports (`/dashboard/admin/reports`) diperjelas sebagai simulasi lokal/mock.
-  - Export laporan production masih Hold/disabled.
+- Batch 11: Customer order dashboard (`/dashboard/orders`) sudah database-backed via `GET /api/orders`.
+- Batch 12: CS orders dashboard (`/dashboard/cs/orders`) sudah database-backed via `GET /api/orders`.
+- Batch 13: Payment status clarity diselaraskan lintas role (Customer, CS, Admin) dengan wording "Simulasi" untuk local-development.
+- Batch 14: Customer package request visibility aktif via `/dashboard/package-requests` dan `GET /api/package-requests`.
 
 ## Data yang Sudah Database-Backed
 
@@ -46,6 +41,9 @@ Dokumen ini merangkum alur order lokal setelah payment manual, transaksi stok, d
 - Informasi pembayaran sederhana order.
 - Status stok order (`stock_status`, `stock_deducted_at`, `stock_released_at`).
 - Admin order list/detail + aksi minimal status/payment.
+- Customer dashboard order history.
+- CS dashboard order list + aksi minimal status/payment.
+- Customer package request history (visibility).
 
 ## Aturan Transaksi Stok
 
@@ -61,66 +59,27 @@ Dokumen ini merangkum alur order lokal setelah payment manual, transaksi stok, d
 
 ## Data/Flow yang Masih Mock atau Hold
 
-- Customer dashboard order masih local/mock-compatible (belum DB-backed penuh).
-- CS dashboard order masih local/mock-compatible (belum DB-backed penuh).
 - Admin reports masih simulasi lokal/mock (bukan reporting engine production).
-- Payment verification workflow.
+- Payment verification otomatis.
 - Payment gateway/QRIS production.
 - Upload bukti pembayaran production.
-- User dashboard berbasis database penuh.
 - Super Admin flow final.
-
-## Batasan Saat Ini
-
-- Tidak ada stock reservation.
-- Tidak ada stock timeout reservation.
-- Tidak ada auth production (login/JWT/session/password/RBAC).
-- Tidak ada deployment production.
-
-## Batas Alur dengan Package Request
-
-- Flow order admin di dokumen ini fokus pada `orders`.
-- Flow package request memakai endpoint dan halaman admin terpisah.
-- Package request belum otomatis dikonversi ke order.
-
-## Sinkronisasi Package Flow (Batch 5-7)
-
-- Public package catalog:
-  - `/paket-catering` membaca `GET /api/packages`,
-  - hanya menampilkan package `active/available`,
-  - package tetap by request (bukan cart/checkout/order instan).
-- Admin package management:
-  - `/dashboard/admin/packages` aktif untuk create/update/toggle active-inactive,
-  - package baru default `inactive`,
-  - slug auto-generate dari name,
-  - multiple images via textarea URL per baris,
-  - search/filter sederhana di admin page.
-- Package request flow:
-  - public submit request via `POST /api/package-requests`,
-  - admin membaca list via `GET /api/package-requests`,
-  - admin review minimal via `PATCH /api/package-requests/[id]/status` (status + estimasi + catatan),
-  - admin page request punya search/filter/status summary/no-result state.
-- Hold tetap berlaku:
-  - convert package request ke order masih disabled/Hold,
-  - package tidak masuk cart/checkout dan tidak langsung menjadi order,
-  - package payment/invoice masih Hold,
-  - hard delete package/request tidak ada,
-  - Super Admin dan role management tidak ada,
-  - auth production (login/JWT/session/password/RBAC) belum ada.
+- Auth production (login/JWT/session/password/RBAC).
+- Profile & Address management customer (masih mock/local-only).
+- Convert package request ke order (Hold).
 
 ## Known Issue (Project-wide)
 
-- `npm run check` sudah `0 errors` dan masih `18 warnings` (a11y/css debt non-blocking).
+- `npm run check` sudah `0 errors` dengan sisa baseline warnings (a11y/css).
 - Area warning utama:
   - `src/lib/components/ModalMenuDetail.svelte`
-  - `src/routes/+page.svelte`
   - `src/routes/dashboard/admin/settings/+page.svelte`
   - `src/routes/dashboard/admin/tax/+page.svelte`
   - `src/routes/dashboard/admin/users/+page.svelte`
   - `src/routes/dashboard/cs/customers/+page.svelte`
 
-## Arah Setelah Batch 10
+## Arah Strategis (Roadmap)
 
-- Payment verification minimal (setelah ada keputusan scope berikutnya).
-- Penguatan flow operasional admin (status + payment) di local development.
-- Migrasi bertahap CS/User dashboard ke data database.
+- Batch 16+: Super Admin local role management.
+- Batch 17+: Profile & Address management database-backed.
+- Batch 18+: Penguatan alur manual review payment.

@@ -356,7 +356,7 @@
                     <h2 class="text-2xl font-black text-brand-charcoal dark:text-white italic tracking-tighter">Profil Customer</h2>
                     <p class="text-xs font-bold text-zinc-400 uppercase tracking-widest mt-1">ID: <span class="text-brand-primary">{selectedCustomer.id}</span></p>
                 </div>
-                <button onclick={closeModal} class="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-2xl hover:text-red-500 transition-colors shadow-sm">
+                <button onclick={closeModal} aria-label="Tutup detail customer" class="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-2xl hover:text-red-500 transition-colors shadow-sm">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -452,8 +452,9 @@
 
                             {#if isRejecting}
                                 <div class="pt-4 border-t border-zinc-200 dark:border-zinc-700 space-y-4" in:fly={{ y: 20 }}>
-                                    <p class="text-[10px] font-black text-red-500 uppercase tracking-widest">Alasan Penolakan (Wajib)</p>
+                                    <label for="reject-reason" class="text-[10px] font-black text-red-500 uppercase tracking-widest">Alasan Penolakan (Wajib)</label>
                                     <textarea 
+                                        id="reject-reason"
                                         bind:value={rejectReason}
                                         placeholder="Contoh: Nomor WhatsApp tidak valid atau alamat di luar jangkauan..."
                                         class="w-full bg-white dark:bg-zinc-800 border-red-100 dark:border-red-900/30 rounded-2xl text-xs font-medium p-4 focus:ring-2 focus:ring-red-500"
@@ -540,7 +541,7 @@
                     <h2 class="text-2xl font-black text-brand-charcoal dark:text-white italic tracking-tighter">Tambah Akun Customer</h2>
                     <p class="text-xs font-medium text-zinc-400 mt-1">Daftarkan customer baru secara manual.</p>
                 </div>
-                <button onclick={closeAddModal} class="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-2xl hover:text-red-500 transition-colors shadow-sm">
+                <button onclick={closeAddModal} aria-label="Tutup modal tambah akun" class="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-2xl hover:text-red-500 transition-colors shadow-sm">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -551,8 +552,9 @@
             <div class="px-10 py-8 max-h-[65vh] overflow-y-auto no-scrollbar space-y-6">
                 <div class="grid grid-cols-2 gap-6">
                     <div class="space-y-2">
-                        <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Nama Lengkap / Instansi *</label>
+                        <label for="add-account-name" class="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Nama Lengkap / Instansi *</label>
                         <input 
+                            id="add-account-name"
                             bind:value={addAccountForm.name}
                             type="text" 
                             placeholder="Contoh: PT ABC atau Bpk. Budi"
@@ -560,8 +562,9 @@
                         />
                     </div>
                     <div class="space-y-2">
-                        <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">WhatsApp *</label>
+                        <label for="add-account-whatsapp" class="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">WhatsApp *</label>
                         <input 
+                            id="add-account-whatsapp"
                             bind:value={addAccountForm.whatsapp}
                             type="text" 
                             placeholder="0812..."
@@ -571,8 +574,9 @@
                 </div>
 
                 <div class="space-y-2">
-                    <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Alamat Pengiriman *</label>
+                    <label for="add-account-address" class="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Alamat Pengiriman *</label>
                     <textarea 
+                        id="add-account-address"
                         bind:value={addAccountForm.address}
                         placeholder="Alamat lengkap untuk pengiriman catering..."
                         class="w-full bg-zinc-50 dark:bg-zinc-800 border-zinc-100 dark:border-zinc-700 rounded-2xl p-4 text-xs font-medium focus:ring-2 focus:ring-brand-primary transition-all"
@@ -582,8 +586,9 @@
 
                 <div class="grid grid-cols-2 gap-6">
                     <div class="space-y-2">
-                        <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Tipe Akun *</label>
+                        <label for="add-account-type" class="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Tipe Akun *</label>
                         <select 
+                            id="add-account-type"
                             bind:value={addAccountForm.accountType}
                             class="w-full bg-zinc-50 dark:bg-zinc-800 border-zinc-100 dark:border-zinc-700 rounded-2xl p-4 text-xs font-bold focus:ring-2 focus:ring-brand-primary transition-all appearance-none"
                         >
@@ -593,8 +598,9 @@
                         </select>
                     </div>
                     <div class="space-y-2">
-                        <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Status Awal *</label>
+                        <label for="add-account-status" class="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Status Awal *</label>
                         <select 
+                            id="add-account-status"
                             bind:value={addAccountForm.status}
                             class="w-full bg-zinc-50 dark:bg-zinc-800 border-zinc-100 dark:border-zinc-700 rounded-2xl p-4 text-xs font-bold focus:ring-2 focus:ring-brand-primary transition-all appearance-none"
                         >
@@ -605,8 +611,9 @@
                 </div>
 
                 <div class="space-y-2">
-                    <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Catatan Internal (Opsional)</label>
+                    <label for="add-account-note" class="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Catatan Internal (Opsional)</label>
                     <textarea 
+                        id="add-account-note"
                         bind:value={addAccountForm.internalNote}
                         placeholder="Catatan untuk tim internal..."
                         class="w-full bg-zinc-50 dark:bg-zinc-800 border-zinc-100 dark:border-zinc-700 rounded-2xl p-4 text-xs font-medium focus:ring-2 focus:ring-brand-primary transition-all"

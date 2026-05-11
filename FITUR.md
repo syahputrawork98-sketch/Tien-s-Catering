@@ -1,36 +1,18 @@
-# FITUR Tien's Catering
+## Status Order & Dashboard Batch (Accepted)
 
-Dokumen ini merangkum progres fitur project pada fase local development.
-
-## Status Package Batch (Accepted)
-
-- Package Batch 5:
-  - Admin Package CRUD minimal aktif (`POST /api/packages`, `PATCH /api/packages/[id]`, `PATCH /api/packages/[id]/status`).
-  - `/dashboard/admin/packages` aktif untuk create/update/aktif-nonaktif package.
-  - Package baru default `inactive`.
-  - Slug auto-generate dari name.
-  - Multiple images via textarea URL per baris.
-  - Tidak ada hard delete, Super Admin, role management, convert request to order, atau package payment/invoice.
-- Package Batch 6:
-  - Feedback edit package sudah benar (`Paket berhasil diperbarui` untuk mode edit).
-  - Search/filter sederhana admin package sudah aktif.
-- Package Batch 7:
-  - Admin package request sudah punya search client-side, status filter, summary count, dan no-result state setelah filter.
-  - Convert ke order tetap Hold/disabled.
-
-## Status Order Batch (Accepted)
-
-- Batch 8:
-  - Customer order dashboard (`/dashboard/orders`) sudah distabilkan.
-  - CS orders handling (`/dashboard/cs/orders`) sudah distabilkan.
-  - Konsistensi mock/type ringan antar customer dan CS orders sudah dirapikan.
-- Batch 9:
-  - Admin order management (`/dashboard/admin/orders`) sudah distabilkan.
-  - Konsistensi list/detail/action status+payment mengikuti endpoint existing.
-- Batch 10:
-  - Admin reports clarity (`/dashboard/admin/reports`) sudah dirapikan.
-  - Reports ditegaskan sebagai simulasi/lokal (mock), bukan reporting engine production.
-  - Export laporan production tetap Hold/disabled.
+- Batch 11:
+  - Customer Order Dashboard (`/dashboard/orders`) sudah DB-backed via `GET /api/orders`.
+  - Data order menampilkan riwayat riil dari database SQLite lokal.
+- Batch 12:
+  - CS Orders Dashboard (`/dashboard/cs/orders`) sudah DB-backed via `GET /api/orders`.
+  - Aksi CS (konfirmasi order/payment) selaras dengan endpoint API existing.
+- Batch 13:
+  - Payment status clarity diselaraskan lintas Customer, CS, dan Admin dashboard.
+  - Label status pembayaran (Belum Bayar, Menunggu Verifikasi, Lunas, COD) dan warna badge konsisten.
+  - Wording ditegaskan sebagai "Simulasi" / "Manual" untuk mode local-development.
+- Batch 14:
+  - Customer Package Request visibility ditambahkan via `/dashboard/package-requests`.
+  - Customer dapat melihat riwayat request paket yang dibuat via `GET /api/package-requests`.
 
 ## Selesai
 
@@ -55,45 +37,21 @@ Dokumen ini merangkum progres fitur project pada fase local development.
   - `POST /api/packages`,
   - `PATCH /api/packages/[id]`,
   - `PATCH /api/packages/[id]/status`,
-  - create package default `inactive`,
   - update package dan toggle active/nonaktif tanpa hard delete,
-  - slug auto-generate dari name,
   - multiple images via textarea URL per baris,
   - search/filter sederhana di admin package page.
 - Public package detail submit request ke database (`POST /api/package-requests`).
 - Admin package request list aktif (`GET /api/package-requests`).
-- Admin package request review minimal aktif (`PATCH /api/package-requests/[id]/status`):
-  - update status request,
-  - update estimasi harga manual,
-  - update catatan admin.
-- Admin package request page punya polish UI:
-  - search client-side,
-  - status filter client-side,
-  - summary count,
-  - no-result state setelah filter.
-- Customer order dashboard stabil:
-  - active/history/empty state lebih jelas,
-  - payment breakdown dan proof history aman untuk optional data.
-- CS orders handling stabil:
-  - tab/filter/status lebih konsisten,
-  - proof verification dan COD collection display selaras shape mock.
-- Admin order management stabil:
-  - list/detail/action status pembayaran lebih konsisten,
-  - hanya memakai endpoint order yang sudah ada.
-- Admin reports clarity:
-  - wording menegaskan mode simulasi/lokal,
-  - no-result state dan status badge lebih jelas,
-  - export production tetap Hold.
-- Batas flow package:
-  - package tidak masuk cart,
-  - package tidak masuk checkout,
-  - package tidak langsung menjadi order.
+- Admin package request review minimal aktif (`PATCH /api/package-requests/[id]/status`).
+- Customer dashboard orders DB-backed (`/dashboard/orders`).
+- CS dashboard orders DB-backed (`/dashboard/cs/orders`).
+- Customer package request visibility aktif (`/dashboard/package-requests`).
+- Konsistensi status pembayaran lintas role dashboard.
 
 ## Berjalan / Local-Compatible
 
-- Customer dashboard order masih local/mock-compatible (belum DB-backed penuh).
-- CS dashboard order masih local/mock-compatible (belum DB-backed penuh).
-- Admin operational package request masih fokus review minimal (status + estimasi + catatan).
+- Admin operational package request fokus review minimal (status + estimasi + catatan).
+- Visibility request paket customer (read-only history).
 
 ## Hold
 
@@ -102,21 +60,19 @@ Dokumen ini merangkum progres fitur project pada fase local development.
 - Hard delete package/request.
 - Super Admin flow final.
 - Role management.
-- Payment verification.
+- Payment verification otomatis.
 - Payment gateway / QRIS production.
 - Upload bukti pembayaran production.
 - Rekening/payment account integration production.
-- CS dashboard berbasis database.
-- User dashboard berbasis database.
 - Auth production (login/JWT/session/password/RBAC).
 - Invoice/pajak production.
+- Reporting engine/export production.
 
 ## Known Issue (Project-wide)
 
-- `npm run check` sudah `0 errors` dan masih `18 warnings` (technical debt a11y/css non-blocking).
-- Area warning utama saat ini:
+- `npm run check` sudah `0 errors` dan baseline warnings berkurang secara bertahap (a11y/css).
+- Area warning tersisa:
   - `src/lib/components/ModalMenuDetail.svelte`
-  - `src/routes/+page.svelte`
   - `src/routes/dashboard/admin/settings/+page.svelte`
   - `src/routes/dashboard/admin/tax/+page.svelte`
   - `src/routes/dashboard/admin/users/+page.svelte`
@@ -124,6 +80,6 @@ Dokumen ini merangkum progres fitur project pada fase local development.
 
 ## Roadmap Berikutnya
 
-- User Dashboard database-backed untuk history order/request.
-- Super Admin local role management (tahap berikutnya).
-- Payment verification minimal (setelah disetujui scope berikutnya).
+- Batch 16+: Super Admin local role management (tahap berikutnya).
+- Batch 17+: Payment verification minimal (manual review enhancement).
+- Batch 18+: Profile & Address management DB-backed.
