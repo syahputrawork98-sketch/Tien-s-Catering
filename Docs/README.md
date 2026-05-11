@@ -15,6 +15,7 @@ Dokumen di sini dipakai sebagai acuan product direction, scope, dan alur kerja l
 8. `07-backend-foundation-plan.md`
 9. `08-order-api-and-admin-flow.md`
 10. `09-package-catering-request-flow.md`
+11. `ROADMAP_BATCH_31_45.md` (Roadmap Fase A-D)
 
 ## Prinsip Workflow
 

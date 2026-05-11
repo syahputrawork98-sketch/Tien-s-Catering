@@ -79,7 +79,13 @@
   - `src/lib/components/ModalMenuDetail.svelte` (A11y click/key events)
 - Batch 29 telah menstandardisasi label "Local SQLite Database Simulation" di seluruh aplikasi.
 
-## Roadmap Berikutnya
+## Roadmap Berikutnya (Batch 31–45)
 
-- Batch 31-35: Tahap Evaluasi Final & Persiapan Serah Terima (Handover).
-- Batch 36+: Final Simulation of Advanced Admin Features (Inventory/Suppliers).
+TC memasuki fase **Pre-Auth Production Readiness** (Fase A–D). Detail roadmap tersedia di [Docs/ROADMAP_BATCH_31_45.md](file:///i:/Workspace/Workspace-Syahputrawork/Tien-s-Catering/Docs/ROADMAP_BATCH_31_45.md).
+
+- **Fase A**: Package to Order (Batch 32–33).
+- **Fase B**: Payment Proof + Invoice (Batch 34–37).
+- **Fase C**: Reporting + Export (Batch 38–41).
+- **Fase D**: Deployment Readiness (Batch 42–45).
+
+*Catatan: Fase E (Auth/Security/RBAC) ditunda ke fase berikutnya.*
