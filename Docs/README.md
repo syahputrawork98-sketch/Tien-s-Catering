@@ -21,7 +21,8 @@ Dokumen di sini dipakai sebagai acuan product direction, scope, dan alur kerja l
 
 `Room 01 Analisa -> Room 00 Keputusan -> Codex Eksekusi -> Room 00 Evaluasi`
 
-## Catatan Penting
+## Status Terakhir (Mei 2026)
 
-- Folder `kanban-master/` tetap dipertahankan sebagai referensi teknis dan current UI tracking.
-- Jika ada perbedaan arah, keputusan terbaru Room Chat 00 menjadi acuan produk.
+- **Fase A & B Selesai**: Batch 31–38 telah selesai (*Accepted*). Fitur Package to Order, Payment Proof Upload/Verification, dan Commercial Invoice Basic sudah aktif.
+- **Fase C & D Ditunda**: Fokus beralih ke stabilitas hasil Fase B sebelum melanjutkan ke Reporting dan Deployment.
+- **Fase E Tetap Deferred**: Sistem Auth/RBAC produksi masih menggunakan simulasi persona switcher.

@@ -24,26 +24,27 @@ Batch 31–45 **TIDAK** mencakup fitur-fitur berikut (HOLD hingga Fase E):
 
 ### Fase A — Package to Order
 - **Batch 31**: Dokumentasi / Roadmap Freeze Fase A–D (Selesai).
-- **Batch 32**: Package Request to Order Foundation (Konversi permintaan paket menjadi pesanan aktif).
-- **Batch 33**: Package Order Visibility (Visibilitas alur pesanan paket di sisi Customer/CS/Admin).
+- **Batch 32**: Package Request to Order Foundation (Selesai).
+- **Batch 33**: Package Order Visibility Customer/CS/Admin (Selesai).
 
 ### Fase B — Payment Proof + Invoice
-- **Batch 34**: Payment Proof Upload Storage Foundation (Simulasi penyimpanan bukti bayar lokal).
-- **Batch 35**: Admin Payment Verification Workflow (Proses verifikasi bukti bayar oleh Admin).
-- **Batch 36**: **Checkpoint 1** — Package + Payment Proof Integration Check.
-- **Batch 37**: Commercial Invoice Basic (Pembuatan invoice komersial dasar).
+- **Batch 34**: Payment Proof Upload Storage Foundation (Selesai).
+- **Batch 35**: Admin Payment Verification Workflow (Selesai).
+- **Batch 36**: **Checkpoint 1** — Package + Payment Proof Integration Check (Selesai).
+- **Batch 37**: Commercial Invoice Basic (Selesai).
+- **Batch 38**: **Fase A & B Documentation & Stabilization Wrap-up** (Selesai).
 
 ### Fase C — Reporting + Export
-- **Batch 38**: Invoice Print/PDF Polish + Order Export Basic.
-- **Batch 39**: Reporting Revenue Logic Phase 3 (Logika pendapatan berdasarkan pesanan riil & terverifikasi).
-- **Batch 40**: Reports Export CSV/PDF Basic.
-- **Batch 41**: **Checkpoint 2** — Payment + Invoice + Reporting Export Check.
+- **Batch 39**: Invoice Print/PDF Polish + Order Export Basic (Ditunda).
+- **Batch 40**: Reporting Revenue Logic Phase 3 (Ditunda).
+- **Batch 41**: Reports Export CSV/PDF Basic (Ditunda).
+- **Batch 42**: **Checkpoint 2** — Payment + Invoice + Reporting Export Check (Ditunda).
 
 ### Fase D — Deployment Readiness
-- **Batch 42**: Deployment Config & Env Readiness.
-- **Batch 43**: Upload Storage & Database Deployment Notes.
-- **Batch 44**: Pre-Auth Production Readiness Checklist.
-- **Batch 45**: **Final Fase A–D Handover + Health Check**.
+- **Batch 43**: Deployment Config & Env Readiness (Ditunda).
+- **Batch 44**: Upload Storage & Database Deployment Notes (Ditunda).
+- **Batch 45**: Pre-Auth Production Readiness Checklist (Ditunda).
+- **Batch 46**: **Final Fase A–D Handover + Health Check** (Ditunda).
 
 ## D. Checkpoint Policy
 
@@ -54,11 +55,10 @@ Untuk menjaga efisiensi pengembangan, pengecekan sistem secara menyeluruh (QA be
 
 ## E. Batch 32 Next Action
 
-**Batch 32 — Package Request to Order Foundation**
+**Batch 38 — Fase A & B Documentation & Stabilization Wrap-up**
 
 Fokus eksekusi:
-- Membangun logika konversi dari `Package Request` (status: `quoted`) menjadi `Order` baru melalui panel Admin.
-- Data `Order` hasil konversi harus masuk ke endpoint `GET /api/orders`.
-- `Package Request` yang telah dikonversi akan mendapatkan status `converted_to_order` dengan relasi ID Order yang tercipta.
-- Order baru akan memiliki status awal `new` dan status pembayaran `unpaid`.
-- Fitur ini belum mencakup *public checkout* untuk paket, fokus pada *admin-driven conversion*.
+- Finalisasi dokumentasi fitur Fase A (Package to Order) dan Fase B (Payment Proof + Invoice).
+- Pencatatan status integrasi pada Checkpoint 1 (Batch 36).
+- Penegasan batasan *pre-auth production readiness* sebelum masuk ke fase Reporting/Deployment.
+- Verifikasi stabilitas sistem melalui `npm run check` terakhir untuk Fase B.

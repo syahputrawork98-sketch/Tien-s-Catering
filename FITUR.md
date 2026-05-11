@@ -51,6 +51,13 @@
 - Customer Profile & Address local simulation.
 - Admin Users management local simulation.
 - End-to-End demo flow consistency (Public -> Customer -> Admin/CS).
+- Convert Package Request ke Order (Admin-driven conversion).
+- Package Request to Order relation & source metadata tracking.
+- Customer Payment Proof Upload (Images/PDF max 5MB, local storage).
+- Admin Payment Verification Workflow (Approve/Reject with notes).
+- Payment statuses: unpaid, waiting_verification, paid, rejected.
+- Commercial Invoice Basic (Print-friendly, basic number generation).
+- Checkpoint 1 (Batch 36): Package + Payment Proof integration solid.
 
 ## Berjalan / Local-Compatible
 
@@ -59,18 +66,13 @@
 
 ## Hold
 
-- Convert package request ke order.
-- Package payment/invoice production.
+- Package public checkout (Admin-driven conversion only for now).
 - Hard delete package/request.
 - Super Admin flow final (RBAC production).
 - Role management production (JWT/Session).
-- Payment verification otomatis.
-- Payment gateway / QRIS production.
-- Upload bukti pembayaran production.
 - Rekening/payment account integration production.
 - Auth production (login/JWT/session/password/RBAC).
-- Invoice/pajak production.
-- Reporting engine/export production (PDF/CSV).
+- Reporting engine/export production (Batch 38+).
 
 ## Known Issue (Project-wide)
 
@@ -83,9 +85,9 @@
 
 TC memasuki fase **Pre-Auth Production Readiness** (Fase A–D). Detail roadmap tersedia di [Docs/ROADMAP_BATCH_31_45.md](file:///i:/Workspace/Workspace-Syahputrawork/Tien-s-Catering/Docs/ROADMAP_BATCH_31_45.md).
 
-- **Fase A**: Package to Order (Batch 32–33).
-- **Fase B**: Payment Proof + Invoice (Batch 34–37).
-- **Fase C**: Reporting + Export (Batch 38–41).
-- **Fase D**: Deployment Readiness (Batch 42–45).
+- **Fase A**: Package to Order (Batch 31–33) - **SELESAI**.
+- **Fase B**: Payment Proof + Invoice (Batch 34–37) - **SELESAI**.
+- **Fase C**: Reporting + Export (Batch 39–41) - **DITUNDA**.
+- **Fase D**: Deployment Readiness (Batch 42–45) - **DITUNDA**.
 
 *Catatan: Fase E (Auth/Security/RBAC) ditunda ke fase berikutnya.*
