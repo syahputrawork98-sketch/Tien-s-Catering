@@ -6,6 +6,8 @@
 	type TabType = 'ALL' | 'NEW' | 'PROCESS' | 'DONE' | 'CANCELLED';
 	type OrderStatus = 'new' | 'confirmed' | 'processing' | 'ready' | 'delivered' | 'completed' | 'cancelled';
 	type PaymentStatus = 'unpaid' | 'waiting_verification' | 'paid' | 'cod';
+	type PaymentMethod = 'cash' | 'transfer' | 'qris' | 'cod' | 'unknown';
+	type PaymentFilter = 'ALL' | PaymentStatus;
 	type OrderStockStatus = 'not_deducted' | 'deducted' | 'released';
 
 	type AdminOrderItem = {
@@ -18,8 +20,8 @@
 	};
 
 	type AdminOrderPayment = {
-		method: string;
-		status: string;
+		method: PaymentMethod;
+		status: PaymentStatus;
 		totalAmount: number;
 		paidAmount: number;
 		remainingAmount: number;
@@ -32,9 +34,9 @@
 		whatsapp: string;
 		orderDate: string;
 		deliveryDate: string;
-		status: string;
-		paymentMethod: string;
-		paymentStatus: string;
+		status: OrderStatus;
+		paymentMethod: PaymentMethod;
+		paymentStatus: PaymentStatus;
 		subtotal: number;
 		taxAmount: number;
 		deliveryFee: number;
@@ -95,9 +97,21 @@
 	let paymentActionError = $state('');
 	let paymentActionSuccess = $state('');
 	let paymentStatusDraftByOrderId = $state<Record<string, PaymentStatus>>({});
+	let searchQuery = $state('');
+	let paymentFilter = $state<PaymentFilter>('ALL');
 
 	const orderStatusFlow: OrderStatus[] = ['new', 'confirmed', 'processing', 'ready', 'delivered', 'completed'];
 	const manualPaymentStatuses: PaymentStatus[] = ['unpaid', 'waiting_verification', 'paid', 'cod'];
+	const allowedOrderStatuses: OrderStatus[] = [
+		'new',
+		'confirmed',
+		'processing',
+		'ready',
+		'delivered',
+		'completed',
+		'cancelled'
+	];
+	const allowedPaymentMethods: PaymentMethod[] = ['cash', 'transfer', 'qris', 'cod', 'unknown'];
 
 	function isRecord(value: unknown): value is Record<string, unknown> {
 		return typeof value === 'object' && value !== null;
@@ -113,6 +127,23 @@
 		const parsed = Number(value);
 		if (!Number.isFinite(parsed) || parsed < 0) return fallback;
 		return parsed;
+	}
+
+	function normalizeOrderStatus(value: string): OrderStatus {
+		const normalized = value.toLowerCase();
+		return allowedOrderStatuses.includes(normalized as OrderStatus) ? (normalized as OrderStatus) : 'new';
+	}
+
+	function normalizePaymentStatus(value: string): PaymentStatus {
+		const normalized = value.toLowerCase();
+		return manualPaymentStatuses.includes(normalized as PaymentStatus) ? (normalized as PaymentStatus) : 'unpaid';
+	}
+
+	function normalizePaymentMethod(value: string): PaymentMethod {
+		const normalized = value.toLowerCase();
+		return allowedPaymentMethods.includes(normalized as PaymentMethod)
+			? (normalized as PaymentMethod)
+			: 'unknown';
 	}
 
 	function getDeliveryLabel(order: AdminOrder): string {
@@ -137,10 +168,14 @@
 		const whatsapp = getString(raw.whatsapp, '-');
 		const orderDate = getString(raw.orderDate, '-');
 		const deliveryDate = getString(raw.deliveryDate, '-');
-		const status = getString(raw.status, 'new').toLowerCase();
+		const status = normalizeOrderStatus(getString(raw.status, 'new'));
 		const paymentObject = isRecord(raw.payment) ? raw.payment : null;
-		const paymentMethod = getString(raw.paymentMethod, getString(paymentObject?.method, '-')).toLowerCase();
-		const paymentStatus = getString(raw.paymentStatus, getString(paymentObject?.status, 'unpaid')).toLowerCase();
+		const paymentMethod = normalizePaymentMethod(
+			getString(raw.paymentMethod, getString(paymentObject?.method, 'unknown'))
+		);
+		const paymentStatus = normalizePaymentStatus(
+			getString(raw.paymentStatus, getString(paymentObject?.status, 'unpaid'))
+		);
 		const subtotal = getNumber(raw.subtotal);
 		const taxAmount = getNumber(raw.taxAmount);
 		const deliveryFee = getNumber(raw.deliveryFee);
@@ -196,8 +231,8 @@
 				addressSummary: getString(deliveryInfoRaw.addressSummary) || null
 			},
 			payment: {
-				method: getString(paymentObject?.method, paymentMethod || '-'),
-				status: getString(paymentObject?.status, paymentStatus || 'unpaid'),
+				method: normalizePaymentMethod(getString(paymentObject?.method, paymentMethod)),
+				status: normalizePaymentStatus(getString(paymentObject?.status, paymentStatus)),
 				totalAmount: getNumber(paymentObject?.totalAmount, total),
 				paidAmount: getNumber(paymentObject?.paidAmount, 0),
 				remainingAmount: getNumber(paymentObject?.remainingAmount, total)
@@ -206,37 +241,72 @@
 		};
 	}
 
-	function isDoneStatus(status: string): boolean {
+	function isDoneStatus(status: OrderStatus): boolean {
 		return ['completed', 'done', 'finished'].includes(status);
 	}
 
-	function isCancelledStatus(status: string): boolean {
+	function isCancelledStatus(status: OrderStatus): boolean {
 		return status === 'cancelled';
 	}
 
-	function isNewStatus(status: string): boolean {
+	function isNewStatus(status: OrderStatus): boolean {
 		return status === 'new';
 	}
 
+	function matchesOrderKeyword(order: AdminOrder, normalizedKeyword: string): boolean {
+		if (!normalizedKeyword) return true;
+
+		const searchableValues = [
+			order.orderNumber,
+			order.customerName,
+			order.whatsapp,
+			order.notes,
+			getDeliveryLabel(order),
+			statusLabel(order.status),
+			paymentLabel(order.paymentStatus)
+		];
+
+		return searchableValues.some((value) => value.toLowerCase().includes(normalizedKeyword));
+	}
+
 	const filteredOrders = $derived(() => {
+		const normalizedKeyword = searchQuery.trim().toLowerCase();
+		let tabbedOrders: AdminOrder[] = [];
+
 		switch (activeTab) {
 			case 'NEW':
-				return orders.filter((order) => isNewStatus(order.status));
+				tabbedOrders = orders.filter((order) => isNewStatus(order.status));
+				break;
 			case 'PROCESS':
-				return orders.filter(
+				tabbedOrders = orders.filter(
 					(order) =>
 						!isNewStatus(order.status) &&
 						!isDoneStatus(order.status) &&
 						!isCancelledStatus(order.status)
 				);
+				break;
 			case 'DONE':
-				return orders.filter((order) => isDoneStatus(order.status));
+				tabbedOrders = orders.filter((order) => isDoneStatus(order.status));
+				break;
 			case 'CANCELLED':
-				return orders.filter((order) => isCancelledStatus(order.status));
+				tabbedOrders = orders.filter((order) => isCancelledStatus(order.status));
+				break;
 			default:
-				return orders;
+				tabbedOrders = orders;
 		}
+
+		return tabbedOrders.filter((order) => {
+			const isPaymentMatch = paymentFilter === 'ALL' || order.paymentStatus === paymentFilter;
+			if (!isPaymentMatch) return false;
+
+			return matchesOrderKeyword(order, normalizedKeyword);
+		});
 	});
+
+	const hasAnyOrders = $derived(orders.length > 0);
+	const hasActiveListFilter = $derived(
+		activeTab !== 'ALL' || paymentFilter !== 'ALL' || searchQuery.trim().length > 0
+	);
 
 	const stats = $derived(() => ({
 		total: orders.length,
@@ -275,8 +345,8 @@
 		return safeDate;
 	}
 
-	function statusLabel(status: string): string {
-		const map: Record<string, string> = {
+	function statusLabel(status: OrderStatus): string {
+		const map: Record<OrderStatus, string> = {
 			new: 'Menunggu Konfirmasi',
 			confirmed: 'Dikonfirmasi',
 			processing: 'Diproses',
@@ -286,11 +356,11 @@
 			cancelled: 'Dibatalkan'
 		};
 
-		return map[status] ?? status.toUpperCase();
+		return map[status];
 	}
 
-	function getNextStatus(status: string): OrderStatus | null {
-		const index = orderStatusFlow.indexOf(status as OrderStatus);
+	function getNextStatus(status: OrderStatus): OrderStatus | null {
+		const index = orderStatusFlow.indexOf(status);
 		if (index < 0 || index >= orderStatusFlow.length - 1) {
 			return null;
 		}
@@ -298,12 +368,12 @@
 		return orderStatusFlow[index + 1];
 	}
 
-	function canSetCancelled(status: string): boolean {
+	function canSetCancelled(status: OrderStatus): boolean {
 		return status !== 'completed' && status !== 'cancelled';
 	}
 
-	function statusColor(status: string): string {
-		const map: Record<string, string> = {
+	function statusColor(status: OrderStatus): string {
+		const map: Record<OrderStatus, string> = {
 			new: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
 			confirmed: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400',
 			processing: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
@@ -313,34 +383,34 @@
 			cancelled: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
 		};
 
-		return map[status] ?? 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300';
+		return map[status];
 	}
 
-	function paymentLabel(status: string): string {
-		const map: Record<string, string> = {
+	function paymentLabel(status: PaymentStatus): string {
+		const map: Record<PaymentStatus, string> = {
 			unpaid: 'Belum Dibayar',
 			waiting_verification: 'Menunggu Verifikasi',
 			paid: 'Sudah Dibayar',
 			cod: 'COD'
 		};
 
-		return map[status] ?? status.toUpperCase();
+		return map[status];
 	}
 
-	function paymentMethodLabel(value: string): string {
-		const normalized = getString(value, '-').toLowerCase();
-		const map: Record<string, string> = {
+	function paymentMethodLabel(value: PaymentMethod): string {
+		const map: Record<PaymentMethod, string> = {
 			cash: 'Cash',
 			transfer: 'Transfer',
 			qris: 'QRIS',
-			cod: 'COD'
+			cod: 'COD',
+			unknown: 'Unknown'
 		};
 
-		return map[normalized] ?? normalized.toUpperCase();
+		return map[value];
 	}
 
 	function normalizeManualPaymentStatus(status: string): PaymentStatus {
-		return manualPaymentStatuses.includes(status as PaymentStatus) ? (status as PaymentStatus) : 'unpaid';
+		return normalizePaymentStatus(status);
 	}
 
 	function normalizeStockStatus(status: string): OrderStockStatus {
@@ -355,15 +425,27 @@
 		};
 	}
 
-	function paymentColor(status: string): string {
-		const map: Record<string, string> = {
+	function hasPaymentStatusChanged(order: AdminOrder): boolean {
+		const draftPaymentStatus =
+			paymentStatusDraftByOrderId[order.id] ?? normalizeManualPaymentStatus(order.paymentStatus);
+		return draftPaymentStatus !== order.paymentStatus;
+	}
+
+	function resetListFilters() {
+		searchQuery = '';
+		paymentFilter = 'ALL';
+		activeTab = 'ALL';
+	}
+
+	function paymentColor(status: PaymentStatus): string {
+		const map: Record<PaymentStatus, string> = {
 			unpaid: 'text-red-500',
 			waiting_verification: 'text-amber-600',
 			paid: 'text-emerald-600',
 			cod: 'text-sky-600'
 		};
 
-		return map[status] ?? 'text-zinc-500';
+		return map[status];
 	}
 
 	function stockStatusLabel(status: OrderStockStatus): string {
@@ -417,6 +499,14 @@
 				acc[item.id] = normalizeManualPaymentStatus(item.paymentStatus);
 				return acc;
 			}, {});
+
+			if (showDetailModal && selectedOrder) {
+				const refreshedSelectedOrder = orders.find((item) => item.id === selectedOrder?.id) ?? null;
+				selectedOrder = refreshedSelectedOrder;
+				if (!refreshedSelectedOrder) {
+					showDetailModal = false;
+				}
+			}
 		} catch {
 			error = 'Gagal terhubung ke server. Silakan coba lagi.';
 			orders = [];
@@ -481,9 +571,14 @@
 		const nextPaymentStatus =
 			paymentStatusDraftByOrderId[order.id] ?? normalizeManualPaymentStatus(order.paymentStatus);
 
-		paymentUpdatingOrderId = order.id;
 		paymentActionError = '';
 		paymentActionSuccess = '';
+		if (!hasPaymentStatusChanged(order)) {
+			paymentActionSuccess = `Status pembayaran ${order.orderNumber} sudah ${paymentLabel(order.paymentStatus)}.`;
+			return;
+		}
+
+		paymentUpdatingOrderId = order.id;
 
 		try {
 			const response = await fetch(`/api/orders/${encodeURIComponent(order.id)}/payment-status`, {
@@ -523,6 +618,17 @@
 	function openDetail(order: AdminOrder) {
 		selectedOrder = order;
 		showDetailModal = true;
+	}
+
+	function getNextStatusActionLabel(status: OrderStatus): string {
+		const nextStatus = getNextStatus(status);
+		return nextStatus ? `Lanjut ke ${statusLabel(nextStatus)}` : 'Status Final';
+	}
+
+	async function advanceToNextStatus(order: AdminOrder) {
+		const nextStatus = getNextStatus(order.status);
+		if (!nextStatus) return;
+		await applyOrderStatus(order, nextStatus);
 	}
 
 	onMount(() => {
@@ -611,9 +717,9 @@
 			{/each}
 		</div>
 
-		<div class="space-y-8" in:fade={{ delay: 180 }}>
-			<div class="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
-				{#each tabs as tab}
+			<div class="space-y-8" in:fade={{ delay: 180 }}>
+				<div class="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
+					{#each tabs as tab}
 					<button
 						type="button"
 						onclick={() => (activeTab = tab.id)}
@@ -627,12 +733,45 @@
 							<span class="px-2 py-0.5 rounded-md text-[9px] {activeTab === tab.id ? 'bg-white/20 text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500'}">{tab.count()}</span>
 						{/if}
 					</button>
-				{/each}
-			</div>
+					{/each}
+				</div>
 
-			<div class="space-y-4">
-				{#each filteredOrders() as order (order.id)}
-					<div class="bg-white dark:bg-zinc-900 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm p-8" in:scale={{ start: 0.98, duration: 260 }}>
+				<div class="flex flex-col lg:flex-row lg:items-center gap-3 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-2xl p-4">
+					<div class="relative flex-1">
+						<input
+							type="text"
+							bind:value={searchQuery}
+							placeholder="Cari nomor order, customer, WhatsApp, lokasi, atau catatan..."
+							class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 pl-11 text-xs font-semibold text-zinc-700 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-brand-primary/40"
+						/>
+						<span class="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400">🔎</span>
+					</div>
+
+					<select
+						bind:value={paymentFilter}
+						class="w-full lg:w-[220px] rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-3 text-xs font-bold text-zinc-700 dark:text-zinc-200"
+					>
+						<option value="ALL">Semua Payment</option>
+						<option value="unpaid">Belum Dibayar</option>
+						<option value="waiting_verification">Menunggu Verifikasi</option>
+						<option value="paid">Sudah Dibayar</option>
+						<option value="cod">COD</option>
+					</select>
+
+					{#if hasActiveListFilter}
+						<button
+							type="button"
+							onclick={resetListFilters}
+							class="w-full lg:w-auto px-5 py-3 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-500 text-[10px] font-black uppercase tracking-widest hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+						>
+							Reset Filter
+						</button>
+					{/if}
+				</div>
+
+				<div class="space-y-4">
+					{#each filteredOrders() as order (order.id)}
+						<div class="bg-white dark:bg-zinc-900 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm p-8" in:scale={{ start: 0.98, duration: 260 }}>
 						<div class="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
 							<div class="flex-1 space-y-4">
 								<div class="flex flex-wrap items-center gap-3">
@@ -671,26 +810,26 @@
 							</div>
 
 							<div class="flex flex-wrap lg:flex-col gap-3 lg:min-w-[220px]">
-								<button
-									type="button"
-									onclick={() => openDetail(order)}
-									class="px-5 py-2.5 bg-zinc-50 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-zinc-100 transition-all"
-								>
-									Detail
-								</button>
-								{#if getNextStatus(order.status)}
 									<button
 										type="button"
-										disabled={statusUpdatingOrderId !== null}
-										onclick={() => applyOrderStatus(order, getNextStatus(order.status)!)}
-										class="px-5 py-2.5 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+										onclick={() => openDetail(order)}
+									class="px-5 py-2.5 bg-zinc-50 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-zinc-100 transition-all"
 									>
-										{statusUpdatingOrderId === order.id
-											? 'Menyimpan...'
-											: `Lanjut ke ${statusLabel(getNextStatus(order.status)!)}`}
+										Detail
 									</button>
-								{:else}
-									<button
+									{#if getNextStatus(order.status)}
+										<button
+											type="button"
+											disabled={statusUpdatingOrderId !== null}
+											onclick={() => advanceToNextStatus(order)}
+											class="px-5 py-2.5 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+										>
+											{statusUpdatingOrderId === order.id
+												? 'Menyimpan...'
+												: getNextStatusActionLabel(order.status)}
+										</button>
+									{:else}
+										<button
 										type="button"
 										disabled
 										class="px-5 py-2.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 text-[10px] font-black uppercase tracking-widest rounded-xl border border-zinc-200 dark:border-zinc-700 opacity-70 cursor-not-allowed"
@@ -705,7 +844,7 @@
 										onclick={() => applyOrderStatus(order, 'cancelled')}
 										class="px-5 py-2.5 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-[10px] font-black uppercase tracking-widest rounded-xl border border-red-200 dark:border-red-900/40 hover:bg-red-100 dark:hover:bg-red-900/30 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
 									>
-										Set Cancelled (Tanpa Restore Stok)
+										Batalkan Pesanan
 									</button>
 								{/if}
 								<div class="p-3 bg-sky-50 dark:bg-sky-900/20 border border-sky-200 dark:border-sky-900/40 rounded-xl space-y-2">
@@ -723,28 +862,39 @@
 										<option value="waiting_verification">Menunggu Verifikasi</option>
 										<option value="paid">Sudah Dibayar</option>
 										<option value="cod">COD</option>
-									</select>
-									<button
-										type="button"
-										disabled={paymentUpdatingOrderId !== null}
-										onclick={() => applyPaymentStatus(order)}
-										class="w-full px-3 py-2 bg-sky-600 text-white text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-sky-700 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
-									>
-										{paymentUpdatingOrderId === order.id ? 'Menyimpan Payment...' : 'Simpan Payment Status'}
-									</button>
-									<p class="text-[9px] font-semibold text-sky-700/80 dark:text-sky-300/80">
-										Tanpa gateway/upload bukti. Workflow manual lokal.
+										</select>
+										<button
+											type="button"
+											disabled={paymentUpdatingOrderId !== null || !hasPaymentStatusChanged(order)}
+											onclick={() => applyPaymentStatus(order)}
+											class="w-full px-3 py-2 bg-sky-600 text-white text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-sky-700 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+										>
+											{paymentUpdatingOrderId === order.id
+												? 'Menyimpan Payment...'
+												: hasPaymentStatusChanged(order)
+													? 'Simpan Payment Status'
+													: 'Tidak Ada Perubahan'}
+										</button>
+										<p class="text-[9px] font-semibold text-sky-700/80 dark:text-sky-300/80">
+											Tanpa gateway/upload bukti. Workflow manual lokal.
 									</p>
 								</div>
 							</div>
 						</div>
 					</div>
-				{:else}
-					<div class="flex flex-col items-center justify-center py-24 bg-white dark:bg-zinc-900 rounded-[3rem] border border-dashed border-zinc-200 dark:border-zinc-800" in:fade>
-						<p class="text-2xl font-black text-zinc-300 dark:text-zinc-700">Belum ada order di database</p>
-					</div>
-				{/each}
-			</div>
+					{:else}
+						<div class="flex flex-col items-center justify-center py-24 bg-white dark:bg-zinc-900 rounded-[3rem] border border-dashed border-zinc-200 dark:border-zinc-800" in:fade>
+							{#if hasAnyOrders}
+								<p class="text-2xl font-black text-zinc-300 dark:text-zinc-700">Tidak ada order yang cocok dengan filter</p>
+								<p class="text-sm font-semibold text-zinc-400 mt-2">
+									Coba ganti kata kunci pencarian, tab status, atau filter payment.
+								</p>
+							{:else}
+								<p class="text-2xl font-black text-zinc-300 dark:text-zinc-700">Belum ada order di database</p>
+							{/if}
+						</div>
+					{/each}
+				</div>
 		</div>
 	{/if}
 </div>
