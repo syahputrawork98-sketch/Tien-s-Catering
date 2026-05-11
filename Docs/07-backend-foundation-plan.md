@@ -7,7 +7,8 @@ Backend foundation lokal sudah berjalan dan sekarang dipakai oleh:
 - flow order harian,
 - flow admin order minimal,
 - flow package catalog,
-- flow package request + review minimal.
+- flow package request + review minimal,
+- flow admin package CRUD minimal.
 
 ## Endpoint Aktif
 
@@ -18,6 +19,9 @@ Backend foundation lokal sudah berjalan dan sekarang dipakai oleh:
 - `PATCH /api/orders/[id]/status`
 - `PATCH /api/orders/[id]/payment-status`
 - `GET /api/packages`
+- `POST /api/packages`
+- `PATCH /api/packages/[id]`
+- `PATCH /api/packages/[id]/status`
 - `POST /api/package-requests`
 - `GET /api/package-requests`
 - `PATCH /api/package-requests/[id]/status`
@@ -71,6 +75,11 @@ Dev persona switcher tetap dipakai pada local development:
 - Public package request submit ke database lokal.
 - Admin package request membaca list request dari database (read model).
 - Admin package request review minimal (status + estimasi + catatan).
+- Admin package create/update/toggle status aktif (tanpa hard delete).
+- Batasan alur package tetap by request:
+  - package tidak masuk cart,
+  - package tidak masuk checkout,
+  - package tidak langsung menjadi order.
 
 ## Batasan Penting (Masih Berlaku)
 
@@ -83,4 +92,7 @@ Backend ini belum production-ready:
 - Belum ada stock reservation/timeout.
 - Belum ada admin stock adjustment UI.
 - Belum ada convert package request ke order.
-- Belum ada admin package CRUD production flow.
+- Belum ada hard delete package.
+- Belum ada Super Admin flow final.
+- Belum ada role management.
+- Belum ada package payment/invoice.

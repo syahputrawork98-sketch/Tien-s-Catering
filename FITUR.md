@@ -20,12 +20,22 @@ Dokumen ini merangkum progres fitur project pada fase local development.
 - Admin order flow polish aktif (label status order/payment/stock lebih jelas).
 - Local backend foundation aktif (`/api/health`, `/api/menus`, `/api/orders`, patch admin minimal).
 - Package catalog membaca API (`GET /api/packages`) dengan fallback mock.
+- Admin package CRUD minimal aktif:
+  - `POST /api/packages`,
+  - `PATCH /api/packages/[id]`,
+  - `PATCH /api/packages/[id]/status`,
+  - create package default `inactive`,
+  - update package dan toggle active/nonaktif tanpa hard delete.
 - Package request tersimpan ke database (`POST /api/package-requests`).
 - Admin package request list read-only aktif (`GET /api/package-requests`).
 - Admin package request review minimal aktif (`PATCH /api/package-requests/[id]/status`):
   - update status request,
   - update estimasi harga manual,
   - update catatan admin.
+- Batas flow package tetap by request:
+  - package tidak masuk cart,
+  - package tidak masuk checkout,
+  - package tidak langsung menjadi order.
 
 ## Berjalan / Stabilizing
 
@@ -36,8 +46,9 @@ Dokumen ini merangkum progres fitur project pada fase local development.
 ## Hold
 
 - Convert package request ke order.
-- Admin package CRUD.
+- Hard delete package.
 - Super Admin flow final.
+- Role management.
 - Payment verification.
 - Payment gateway / QRIS production.
 - Upload bukti pembayaran production.
@@ -50,7 +61,6 @@ Dokumen ini merangkum progres fitur project pada fase local development.
 
 ## Roadmap Berikutnya
 
-- Admin Package CRUD minimal.
 - User Dashboard database-backed untuk history order/request.
 - Super Admin local role management (tahap berikutnya).
 - Payment verification minimal (setelah disetujui scope berikutnya).

@@ -55,6 +55,8 @@
 	let formError = $state('');
 	let isSubmitting = $state(false);
 	let isTogglingId = $state<string | null>(null);
+	let searchQuery = $state('');
+	let statusFilter = $state<'all' | 'active' | 'inactive'>('all');
 
 	let feedback = $state<{ type: 'success' | 'error'; message: string } | null>(null);
 
@@ -228,6 +230,21 @@
 		return status === 'active' ? 'Aktif' : 'Nonaktif';
 	}
 
+	let filteredPackages = $derived.by(() => {
+		const normalizedQuery = searchQuery.trim().toLowerCase();
+
+		return packages.filter((item) => {
+			const matchesStatus = statusFilter === 'all' ? true : item.status === statusFilter;
+			if (!matchesStatus) return false;
+
+			if (!normalizedQuery) return true;
+			const haystack = [item.name, item.packageCategory, item.category, item.slug]
+				.join(' ')
+				.toLowerCase();
+			return haystack.includes(normalizedQuery);
+		});
+	});
+
 	function validateFormInput(): string | null {
 		if (!form.name.trim()) return 'Nama paket wajib diisi.';
 		if (!form.description.trim()) return 'Deskripsi paket wajib diisi.';
@@ -282,10 +299,13 @@
 		isSubmitting = true;
 
 		try {
+			const submitMode = formMode;
 			const payload = buildFormPayload();
 			const endpoint =
-				formMode === 'create' ? '/api/packages' : `/api/packages/${encodeURIComponent(editingPackageId || '')}`;
-			const method = formMode === 'create' ? 'POST' : 'PATCH';
+				submitMode === 'create'
+					? '/api/packages'
+					: `/api/packages/${encodeURIComponent(editingPackageId || '')}`;
+			const method = submitMode === 'create' ? 'POST' : 'PATCH';
 
 			const response = await fetch(endpoint, {
 				method,
@@ -307,7 +327,7 @@
 			feedback = {
 				type: 'success',
 				message:
-					formMode === 'create'
+					submitMode === 'create'
 						? 'Paket berhasil dibuat. Status default Nonaktif.'
 						: 'Paket berhasil diperbarui.'
 			};
@@ -388,6 +408,39 @@
 			{feedback.message}
 		</div>
 	{/if}
+
+	<div class="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm space-y-3">
+		<div class="grid gap-3 md:grid-cols-[1fr_220px]">
+			<div>
+				<label for="package-search" class="mb-1 block text-xs font-bold uppercase tracking-wider text-zinc-500">
+					Cari package
+				</label>
+				<input
+					id="package-search"
+					class="w-full rounded-xl border border-zinc-200 px-3 py-2 text-sm"
+					placeholder="Cari nama, kategori, atau slug"
+					bind:value={searchQuery}
+				/>
+			</div>
+			<div>
+				<label for="package-status-filter" class="mb-1 block text-xs font-bold uppercase tracking-wider text-zinc-500">
+					Filter status
+				</label>
+				<select
+					id="package-status-filter"
+					class="w-full rounded-xl border border-zinc-200 px-3 py-2 text-sm"
+					bind:value={statusFilter}
+				>
+					<option value="all">Semua</option>
+					<option value="active">Active</option>
+					<option value="inactive">Inactive</option>
+				</select>
+			</div>
+		</div>
+		<p class="text-xs text-zinc-500">
+			Menampilkan {filteredPackages.length} dari {packages.length} package.
+		</p>
+	</div>
 
 	{#if showForm}
 		<form class="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm space-y-4" onsubmit={submitForm}>
@@ -504,9 +557,13 @@
 		<div class="rounded-2xl border border-zinc-200 bg-white p-6 text-sm text-zinc-500">
 			Belum ada data package.
 		</div>
+	{:else if filteredPackages.length === 0}
+		<div class="rounded-2xl border border-zinc-200 bg-white p-6 text-sm text-zinc-500">
+			Tidak ada package yang cocok dengan filter saat ini.
+		</div>
 	{:else}
 		<div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-			{#each packages as item (item.id)}
+			{#each filteredPackages as item (item.id)}
 				<article class="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
 					<div class="mb-3 flex items-start justify-between gap-3">
 						<div>
