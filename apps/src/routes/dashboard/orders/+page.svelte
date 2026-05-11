@@ -1,14 +1,17 @@
 <script lang="ts">
-    import { dashboardOrders as initialDashboardOrders, formatRupiah, type Order } from '$lib/mock/orders_dashboard';
-    import type { MockPaymentBreakdown, MockPaymentMethod, MockPaymentPlan, MockPaymentProof } from '$lib/mock/orders';
+    import { formatRupiah, type Order, type OrderStatus as UiOrderStatus } from '$lib/mock/orders_dashboard';
+    import type { MockPaymentBreakdown, MockPaymentMethod, MockPaymentPlan, MockPaymentProof, MockPaymentStatus } from '$lib/mock/orders';
     import { getPrimaryPaymentAccount } from '$lib/mock/paymentAccounts';
     import OrderTabs from '$lib/components/dashboard/OrderTabs.svelte';
     import ActiveOrdersList from '$lib/components/dashboard/ActiveOrdersList.svelte';
     import HistoryOrdersList from '$lib/components/dashboard/HistoryOrdersList.svelte';
     import Modal from '$lib/components/ui/Modal.svelte';
     import { fade, fly, scale } from 'svelte/transition';
+    import { onMount } from 'svelte';
 
-    let orders = $state<Order[]>([...initialDashboardOrders]);
+    let orders = $state<Order[]>([]);
+    let loading = $state(true);
+    let error = $state('');
     let activeTab = $state<'ACTIVE' | 'HISTORY'>('ACTIVE');
 
     // Detail Modal State
@@ -22,6 +25,94 @@
     let selectedMethod = $state<MockPaymentMethod | null>(null);
 
     const primaryPayment = getPrimaryPaymentAccount();
+
+    function mapStatus(status: string): UiOrderStatus {
+        const s = status.toLowerCase();
+        if (s === 'new' || s === 'confirmed') return 'PENDING';
+        if (s === 'processing' || s === 'ready') return 'PROCESSING';
+        if (s === 'delivered') return 'SHIPPED';
+        if (s === 'completed') return 'COMPLETED';
+        if (s === 'cancelled') return 'CANCELLED';
+        return 'PENDING';
+    }
+
+    function mapPaymentStatus(status: string): MockPaymentStatus {
+        const s = status.toLowerCase();
+        if (s === 'unpaid') return 'unpaid';
+        if (s === 'waiting_verification') return 'waiting_verification';
+        if (s === 'paid') return 'paid';
+        if (s === 'cod') return 'cod_pending';
+        return 'unpaid';
+    }
+
+    function mapType(status: string): 'active' | 'history' {
+        const s = status.toLowerCase();
+        return ['completed', 'cancelled'].includes(s) ? 'history' : 'active';
+    }
+
+    function extractMenuName(items: any[]): string {
+        if (!items.length) return 'Pesanan Catering';
+        if (items.length === 1) return items[0].name;
+        return `${items[0].name} +${items.length - 1} item`;
+    }
+
+    function mapApiOrderToUiOrder(apiOrder: any): Order {
+        return {
+            id: apiOrder.id,
+            orderNumber: apiOrder.orderNumber,
+            menuName: extractMenuName(apiOrder.items),
+            orderDate: apiOrder.orderDate,
+            deliveryDate: apiOrder.deliveryDate,
+            status: mapStatus(apiOrder.status),
+            total: apiOrder.total,
+            items: apiOrder.items.map((i: any) => ({
+                name: i.name,
+                quantity: i.quantity,
+                price: i.price
+            })),
+            type: mapType(apiOrder.status),
+            paymentStatus: mapPaymentStatus(apiOrder.paymentStatus),
+            paymentMethod: apiOrder.paymentMethod === 'cod' ? 'cod_cash' : 
+                           apiOrder.paymentMethod === 'qris' ? 'qris' : 
+                           apiOrder.paymentMethod === 'transfer' ? 'bank_transfer' : 'bank_transfer',
+            paymentBreakdown: {
+                totalAmount: apiOrder.total,
+                paidAmount: apiOrder.payment?.paidAmount ?? 0,
+                remainingAmount: apiOrder.payment?.remainingAmount ?? apiOrder.total,
+                dpRequired: false
+            },
+            paymentProofs: [],
+            paymentPlan: apiOrder.paymentMethod === 'cod' ? 'cod_full' : 'full_prepaid',
+            deliveryInfo: apiOrder.deliveryInfo ? {
+                departmentOrUnit: apiOrder.deliveryInfo.departmentOrUnit || null,
+                floor: apiOrder.deliveryInfo.floor || null,
+                locationNote: apiOrder.deliveryInfo.locationNote || null,
+                addressSummary: apiOrder.deliveryInfo.addressSummary || null
+            } : undefined
+        };
+    }
+
+    async function loadOrders() {
+        loading = true;
+        error = '';
+        try {
+            const response = await fetch('/api/orders');
+            if (!response.ok) throw new Error('Gagal mengambil data pesanan.');
+            const data = await response.json();
+            if (Array.isArray(data.items)) {
+                orders = data.items.map(mapApiOrderToUiOrder);
+            }
+        } catch (e: any) {
+            console.error(e);
+            error = e.message || 'Terjadi kesalahan saat memuat data.';
+        } finally {
+            loading = false;
+        }
+    }
+
+    onMount(() => {
+        loadOrders();
+    });
 
     function getOrderById(orderId: string): Order | null {
         return orders.find((order) => order.id === orderId) ?? null;
@@ -232,14 +323,33 @@
     <OrderTabs bind:activeTab />
 
     <div class="min-h-[400px]">
-        {#if activeTab === 'ACTIVE'}
-            <div in:fade={{ duration: 200 }}>
-                <ActiveOrdersList orders={orders} onDetail={handleDetail} />
+        {#if loading}
+            <div class="flex flex-col items-center justify-center py-20 space-y-4" in:fade>
+                <div class="w-12 h-12 border-4 border-brand-primary border-t-transparent rounded-full animate-spin"></div>
+                <p class="text-zinc-500 font-bold uppercase tracking-widest text-[10px]">Memuat data pesanan...</p>
+            </div>
+        {:else if error}
+            <div class="bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/20 p-10 rounded-[2.5rem] text-center space-y-4" in:fade>
+                <span class="text-4xl block">⚠️</span>
+                <h3 class="text-lg font-black text-red-700 dark:text-red-400 italic">Gagal Memuat Data</h3>
+                <p class="text-sm text-red-600/70 font-medium">{error}</p>
+                <button 
+                    onclick={loadOrders}
+                    class="px-8 py-3 bg-red-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-700 transition-all shadow-lg shadow-red-600/20"
+                >
+                    Coba Lagi
+                </button>
             </div>
         {:else}
-            <div in:fade={{ duration: 200 }}>
-                <HistoryOrdersList orders={orders} onDetail={handleDetail} />
-            </div>
+            {#if activeTab === 'ACTIVE'}
+                <div in:fade={{ duration: 200 }}>
+                    <ActiveOrdersList orders={orders} onDetail={handleDetail} />
+                </div>
+            {:else}
+                <div in:fade={{ duration: 200 }}>
+                    <HistoryOrdersList orders={orders} onDetail={handleDetail} />
+                </div>
+            {/if}
         {/if}
     </div>
 </div>
@@ -261,17 +371,44 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- Order Items -->
-                <div class="space-y-4">
-                    <h4 class="text-xs font-black uppercase tracking-widest text-zinc-400">Daftar Menu</h4>
-                    <div class="space-y-3">
-                        {#each selectedOrder.items as item}
-                            <div class="flex justify-between items-center bg-zinc-50 dark:bg-zinc-800/50 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800">
-                                <span class="text-sm font-bold text-zinc-600 dark:text-zinc-300">{item.quantity}x {item.name}</span>
-                                <span class="text-sm font-black italic">{formatRupiah(item.price * item.quantity)}</span>
-                            </div>
-                        {/each}
+                <!-- Order Items & Delivery -->
+                <div class="space-y-8">
+                    <div class="space-y-4">
+                        <h4 class="text-xs font-black uppercase tracking-widest text-zinc-400">Daftar Menu</h4>
+                        <div class="space-y-3">
+                            {#each selectedOrder.items as item}
+                                <div class="flex justify-between items-center bg-zinc-50 dark:bg-zinc-800/50 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800">
+                                    <span class="text-sm font-bold text-zinc-600 dark:text-zinc-300">{item.quantity}x {item.name}</span>
+                                    <span class="text-sm font-black italic">{formatRupiah(item.price * item.quantity)}</span>
+                                </div>
+                            {/each}
+                        </div>
                     </div>
+
+                    {#if selectedOrder.deliveryInfo}
+                        <div class="space-y-4">
+                            <h4 class="text-xs font-black uppercase tracking-widest text-zinc-400">Informasi Pengiriman</h4>
+                            <div class="bg-blue-50/50 dark:bg-blue-900/10 p-6 rounded-2xl border border-blue-100/50 dark:border-blue-900/20 space-y-3">
+                                <div class="flex items-start gap-3">
+                                    <span class="text-xl">📍</span>
+                                    <div>
+                                        {#if selectedOrder.deliveryInfo.addressSummary}
+                                            <p class="text-sm font-bold text-brand-charcoal dark:text-white">{selectedOrder.deliveryInfo.addressSummary}</p>
+                                        {:else}
+                                            <p class="text-sm font-bold text-brand-charcoal dark:text-white">
+                                                {[
+                                                    selectedOrder.deliveryInfo.departmentOrUnit,
+                                                    selectedOrder.deliveryInfo.floor,
+                                                    selectedOrder.deliveryInfo.locationNote
+                                                ].filter(Boolean).join(', ') || 'Alamat tidak tersedia'}
+                                            </p>
+                                        {/if}
+                                        <p class="text-[10px] text-zinc-500 font-medium mt-1 uppercase tracking-wider">Tgl Antar: {selectedOrder.deliveryDate}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {/if}
                 </div>
 
                 <!-- Payment Section -->

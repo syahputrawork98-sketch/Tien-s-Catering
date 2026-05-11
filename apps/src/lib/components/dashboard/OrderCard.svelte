@@ -17,7 +17,10 @@
                 {order.paymentStatus === 'paid' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 
                  order.paymentStatus === 'waiting_verification' ? 'bg-amber-50 text-amber-600 border border-amber-100 animate-pulse' : 
                  'bg-zinc-50 text-zinc-400 border border-zinc-100'}">
-                {order.paymentStatus === 'waiting_verification' ? 'Verifikasi Bayar' : order.paymentStatus}
+                {order.paymentStatus === 'paid' ? 'Lunas' : 
+                 order.paymentStatus === 'partially_paid' ? 'DP Terbayar' : 
+                 order.paymentStatus === 'waiting_verification' ? 'Verifikasi' : 
+                 order.paymentStatus === 'cod_pending' ? 'COD' : 'Belum Bayar'}
             </span>
         </div>
         

@@ -35,6 +35,13 @@ export interface Order {
   paymentBreakdown?: import('./orders').MockPaymentBreakdown;
   paymentProofs?: import('./orders').MockPaymentProof[];
   codCollection?: import('./orders').MockCodCollection;
+
+  deliveryInfo?: {
+    departmentOrUnit: string | null;
+    floor: string | null;
+    locationNote: string | null;
+    addressSummary: string | null;
+  };
 }
 
 // ─── Helper: map status lowercase -> uppercase ────────────
