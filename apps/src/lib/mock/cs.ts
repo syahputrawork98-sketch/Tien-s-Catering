@@ -49,6 +49,8 @@ export type MockCsOrder = {
   completedConfirmedByUser?: boolean;
   completedConfirmedByAdmin?: boolean;
   completionNote?: string;
+  sourceType?: 'catalog' | 'package_request';
+  sourceId?: string | null;
 };
 
 export type MockCsMenu = {

@@ -18,11 +18,13 @@
                  order.paymentStatus === 'partially_paid' ? 'bg-blue-50 text-blue-600 border border-blue-100' : 
                  order.paymentStatus === 'waiting_verification' ? 'bg-amber-50 text-amber-600 border border-amber-100 animate-pulse' : 
                  order.paymentStatus === 'cod_pending' ? 'bg-sky-50 text-sky-600 border border-sky-100' :
+                 order.paymentStatus === 'rejected' ? 'bg-red-50 text-red-600 border border-red-100' :
                  'bg-zinc-50 text-zinc-400 border border-zinc-100'}">
                 {order.paymentStatus === 'paid' ? 'Lunas' : 
                  order.paymentStatus === 'partially_paid' ? 'DP Terbayar' : 
                  order.paymentStatus === 'waiting_verification' ? 'Menunggu Verifikasi' : 
-                 order.paymentStatus === 'cod_pending' ? 'COD / Bayar di Tempat' : 'Belum Bayar'}
+                 order.paymentStatus === 'cod_pending' ? 'COD / Bayar di Tempat' : 
+                 order.paymentStatus === 'rejected' ? 'Pembayaran Ditolak' : 'Belum Bayar'}
             </span>
         </div>
         

@@ -3,7 +3,7 @@
 	import { onMount } from 'svelte';
 	import { fade, fly, scale } from 'svelte/transition';
 
-	type TabType = 'ALL' | 'NEW' | 'PROCESS' | 'DONE' | 'CANCELLED';
+	type TabType = 'ALL' | 'NEW' | 'VERIFIKASI' | 'PROCESS' | 'DONE' | 'CANCELLED';
 	type OrderStatus = 'new' | 'confirmed' | 'processing' | 'ready' | 'delivered' | 'completed' | 'cancelled';
 	type PaymentStatus = 'unpaid' | 'waiting_verification' | 'paid' | 'cod' | 'rejected';
 	type PaymentMethod = 'cash' | 'transfer' | 'qris' | 'cod' | 'unknown';
@@ -303,6 +303,9 @@
 			case 'NEW':
 				tabbedOrders = orders.filter((order) => isNewStatus(order.status));
 				break;
+			case 'VERIFIKASI':
+				tabbedOrders = orders.filter((order) => order.paymentStatus === 'waiting_verification');
+				break;
 			case 'PROCESS':
 				tabbedOrders = orders.filter(
 					(order) =>
@@ -343,6 +346,7 @@
 				!isDoneStatus(order.status) &&
 				!isCancelledStatus(order.status)
 		).length,
+		verifikasi: orders.filter((order) => order.paymentStatus === 'waiting_verification').length,
 		done: orders.filter((order) => isDoneStatus(order.status)).length,
 		cancelled: orders.filter((order) => isCancelledStatus(order.status)).length
 	}));
@@ -708,6 +712,7 @@
 	const tabs: { id: TabType; label: string; count: () => number }[] = [
 		{ id: 'ALL', label: 'Semua', count: () => stats().total },
 		{ id: 'NEW', label: 'Menunggu Konfirmasi', count: () => stats().new },
+		{ id: 'VERIFIKASI', label: 'Verifikasi Bayar', count: () => stats().verifikasi },
 		{ id: 'PROCESS', label: 'Diproses', count: () => stats().process },
 		{ id: 'DONE', label: 'Selesai', count: () => stats().done },
 		{ id: 'CANCELLED', label: 'Dibatalkan', count: () => stats().cancelled }

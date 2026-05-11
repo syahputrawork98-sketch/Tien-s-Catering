@@ -19,6 +19,7 @@
                 case 'partially_paid': return 'bg-indigo-100 text-indigo-700';
                 case 'waiting_verification': return 'bg-amber-100 text-amber-700';
                 case 'cod_pending': return 'bg-sky-100 text-sky-700';
+                case 'rejected': return 'bg-red-100 text-red-700';
                 default: return 'bg-zinc-100 text-zinc-400';
             }
         } else {
@@ -27,6 +28,7 @@
                 case 'partially_paid': return 'bg-indigo-50 text-indigo-600 border border-indigo-100';
                 case 'waiting_verification': return 'bg-amber-50 text-amber-600 border border-amber-100 animate-pulse';
                 case 'cod_pending': return 'bg-sky-50 text-sky-600 border border-sky-100';
+                case 'rejected': return 'bg-red-50 text-red-600 border border-red-100';
                 default: return 'bg-zinc-50 text-zinc-400 border border-zinc-100';
             }
         }
@@ -39,6 +41,7 @@
         if (status === 'paid') return 'Lunas';
         if (status === 'unpaid') return 'Belum Bayar';
         if (status === 'partially_paid') return 'DP Terbayar';
+        if (status === 'rejected') return 'Pembayaran Ditolak';
         return status.replace('_', ' ').toUpperCase();
     }
 
@@ -686,6 +689,13 @@
                 <div>
                     <h2 class="text-2xl font-black text-brand-charcoal dark:text-white italic tracking-tighter">Detail Pesanan #{selectedOrder.id}</h2>
                     <p class="text-xs font-bold text-zinc-400 uppercase tracking-widest mt-1">Status: <span class="text-brand-primary">{selectedOrder.status}</span></p>
+                    {#if selectedOrder.sourceType === 'package_request'}
+                        <div class="mt-2">
+                            <span class="px-3 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 text-[10px] font-black uppercase rounded-full border border-indigo-100 dark:border-indigo-900/50 tracking-widest">
+                                🍱 Paket Katering
+                            </span>
+                        </div>
+                    {/if}
                 </div>
                 <button onclick={closeModal} class="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-2xl hover:text-red-500 transition-colors shadow-sm" aria-label="Tutup modal">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
