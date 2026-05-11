@@ -304,8 +304,12 @@
 <div class="space-y-8">
     <header class="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div in:fly={{ y: -20, duration: 500 }}>
-            <h1 class="text-4xl font-black text-brand-charcoal dark:text-white tracking-tighter">Pesanan Saya 🛍️</h1>
-            <p class="text-zinc-500 font-medium mt-2">Pantau status pesanan aktif dan lihat riwayat katering Anda.</p>
+            <div class="inline-flex items-center gap-2 px-3 py-1 bg-brand-primary/10 rounded-full mb-3">
+                <span class="w-1.5 h-1.5 rounded-full bg-brand-primary animate-pulse"></span>
+                <span class="text-[9px] font-black text-brand-primary uppercase tracking-widest italic">Local SQLite Database Simulation</span>
+            </div>
+            <h1 class="text-4xl font-black text-brand-charcoal dark:text-white tracking-tighter uppercase italic">Pesanan <span class="text-brand-primary">Saya</span> 🛍️</h1>
+            <p class="text-zinc-500 font-medium mt-1">Pantau status pesanan aktif dan lihat riwayat katering Anda.</p>
         </div>
         
         <div class="flex gap-4" in:fly={{ x: 20, duration: 500 }}>

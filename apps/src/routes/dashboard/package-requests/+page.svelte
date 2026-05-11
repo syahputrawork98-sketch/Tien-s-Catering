@@ -191,10 +191,10 @@
 	<header in:fly={{ y: -20, duration: 500 }}>
 		<div class="inline-flex items-center gap-2 px-4 py-1.5 bg-brand-primary/5 rounded-full mb-4">
 			<span class="w-2 h-2 rounded-full bg-brand-primary animate-pulse"></span>
-			<span class="text-[10px] font-black text-brand-primary uppercase tracking-widest">Alur Request Paket (Demo)</span>
+			<span class="text-[10px] font-black text-brand-primary uppercase tracking-widest">Local SQLite Database Simulation</span>
 		</div>
 		<h1 class="text-4xl lg:text-5xl font-black text-brand-charcoal dark:text-white tracking-tighter italic uppercase">
-			Request Paket Saya
+			Request <span class="text-brand-primary">Paket</span> Saya 🍱
 		</h1>
 		<p class="text-zinc-500 font-medium mt-2 max-w-2xl">
 			Pantau status permintaan paket catering Anda. Harap diperhatikan bahwa request ini bersifat penawaran awal dan baru akan diproses setelah dikonfirmasi menjadi order resmi.

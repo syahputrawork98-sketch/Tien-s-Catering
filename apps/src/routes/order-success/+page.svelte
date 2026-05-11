@@ -135,13 +135,24 @@
 
 		<div class="space-y-4" in:fade={{ delay: 600 }}>
 			<a
+				href="/dashboard/orders"
+				class="block w-full py-5 bg-brand-primary text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl shadow-brand-primary/20 hover:scale-[1.02] transition-all"
+				>Pantau Di Dashboard Saya</a
+			>
+			<a
 				href="/"
-				class="block w-full py-5 bg-brand-charcoal text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-zinc-800 transition-all"
+				class="block w-full py-5 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-zinc-200 transition-all"
 				>Kembali Ke Beranda</a
 			>
-			<p class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
-				Status pesanan akan diupdate via WhatsApp
-			</p>
+			<div class="pt-4 flex flex-col items-center gap-3">
+				<p class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+					Status pesanan akan diupdate via WhatsApp
+				</p>
+				<div class="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 dark:bg-blue-900/20 rounded-full border border-blue-100 dark:border-blue-900/30">
+					<span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+					<span class="text-[8px] font-black text-blue-600 dark:text-blue-300 uppercase tracking-widest">Local Demo Flow Aktif</span>
+				</div>
+			</div>
 		</div>
 	</div>
 </div>
