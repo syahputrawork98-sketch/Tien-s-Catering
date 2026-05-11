@@ -296,9 +296,12 @@
         <div>
             <h1 class="text-4xl font-black text-brand-charcoal dark:text-white tracking-tighter italic uppercase">Laporan <span class="text-brand-primary">Bisnis</span> 📈</h1>
             <p class="text-zinc-500 font-medium mt-1">Pantau penjualan, pesanan, customer, produk, dan keuangan Tien’s Catering.</p>
-            <p class="text-[11px] font-bold text-amber-700 dark:text-amber-300 mt-3 uppercase tracking-wider">
-                {reportsSourceLabel}
-            </p>
+            <div class="flex items-center gap-2 mt-3">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <p class="text-[11px] font-black text-amber-700 dark:text-amber-300 uppercase tracking-wider italic">
+                    {reportsSourceLabel}
+                </p>
+            </div>
         </div>
         <div class="flex gap-3">
             <button
@@ -355,8 +358,8 @@
 
     <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900/30 rounded-2xl px-6 py-4">
         <p class="text-[10px] font-black text-amber-700 dark:text-amber-300 uppercase tracking-widest">Mode Laporan: Simulasi Lokal</p>
-        <p class="text-xs font-semibold text-amber-700/90 dark:text-amber-200/90 mt-1">
-            Search dan filter periode bekerja pada dataset mock lokal. Export PDF/CSV production masih Hold.
+        <p class="text-xs font-semibold text-amber-700/90 dark:text-amber-200/90 mt-1 italic">
+            Beberapa analisa tren dan demografi masih dalam tahap visual simulasi. Data pesanan & keuangan bersumber dari live SQLite.
         </p>
     </div>
 
@@ -395,28 +398,43 @@
                 <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm relative overflow-hidden group hover:border-brand-primary/30 transition-all">
                     <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">Total Revenue (DB)</p>
                     <p class="text-3xl font-black text-brand-charcoal dark:text-white italic mb-2 tracking-tighter">{formatRupiah(dbStats.totalRevenue)}</p>
-                    <p class="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">Database Lokal</p>
+                    <div class="flex items-center gap-1.5 mt-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <p class="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest italic">Database Lokal Aktif</p>
+                    </div>
                 </div>
                 <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm relative overflow-hidden group hover:border-brand-primary/30 transition-all">
                     <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">Total Orders (DB)</p>
                     <p class="text-3xl font-black text-brand-charcoal dark:text-white italic mb-2 tracking-tighter">{dbStats.orderCount}</p>
-                    <p class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Database Lokal</p>
+                    <div class="flex items-center gap-1.5 mt-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <p class="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest italic">Database Lokal Aktif</p>
+                    </div>
                 </div>
                 <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm relative overflow-hidden group hover:border-brand-primary/30 transition-all">
                     <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">Avg. Order (DB)</p>
                     <p class="text-3xl font-black text-brand-charcoal dark:text-white italic mb-2 tracking-tighter">{formatRupiah(dbStats.orderCount > 0 ? Math.round(dbStats.totalRevenue / dbStats.orderCount) : 0)}</p>
-                    <p class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Database Lokal</p>
+                    <div class="flex items-center gap-1.5 mt-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <p class="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest italic">Database Lokal Aktif</p>
+                    </div>
                 </div>
                 <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm relative overflow-hidden group hover:border-brand-primary/30 transition-all">
-                    <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">Pending Verify (DB)</p>
+                    <p class="text-[10px] font-black text-orange-400 uppercase tracking-widest mb-2">Pending Verify (DB)</p>
                     <p class="text-3xl font-black text-orange-600 italic mb-2 tracking-tighter">{dbStats.paymentCounts.waiting}</p>
-                    <p class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Database Lokal</p>
+                    <div class="flex items-center gap-1.5 mt-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <p class="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest italic">Database Lokal Aktif</p>
+                    </div>
                 </div>
             </div>
 
             <section class="bg-white dark:bg-zinc-900 rounded-[3rem] border border-zinc-100 dark:border-zinc-800 shadow-sm overflow-hidden">
                 <div class="p-8 border-b border-zinc-50 dark:border-zinc-800 flex justify-between items-center bg-zinc-50/30 dark:bg-zinc-800/20">
-                    <h2 class="text-xl font-black text-brand-charcoal dark:text-white tracking-tight uppercase italic">Weekly Sales Trend</h2>
+                    <div class="flex items-center gap-3">
+                        <h2 class="text-xl font-black text-brand-charcoal dark:text-white tracking-tight uppercase italic">Weekly Sales Trend</h2>
+                        <span class="px-2.5 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-lg text-[8px] font-black text-zinc-400 uppercase tracking-widest italic">Visual Simulasi</span>
+                    </div>
                     <span class="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">Periode: {periodFilterLabel(periodFilter)}</span>
                 </div>
                 <div class="overflow-x-auto">
@@ -464,21 +482,28 @@
         {:else if activeTab === 'sales'}
             <!-- Tab: Penjualan -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-emerald-50 dark:bg-emerald-900/20 p-8 rounded-[2.5rem] border border-emerald-100 dark:border-emerald-800/30 shadow-sm">
+                <div class="bg-emerald-50 dark:bg-emerald-900/20 p-8 rounded-[2.5rem] border border-emerald-100 dark:border-emerald-800/30 shadow-sm relative group overflow-hidden">
                     <p class="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-2">Total Revenue (DB)</p>
                     <p class="text-3xl font-black text-emerald-700 dark:text-emerald-300 italic tracking-tighter">{formatRupiah(dbStats.totalRevenue)}</p>
+                    <span class="absolute top-4 right-6 text-[8px] font-black text-emerald-400 uppercase tracking-widest italic opacity-60">Database Lokal</span>
                 </div>
-                <div class="bg-blue-50 dark:bg-blue-900/20 p-8 rounded-[2.5rem] border border-blue-100 dark:border-blue-800/30 shadow-sm">
+                <div class="bg-blue-50 dark:bg-blue-900/20 p-8 rounded-[2.5rem] border border-blue-100 dark:border-blue-800/30 shadow-sm relative group overflow-hidden">
                     <p class="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2">Total Transactions (DB)</p>
                     <p class="text-3xl font-black text-blue-700 dark:text-blue-300 italic tracking-tighter">{dbStats.orderCount}</p>
+                    <span class="absolute top-4 right-6 text-[8px] font-black text-blue-400 uppercase tracking-widest italic opacity-60">Database Lokal</span>
                 </div>
-                <div class="bg-indigo-50 dark:bg-indigo-900/20 p-8 rounded-[2.5rem] border border-indigo-100 dark:border-indigo-800/30 shadow-sm">
+                <div class="bg-indigo-50 dark:bg-indigo-900/20 p-8 rounded-[2.5rem] border border-indigo-100 dark:border-indigo-800/30 shadow-sm relative group overflow-hidden">
                     <p class="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mb-2">Avg. Value (DB)</p>
                     <p class="text-3xl font-black text-indigo-700 dark:text-indigo-300 italic tracking-tighter">{formatRupiah(dbStats.orderCount > 0 ? Math.round(dbStats.totalRevenue / dbStats.orderCount) : 0)}</p>
+                    <span class="absolute top-4 right-6 text-[8px] font-black text-indigo-400 uppercase tracking-widest italic opacity-60">Database Lokal</span>
                 </div>
             </div>
 
             <section class="bg-white dark:bg-zinc-900 rounded-[3rem] border border-zinc-100 dark:border-zinc-800 shadow-sm overflow-hidden">
+                <div class="p-8 border-b border-zinc-50 dark:border-zinc-800 flex justify-between items-center bg-zinc-50/30 dark:bg-zinc-800/20">
+                    <h3 class="text-sm font-black text-brand-charcoal dark:text-white uppercase tracking-widest italic">Rincian Penjualan Terakhir</h3>
+                    <p class="text-[9px] font-black text-emerald-500 uppercase tracking-widest italic tracking-[0.2em]">✓ Live Database Sync</p>
+                </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse min-w-[900px]">
                         <thead>
@@ -520,14 +545,19 @@
             <!-- Tab: Pesanan -->
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {#each orderSummaryCards as stat}
-                    <div class="bg-white dark:bg-zinc-900 p-6 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 text-center">
+                    <div class="bg-white dark:bg-zinc-900 p-6 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 text-center relative overflow-hidden group">
                         <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">{stat.label}</p>
                         <p class="text-2xl font-black {stat.color} italic tracking-tighter">{stat.count}</p>
+                        <span class="absolute -bottom-1 -right-1 text-[20px] opacity-5 grayscale transition-all group-hover:grayscale-0 group-hover:scale-120 group-hover:opacity-10 pointer-events-none">📦</span>
                     </div>
                 {/each}
             </div>
 
             <section class="bg-white dark:bg-zinc-900 rounded-[3rem] border border-zinc-100 dark:border-zinc-800 shadow-sm overflow-hidden">
+                <div class="p-8 border-b border-zinc-50 dark:border-zinc-800 flex justify-between items-center bg-zinc-50/30 dark:bg-zinc-800/20">
+                    <h3 class="text-sm font-black text-brand-charcoal dark:text-white uppercase tracking-widest italic">Monitoring Pesanan Lokal</h3>
+                    <p class="text-[9px] font-black text-brand-primary uppercase tracking-widest italic tracking-[0.2em]">SOT: Local SQLite Database</p>
+                </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse min-w-[900px]">
                         <thead>
@@ -568,11 +598,11 @@
         {:else if activeTab === 'customers'}
             <!-- Tab: Customer -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-zinc-900 p-8 rounded-[2.5rem] text-white">
-                    <p class="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-4">Top Customers</p>
+                <div class="bg-zinc-900 p-8 rounded-[2.5rem] text-white relative overflow-hidden group">
+                    <p class="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-4">Top Customers <span class="ml-2 text-[8px] text-zinc-600 italic">(Simulasi)</span></p>
                     <div class="space-y-4">
                         {#each mockAccounts.filter(a => a.role === 'USER' && (a.totalOrders ?? 0) > 0).sort((a, b) => (b.totalOrders || 0) - (a.totalOrders || 0)).slice(0, 3) as top}
-                            <div class="flex items-center justify-between p-4 bg-white/5 rounded-2xl">
+                            <div class="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5 group-hover:border-white/10 transition-all">
                                 <span class="text-sm font-black italic">{top.name}</span>
                                 <span class="text-xs font-bold text-brand-primary">{top.totalOrders} Pesanan</span>
                             </div>
@@ -580,13 +610,17 @@
                     </div>
                 </div>
                 <div class="bg-brand-primary p-8 rounded-[2.5rem] text-white">
-                    <p class="text-[10px] font-black text-white/60 uppercase tracking-widest mb-2">New Customers (Bulan Ini)</p>
+                    <p class="text-[10px] font-black text-white/60 uppercase tracking-widest mb-2">New Customers (Bulan Ini) <span class="ml-2 text-[8px] text-white/40 italic">(Simulasi)</span></p>
                     <p class="text-5xl font-black italic tracking-tighter">+{mockAccounts.filter(a => a.registrationStatus === 'approved').length}</p>
                     <p class="text-xs font-bold mt-2 text-white/80">Pertumbuhan yang sangat baik!</p>
                 </div>
             </div>
 
             <section class="bg-white dark:bg-zinc-900 rounded-[3rem] border border-zinc-100 dark:border-zinc-800 shadow-sm overflow-hidden">
+                <div class="p-8 border-b border-zinc-50 dark:border-zinc-800 flex justify-between items-center bg-zinc-50/30 dark:bg-zinc-800/20">
+                    <h3 class="text-sm font-black text-brand-charcoal dark:text-white uppercase tracking-widest italic">Daftar Pelanggan Simulasi</h3>
+                    <p class="text-[8px] font-black text-zinc-400 uppercase tracking-widest italic">Info: Data customer belum sinkron DB Pesanan</p>
+                </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse min-w-[900px]">
                         <thead>
@@ -636,14 +670,18 @@
                     { label: 'Active Package', count: mockCatalogItems.filter(p => p.type === 'package' && p.isActive).length, color: 'text-blue-600' },
                     { label: 'Sold Out / Draft', count: mockCatalogItems.filter(p => !p.isActive || p.status === 'sold_out').length, color: 'text-red-600' }
                 ] as stat}
-                    <div class="bg-white dark:bg-zinc-900 p-6 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 text-center">
+                    <div class="bg-white dark:bg-zinc-900 p-6 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 text-center relative group">
                         <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">{stat.label}</p>
                         <p class="text-2xl font-black {stat.color} italic tracking-tighter">{stat.count}</p>
+                        <span class="absolute top-2 right-4 text-[7px] font-black text-zinc-300 uppercase tracking-tighter italic opacity-40">Visual Data</span>
                     </div>
                 {/each}
             </div>
 
             <section class="bg-white dark:bg-zinc-900 rounded-[3rem] border border-zinc-100 dark:border-zinc-800 shadow-sm overflow-hidden">
+                <div class="p-8 border-b border-zinc-50 dark:border-zinc-800 flex justify-between items-center bg-zinc-50/30 dark:bg-zinc-800/20">
+                    <h3 class="text-sm font-black text-brand-charcoal dark:text-white uppercase tracking-widest italic">Analisa Performa Produk (Simulasi)</h3>
+                </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse min-w-[900px]">
                         <thead>
@@ -689,25 +727,30 @@
         {:else if activeTab === 'finance'}
             <!-- Tab: Keuangan -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div class="bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-800 shadow-sm text-white">
+                <div class="bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-800 shadow-sm text-white relative group">
                     <p class="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">Gross Revenue (DB)</p>
                     <p class="text-2xl font-black text-brand-primary italic tracking-tighter">{formatRupiah(dbStats.totalRevenue)}</p>
+                    <span class="absolute top-4 right-6 text-[7px] font-black text-emerald-400 uppercase tracking-widest italic animate-pulse">DB Sync</span>
                 </div>
-                <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm">
-                    <p class="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-2">Paid Amount (DB)</p>
+                <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm relative">
+                    <p class="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-2">Lunas / Paid (DB)</p>
                     <p class="text-2xl font-black text-emerald-600 italic tracking-tighter">{formatRupiah(dbOrders.filter(o => o.paymentStatus === 'paid').reduce((sum, o) => sum + (o.total || 0), 0))}</p>
                 </div>
-                <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm">
-                    <p class="text-[10px] font-black text-orange-400 uppercase tracking-widest mb-2">Unpaid / Pending (DB)</p>
+                <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm relative">
+                    <p class="text-[10px] font-black text-orange-400 uppercase tracking-widest mb-2">Belum Bayar / Pending (DB)</p>
                     <p class="text-2xl font-black text-orange-600 italic tracking-tighter">{formatRupiah(dbOrders.filter(o => o.paymentStatus === 'unpaid' || o.paymentStatus === 'waiting_verification').reduce((sum, o) => sum + (o.total || 0), 0))}</p>
                 </div>
-                <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm">
-                    <p class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2">COD Count (DB)</p>
+                <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm relative">
+                    <p class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2">Metode COD (DB)</p>
                     <p class="text-2xl font-black text-indigo-600 italic tracking-tighter">{dbStats.paymentCounts.cod} Order</p>
                 </div>
             </div>
 
             <section class="bg-white dark:bg-zinc-900 rounded-[3rem] border border-zinc-100 dark:border-zinc-800 shadow-sm overflow-hidden">
+                <div class="p-8 border-b border-zinc-50 dark:border-zinc-800 flex justify-between items-center bg-zinc-50/30 dark:bg-zinc-800/20">
+                    <h3 class="text-sm font-black text-brand-charcoal dark:text-white uppercase tracking-widest italic">Rincian Arus Kas Pesanan Lokal</h3>
+                    <p class="text-[9px] font-black text-emerald-500 uppercase tracking-widest italic">✓ Database Backed</p>
+                </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse min-w-[900px]">
                         <thead>
@@ -745,6 +788,7 @@
                 </div>
             </section>
         {/if}
+        {/if}
 
         <!-- Empty Search State -->
         {#if normalizedSearchQuery.length > 0 && !hasSearchResultInActiveTab}
@@ -762,7 +806,6 @@
                 </div>
             </div>
         {/if}
-    {/if}
     </div>
 </div>
 
@@ -775,5 +818,3 @@
         scrollbar-width: none;
     }
 </style>
-
-
