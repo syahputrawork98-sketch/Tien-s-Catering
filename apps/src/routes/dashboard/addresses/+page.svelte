@@ -1,6 +1,6 @@
 <script lang="ts">
     import { mockUserAddresses } from '$lib/mock/user';
-    import { fade } from 'svelte/transition';
+    import { fade, fly } from 'svelte/transition';
 
     let addresses = $state([...mockUserAddresses]);
 
@@ -16,12 +16,19 @@
 </script>
 
 <div class="space-y-10">
-    <header class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <header in:fly={{ y: -20, duration: 500 }}>
         <div>
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-full mb-4">
+                <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                <span class="text-[10px] font-black text-blue-600 dark:text-blue-300 uppercase tracking-widest">Simulasi Alamat Lokal</span>
+            </div>
             <h1 class="text-3xl font-black text-brand-charcoal dark:text-white tracking-tighter">Alamat Saya 📍</h1>
-            <p class="text-zinc-500 font-medium mt-1">Daftar lokasi pengiriman favorit Anda.</p>
+            <p class="text-zinc-500 font-medium mt-1">Daftar lokasi pengiriman favorit. Berjalan dalam mode simulasi lokal.</p>
         </div>
-        <button class="bg-brand-charcoal text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:scale-105 transition-all flex items-center gap-2">
+        <button 
+            onclick={() => alert("Fitur Tambah Alamat (Simulation Mode)\n\nLengkapi profil alamat pengiriman di mode lokal ini. Data belum tersimpan permanen ke DB.")}
+            class="bg-brand-charcoal text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:scale-105 transition-all flex items-center gap-2"
+        >
             + Tambah Alamat
         </button>
     </header>

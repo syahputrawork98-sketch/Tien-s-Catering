@@ -21,7 +21,7 @@
     let passwordError = $state('');
 
     function handleSave() {
-        alert("Profil berhasil diperbarui (Simulasi).");
+        alert("Profil berhasil diperbarui (Simulasi).\n\nPerubahan ini hanya tersimpan di sesi browser lokal saat ini dan belum sinkron ke database utama.");
     }
 
     function handleChangePassword() {
@@ -50,9 +50,13 @@
 </script>
 
 <div class="space-y-10">
-    <header>
+    <header in:fly={{ y: -20, duration: 500 }}>
+        <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-full mb-4">
+            <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+            <span class="text-[10px] font-black text-blue-600 dark:text-blue-300 uppercase tracking-widest">Simulasi Profil Lokal</span>
+        </div>
         <h1 class="text-3xl font-black text-brand-charcoal dark:text-white tracking-tighter">Profil Saya 👤</h1>
-        <p class="text-zinc-500 font-medium mt-1">Kelola informasi pribadi dan keamanan akun Anda.</p>
+        <p class="text-zinc-500 font-medium mt-1">Kelola informasi pribadi. Fitur ini berjalan dalam mode simulasi lokal.</p>
     </header>
 
     <div class="grid lg:grid-cols-3 gap-10">
