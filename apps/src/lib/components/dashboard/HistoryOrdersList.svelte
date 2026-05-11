@@ -5,14 +5,21 @@
 
     let { orders = [], onDetail } = $props<{ orders: Order[], onDetail: (id: string) => void }>();
 
-    let filter = $state('ALL'); // TODAY, WEEK, MONTH, ALL
+    type HistoryFilter = 'ALL' | 'TODAY' | 'WEEK' | 'MONTH';
+
+    let filter = $state<HistoryFilter>('ALL');
     let searchQuery = $state('');
+    const filterOptions: HistoryFilter[] = ['ALL', 'TODAY', 'WEEK', 'MONTH'];
 
     const historyOrders = $derived(orders.filter((o: Order) => o.type === 'history'));
+    const hasHistoryOrders = $derived(historyOrders.length > 0);
+    const hasActiveFilter = $derived(filter !== 'ALL' || searchQuery.trim().length > 0);
 
     const filteredOrders = $derived(historyOrders.filter((o: Order) => {
-        const matchesSearch = o.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                             o.menuName.toLowerCase().includes(searchQuery.toLowerCase());
+        const normalizedQuery = searchQuery.trim().toLowerCase();
+        const matchesSearch = normalizedQuery.length === 0 ||
+            o.orderNumber.toLowerCase().includes(normalizedQuery) || 
+            o.menuName.toLowerCase().includes(normalizedQuery);
         
         if (!matchesSearch) return false;
 
@@ -58,7 +65,7 @@
     <!-- Filter & Search -->
     <div class="flex flex-col md:flex-row gap-4 items-center justify-between bg-white dark:bg-zinc-900 p-6 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 shadow-sm">
         <div class="flex flex-wrap gap-2">
-            {#each ['ALL', 'TODAY', 'WEEK', 'MONTH'] as f}
+            {#each filterOptions as f}
                 <button 
                     onclick={() => filter = f}
                     class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all
@@ -98,8 +105,8 @@
         </div>
     {:else}
         <EmptyState 
-            message="Belum ada riwayat pesanan." 
-            description={searchQuery ? "Tidak ditemukan pesanan dengan kata kunci tersebut." : "Pesanan yang sudah selesai atau dibatalkan akan muncul di sini."}
+            message={hasHistoryOrders ? "Tidak ada riwayat pesanan yang cocok." : "Belum ada riwayat pesanan."}
+            description={hasHistoryOrders && hasActiveFilter ? "Coba ubah kata kunci pencarian atau reset filter waktu." : "Pesanan yang sudah selesai atau dibatalkan akan muncul di sini."}
             icon="🕰️"
         />
     {/if}

@@ -92,14 +92,14 @@ export const mockCsOrders: MockCsOrder[] = mockOrders.map((o: MockOrder) => ({
   address: o.address,
   total: o.total,
   status: o.status as MockCsOrderStatus,
-  paymentStatus: o.paymentStatus as any,
+  paymentStatus: o.paymentStatus,
   items: o.items.map(i => ({
     name: i.name,
     quantity: i.quantity,
     price: i.price
   })),
   notes: o.notes,
-  cancelledBy: o.cancelledBy as any,
+  cancelledBy: o.cancelledBy,
   cancellationReason: o.cancellationReason,
   completedConfirmedByCs: o.completedConfirmedByCs,
   completedConfirmedByUser: o.completedConfirmedByUser,

@@ -1,5 +1,6 @@
 <script lang="ts">
-    import { dashboardOrders as initialDashboardOrders, formatRupiah } from '$lib/mock/orders_dashboard';
+    import { dashboardOrders as initialDashboardOrders, formatRupiah, type Order } from '$lib/mock/orders_dashboard';
+    import type { MockPaymentBreakdown, MockPaymentMethod, MockPaymentPlan, MockPaymentProof } from '$lib/mock/orders';
     import { getPrimaryPaymentAccount } from '$lib/mock/paymentAccounts';
     import OrderTabs from '$lib/components/dashboard/OrderTabs.svelte';
     import ActiveOrdersList from '$lib/components/dashboard/ActiveOrdersList.svelte';
@@ -7,25 +8,72 @@
     import Modal from '$lib/components/ui/Modal.svelte';
     import { fade, fly, scale } from 'svelte/transition';
 
-    let orders = $state([...initialDashboardOrders]);
+    let orders = $state<Order[]>([...initialDashboardOrders]);
     let activeTab = $state<'ACTIVE' | 'HISTORY'>('ACTIVE');
 
     // Detail Modal State
     let showDetail = $state(false);
-    let selectedOrder = $state<any>(null);
+    let selectedOrder = $state<Order | null>(null);
     let isUploading = $state(false);
     let uploadNote = $state('');
     
     // New states for selection
-    let selectedPlan = $state<import('$lib/mock/orders').MockPaymentPlan | null>(null);
-    let selectedMethod = $state<import('$lib/mock/orders').MockPaymentMethod | null>(null);
+    let selectedPlan = $state<MockPaymentPlan | null>(null);
+    let selectedMethod = $state<MockPaymentMethod | null>(null);
 
     const primaryPayment = getPrimaryPaymentAccount();
 
+    function getOrderById(orderId: string): Order | null {
+        return orders.find((order) => order.id === orderId) ?? null;
+    }
+
+    function getPaymentBreakdown(order: Order): MockPaymentBreakdown {
+        return {
+            totalAmount: order.paymentBreakdown?.totalAmount ?? order.total,
+            paidAmount: order.paymentBreakdown?.paidAmount ?? 0,
+            remainingAmount: order.paymentBreakdown?.remainingAmount ?? order.total,
+            dpRequired: order.paymentBreakdown?.dpRequired ?? false,
+            dpPercent: order.paymentBreakdown?.dpPercent,
+            dpAmount: order.paymentBreakdown?.dpAmount
+        };
+    }
+
+    function getOrderProofHistory(order: Order): MockPaymentProof[] {
+        if (order.paymentProofs && order.paymentProofs.length > 0) {
+            return order.paymentProofs;
+        }
+
+        return order.paymentProof ? [order.paymentProof] : [];
+    }
+
+    function hasPackageItem(order: Order): boolean {
+        return order.items.some((item) => item.name.toLowerCase().includes('paket'));
+    }
+
+    function getUploadAmount(order: Order): number {
+        const breakdown = getPaymentBreakdown(order);
+
+        if (order.paymentStatus === 'partially_paid') {
+            return breakdown.remainingAmount;
+        }
+
+        if (order.paymentPlan === 'dp_then_remaining') {
+            return breakdown.dpAmount ?? breakdown.remainingAmount;
+        }
+
+        return breakdown.totalAmount;
+    }
+
+    const selectedOrderBreakdown = $derived(selectedOrder ? getPaymentBreakdown(selectedOrder) : null);
+    const selectedOrderProofHistory = $derived(selectedOrder ? getOrderProofHistory(selectedOrder) : []);
+    const selectedOrderHasPackageMenu = $derived(selectedOrder ? hasPackageItem(selectedOrder) : false);
+    const selectedOrderUploadAmount = $derived(selectedOrder ? getUploadAmount(selectedOrder) : 0);
+
     function handleDetail(id: string) {
-        selectedOrder = orders.find(o => o.id === id);
-        selectedPlan = selectedOrder?.paymentPlan || null;
-        selectedMethod = selectedOrder?.paymentMethod || null;
+        selectedOrder = getOrderById(id);
+        if (!selectedOrder) return;
+        selectedPlan = selectedOrder?.paymentPlan ?? null;
+        selectedMethod = selectedOrder?.paymentMethod ?? null;
         showDetail = true;
     }
 
@@ -36,7 +84,7 @@
         cancelled: orders.filter(o => o.status === 'CANCELLED').length
     });
 
-    function setPaymentPlan(plan: any) {
+    function setPaymentPlan(plan: MockPaymentPlan) {
         selectedPlan = plan;
         if (plan === 'cod_full') {
             selectedMethod = 'cod_cash';
@@ -46,38 +94,43 @@
     function confirmPaymentPlan() {
         if (!selectedOrder || !selectedPlan) return;
 
+        const selectedOrderId = selectedOrder.id;
         const plan = selectedPlan;
         const method = selectedMethod;
         
-        orders = orders.map(o => {
-            if (o.id === selectedOrder.id) {
+        orders = orders.map((order) => {
+            if (order.id === selectedOrderId) {
                 const breakdown = {
-                    totalAmount: o.total,
+                    totalAmount: order.total,
                     paidAmount: 0,
-                    remainingAmount: o.total,
+                    remainingAmount: order.total,
                     dpRequired: plan === 'dp_then_remaining',
                     dpPercent: plan === 'dp_then_remaining' ? 30 : undefined,
-                    dpAmount: plan === 'dp_then_remaining' ? Math.round(o.total * 0.3) : undefined
+                    dpAmount: plan === 'dp_then_remaining' ? Math.round(order.total * 0.3) : undefined
                 };
                 
                 return {
-                    ...o,
+                    ...order,
                     paymentPlan: plan,
                     paymentMethod: method || (plan === 'cod_full' ? 'cod_cash' : 'bank_transfer'),
                     paymentStatus: plan === 'cod_full' ? 'cod_pending' : 'unpaid',
                     paymentBreakdown: breakdown,
-                    codCollection: plan === 'cod_full' ? { expectedAmount: o.total } : undefined
+                    codCollection: plan === 'cod_full' ? { expectedAmount: order.total } : undefined
                 };
             }
-            return o;
+            return order;
         });
         
-        selectedOrder = orders.find(o => o.id === selectedOrder.id);
+        selectedOrder = getOrderById(selectedOrderId);
     }
 
     async function handleFileUpload(event: Event) {
         const input = event.target as HTMLInputElement;
         if (!input.files || input.files.length === 0 || !selectedOrder) return;
+
+        const selectedOrderId = selectedOrder.id;
+        const currentOrder = getOrderById(selectedOrderId);
+        if (!currentOrder) return;
 
         const file = input.files[0];
         if (!file.type.startsWith('image/')) {
@@ -110,19 +163,21 @@
                 
                 // Determine stage
                 let stage: 'full' | 'dp' | 'remaining' = 'full';
-                if (selectedOrder.paymentPlan === 'dp_then_remaining') {
-                    stage = selectedOrder.paymentStatus === 'unpaid' ? 'dp' : 'remaining';
+                if (currentOrder.paymentPlan === 'dp_then_remaining') {
+                    stage = currentOrder.paymentStatus === 'unpaid' ? 'dp' : 'remaining';
                 }
 
-                const newProof: import('../../../lib/mock/orders').MockPaymentProof = {
+                const currentBreakdown = getPaymentBreakdown(currentOrder);
+
+                const newProof: MockPaymentProof = {
                     id: `PROOF-${Date.now()}`,
-                    stage: stage,
+                    stage,
                     imageUrl: dataUrl,
                     fileName: file.name,
                     uploadedAt: new Date().toISOString(),
                     uploadedBy: 'user',
-                    amount: stage === 'dp' ? (selectedOrder.paymentBreakdown?.dpAmount || 0) : (selectedOrder.paymentBreakdown?.remainingAmount || selectedOrder.total),
-                    method: (selectedOrder.paymentMethod === 'qris' ? 'qris' : 'bank_transfer') as 'bank_transfer' | 'qris',
+                    amount: stage === 'dp' ? (currentBreakdown.dpAmount ?? 0) : currentBreakdown.remainingAmount,
+                    method: currentOrder.paymentMethod === 'qris' ? 'qris' : 'bank_transfer',
                     status: 'uploaded',
                     note: uploadNote,
                     originalSizeKb: Math.round(file.size / 1024),
@@ -132,20 +187,20 @@
                 };
 
                 // Update local state
-                orders = orders.map(o => {
-                    if (o.id === selectedOrder.id) {
-                        const existingProofs = o.paymentProofs || [];
+                orders = orders.map((order) => {
+                    if (order.id === selectedOrderId) {
+                        const existingProofs = order.paymentProofs || [];
                         return {
-                            ...o,
+                            ...order,
                             paymentStatus: 'waiting_verification',
                             paymentProofs: [...existingProofs, newProof],
                             paymentProof: newProof // legacy
                         };
                     }
-                    return o;
+                    return order;
                 });
 
-                selectedOrder = orders.find(o => o.id === selectedOrder.id);
+                selectedOrder = getOrderById(selectedOrderId);
                 isUploading = false;
                 uploadNote = '';
             };
@@ -246,7 +301,7 @@
                                 </button>
 
                                 <!-- Option: DP (Hanya untuk order >= 500k atau paket) -->
-                                {#if selectedOrder.total >= 500000 || selectedOrder.items.some((i: any) => i.name.toLowerCase().includes('paket'))}
+                                {#if selectedOrder.total >= 500000 || selectedOrderHasPackageMenu}
                                     <button 
                                         onclick={() => setPaymentPlan('dp_then_remaining')}
                                         class="text-left p-6 rounded-2xl border-2 transition-all group
@@ -328,11 +383,11 @@
                                     <div class="grid grid-cols-2 gap-4 text-[10px]">
                                         <div class="bg-white/5 p-4 rounded-xl">
                                             <p class="text-white/40 font-black uppercase mb-1">Sudah Dibayar</p>
-                                            <p class="text-emerald-400 font-black">{formatRupiah(selectedOrder.paymentBreakdown?.paidAmount || 0)}</p>
+                                            <p class="text-emerald-400 font-black">{formatRupiah(selectedOrderBreakdown?.paidAmount ?? 0)}</p>
                                         </div>
                                         <div class="bg-white/5 p-4 rounded-xl">
                                             <p class="text-white/40 font-black uppercase mb-1">Sisa Tagihan</p>
-                                            <p class="text-amber-400 font-black">{formatRupiah(selectedOrder.paymentBreakdown?.remainingAmount || selectedOrder.total)}</p>
+                                            <p class="text-amber-400 font-black">{formatRupiah(selectedOrderBreakdown?.remainingAmount ?? selectedOrder.total)}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -391,7 +446,7 @@
                                         <div class="flex items-center justify-between">
                                             <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Upload Bukti {selectedOrder.paymentStatus === 'partially_paid' ? 'Pelunasan' : 'Pembayaran'}</p>
                                             <p class="text-[10px] font-black text-brand-primary italic uppercase tracking-widest">
-                                                {selectedOrder.paymentStatus === 'partially_paid' ? formatRupiah(selectedOrder.paymentBreakdown.remainingAmount) : formatRupiah(selectedOrder.paymentBreakdown?.dpAmount || selectedOrder.total)}
+                                                {formatRupiah(selectedOrderUploadAmount)}
                                             </p>
                                         </div>
                                         
@@ -414,11 +469,11 @@
                             {/if}
 
                             <!-- Proof History -->
-                            {#if selectedOrder.paymentProofs && selectedOrder.paymentProofs.length > 0}
+                            {#if selectedOrderProofHistory.length > 0}
                                 <div class="space-y-4">
                                     <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Riwayat Bukti Pembayaran</p>
                                     <div class="space-y-3">
-                                        {#each selectedOrder.paymentProofs as proof}
+                                        {#each selectedOrderProofHistory as proof}
                                             <div class="bg-white dark:bg-zinc-900 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800 flex items-center gap-4 group/proof hover:border-zinc-300 transition-all">
                                                 <div class="w-16 h-20 bg-zinc-50 dark:bg-zinc-800 rounded-xl overflow-hidden shadow-inner flex-shrink-0 relative">
                                                     <img src={proof.imageUrl} alt="Proof" class="w-full h-full object-cover" />
@@ -455,6 +510,11 @@
                                             {/if}
                                         {/each}
                                     </div>
+                                </div>
+                            {:else if selectedOrder.paymentPlan !== 'cod_full'}
+                                <div class="bg-zinc-50 dark:bg-zinc-800/50 border-2 border-dashed border-zinc-200 dark:border-zinc-700 p-6 rounded-3xl text-center">
+                                    <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Belum ada riwayat bukti pembayaran</p>
+                                    <p class="text-xs text-zinc-500 mt-2 font-medium">Riwayat upload bukti akan muncul di sini setelah customer mengirim pembayaran.</p>
                                 </div>
                             {/if}
                         </div>

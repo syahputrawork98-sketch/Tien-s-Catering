@@ -17,6 +17,7 @@
     let orders = $state<MockCsOrder[]>([...mockCsOrders]);
     let activeTab = $state<TabType>('NEW');
     let historyDateFilter = $state<string>('');
+    let searchQuery = $state('');
     
     // Modal State
     let selectedOrder = $state<MockCsOrder | null>(null);
@@ -34,6 +35,7 @@
         { id: 'PROSES', label: 'Proses', color: 'blue' },
         { id: 'LUNAS', label: 'Lunas', color: 'emerald' },
         { id: 'BELUM_BAYAR', label: 'Belum Bayar', color: 'zinc' },
+        { id: 'SELESAI', label: 'Selesai', color: 'emerald' },
         { id: 'BATAL', label: 'Batal', color: 'red' },
         { id: 'HISTORY', label: 'History', color: 'zinc' }
     ];
@@ -48,6 +50,40 @@
             dpAmount: order.paymentBreakdown?.dpAmount
         };
     }
+
+    function getOrderProofHistory(order: MockCsOrder): MockPaymentProof[] {
+        if (order.paymentProofs && order.paymentProofs.length > 0) {
+            return order.paymentProofs;
+        }
+
+        return order.paymentProof ? [order.paymentProof] : [];
+    }
+
+    function getLatestProof(order: MockCsOrder): MockPaymentProof | null {
+        const proofs = getOrderProofHistory(order);
+        return proofs.length > 0 ? proofs[proofs.length - 1] : null;
+    }
+
+    function matchesSearch(order: MockCsOrder, keyword: string): boolean {
+        if (!keyword) return true;
+
+        const searchableValues = [
+            order.id,
+            order.customerName,
+            order.whatsapp,
+            order.address,
+            order.notes,
+            order.cancellationReason,
+            ...order.items.map((item) => item.name)
+        ];
+
+        return searchableValues
+            .filter((value): value is string => Boolean(value))
+            .some((value) => value.toLowerCase().includes(keyword));
+    }
+
+    const selectedOrderPaymentBreakdown = $derived(selectedOrder ? getPaymentBreakdown(selectedOrder) : null);
+    const selectedOrderProofHistory = $derived(selectedOrder ? getOrderProofHistory(selectedOrder) : []);
 
     const stats = $derived({
         total: orders.length,
@@ -75,6 +111,7 @@
             const isCompletedStatus = order.status === 'completed';
             const isProsesStatus = order.status === 'confirmed' || order.status === 'processing' || order.status === 'ready' || order.status === 'delivered';
             const isConfirmedCompleted = !!(order.completedConfirmedByCs || order.completedConfirmedByUser || order.completedConfirmedByAdmin);
+            const normalizedKeyword = searchQuery.trim().toLowerCase();
 
             switch (activeTab) {
                 case 'NEW': 
@@ -109,10 +146,12 @@
             if (!matchesTab) return false;
 
             if (activeTab === 'HISTORY' && historyDateFilter) {
-                return order.deliveryDate === historyDateFilter;
+                if (order.deliveryDate !== historyDateFilter) {
+                    return false;
+                }
             }
 
-            return true;
+            return matchesSearch(order, normalizedKeyword);
         })
     );
 
@@ -394,6 +433,11 @@
         historyDateFilter = '';
     }
 
+    function resetAllFilters() {
+        searchQuery = '';
+        historyDateFilter = '';
+    }
+
     const cancelReasons = [
         'Stok/menu habis',
         'Area pengiriman tidak tersedia',
@@ -453,25 +497,36 @@
             </div>
         </div>
 
-        <!-- History Filter (Below Tabs) -->
-        {#if activeTab === 'HISTORY'}
-            <div class="flex items-center gap-4 bg-white dark:bg-zinc-900 p-3 pl-8 rounded-2xl border border-zinc-100 dark:border-zinc-800 shadow-sm w-fit" in:fly={{ y: 10, duration: 300 }}>
-                <span class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Filter Riwayat:</span>
-                <input 
-                    type="date" 
-                    bind:value={historyDateFilter}
-                    class="bg-transparent border-none focus:ring-0 text-sm font-bold text-brand-charcoal dark:text-white cursor-pointer"
+        <div class="flex flex-col lg:flex-row lg:items-center gap-4">
+            <div class="relative w-full lg:max-w-xl">
+                <input
+                    type="text"
+                    bind:value={searchQuery}
+                    placeholder="Cari ID, customer, WhatsApp, alamat, atau nama menu..."
+                    class="w-full bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-2xl pl-12 pr-4 py-4 text-xs font-bold focus:ring-2 focus:ring-brand-primary shadow-sm"
                 />
-                {#if historyDateFilter}
-                    <button 
-                        onclick={resetHistoryFilter}
-                        class="px-4 py-2 bg-zinc-50 dark:bg-zinc-800 text-[10px] font-black uppercase text-zinc-400 hover:text-red-500 rounded-lg transition-all"
-                    >
-                        Reset
-                    </button>
-                {/if}
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400">🔎</span>
             </div>
-        {/if}
+
+            {#if activeTab === 'HISTORY'}
+                <div class="flex items-center gap-4 bg-white dark:bg-zinc-900 p-3 pl-8 rounded-2xl border border-zinc-100 dark:border-zinc-800 shadow-sm w-fit" in:fly={{ y: 10, duration: 300 }}>
+                    <span class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Filter Riwayat:</span>
+                    <input 
+                        type="date" 
+                        bind:value={historyDateFilter}
+                        class="bg-transparent border-none focus:ring-0 text-sm font-bold text-brand-charcoal dark:text-white cursor-pointer"
+                    />
+                    {#if historyDateFilter}
+                        <button 
+                            onclick={resetHistoryFilter}
+                            class="px-4 py-2 bg-zinc-50 dark:bg-zinc-800 text-[10px] font-black uppercase text-zinc-400 hover:text-red-500 rounded-lg transition-all"
+                        >
+                            Reset
+                        </button>
+                    {/if}
+                </div>
+            {/if}
+        </div>
 
         <!-- Orders List -->
         <div class="min-h-[500px] pt-4">
@@ -524,9 +579,9 @@
                                                           'bg-zinc-50 text-zinc-400 border border-zinc-100'}">
                                                          {order.paymentStatus === 'waiting_verification' ? 'Verifikasi Pembayaran' : order.paymentStatus}
                                                      </span>
-                                                     {#if order.paymentProof}
+                                                     {#if getLatestProof(order)}
                                                          <div class="w-6 h-8 bg-zinc-100 rounded-md overflow-hidden border border-zinc-200">
-                                                             <img src={order.paymentProof.imageUrl} alt="Proof" class="w-full h-full object-cover" />
+                                                             <img src={getLatestProof(order)?.imageUrl} alt="Proof" class="w-full h-full object-cover" />
                                                          </div>
                                                      {/if}
                                                  </div>
@@ -585,16 +640,26 @@
                         </svg>
                     </div>
                     <h3 class="text-2xl font-black text-brand-charcoal dark:text-white">
-                        {activeTab === 'HISTORY' && historyDateFilter 
-                            ? 'Tidak ada riwayat pesanan pada tanggal ini.' 
-                            : 'Belum ada pesanan di kategori ini.'}
+                        {searchQuery.trim() && activeTab === 'HISTORY' && historyDateFilter
+                            ? 'Tidak ada pesanan yang cocok dengan kata kunci dan tanggal ini.'
+                            : searchQuery.trim()
+                                ? 'Tidak ada pesanan yang cocok dengan pencarian.'
+                                : activeTab === 'HISTORY' && historyDateFilter
+                                    ? 'Tidak ada riwayat pesanan pada tanggal ini.'
+                                    : 'Belum ada pesanan di kategori ini.'}
                     </h3>
                     <p class="text-zinc-400 font-medium mt-3 max-w-md mx-auto">
-                        {activeTab === 'HISTORY' && historyDateFilter 
-                            ? 'Coba pilih tanggal lain atau reset filter untuk melihat semua data.' 
-                            : 'Pesanan akan muncul otomatis ketika statusnya sesuai dengan tahapan kerja.'}
+                        {searchQuery.trim()
+                            ? 'Coba ubah kata kunci pencarian atau reset filter untuk melihat data yang tersedia.'
+                            : activeTab === 'HISTORY' && historyDateFilter 
+                                ? 'Coba pilih tanggal lain atau reset filter untuk melihat semua data.' 
+                                : 'Pesanan akan muncul otomatis ketika statusnya sesuai dengan tahapan kerja.'}
                     </p>
-                    <button onclick={() => { activeTab = 'NEW'; resetHistoryFilter(); }} class="mt-10 px-10 py-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-zinc-200 transition-all">Lihat Pesanan Baru</button>
+                    {#if searchQuery.trim() || historyDateFilter}
+                        <button onclick={resetAllFilters} class="mt-10 px-10 py-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-zinc-200 transition-all">Reset Filter</button>
+                    {:else}
+                        <button onclick={() => { activeTab = 'NEW'; resetHistoryFilter(); }} class="mt-10 px-10 py-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-zinc-200 transition-all">Lihat Pesanan Baru</button>
+                    {/if}
                 </div>
             {/if}
         </div>
@@ -757,11 +822,11 @@
                         </div>
                         <div class="bg-zinc-50 dark:bg-zinc-800 p-5 rounded-3xl border border-zinc-100 dark:border-zinc-800">
                             <p class="text-[8px] font-black text-zinc-400 uppercase tracking-widest mb-1">Terbayar</p>
-                            <p class="text-xs font-black text-emerald-600 italic">{formatPrice(selectedOrder.paymentBreakdown?.paidAmount || 0)}</p>
+                            <p class="text-xs font-black text-emerald-600 italic">{formatPrice(selectedOrderPaymentBreakdown?.paidAmount ?? 0)}</p>
                         </div>
                         <div class="bg-zinc-50 dark:bg-zinc-800 p-5 rounded-3xl border border-zinc-100 dark:border-zinc-800">
                             <p class="text-[8px] font-black text-zinc-400 uppercase tracking-widest mb-1">Sisa</p>
-                            <p class="text-xs font-black text-amber-600 italic">{formatPrice(selectedOrder.paymentBreakdown?.remainingAmount || selectedOrder.total)}</p>
+                            <p class="text-xs font-black text-amber-600 italic">{formatPrice(selectedOrderPaymentBreakdown?.remainingAmount ?? selectedOrder.total)}</p>
                         </div>
                     </div>
 
@@ -801,11 +866,11 @@
                     {/if}
 
                     <!-- Payment Proof Timeline -->
-                    {#if selectedOrder.paymentProofs && selectedOrder.paymentProofs.length > 0}
+                    {#if selectedOrderProofHistory.length > 0}
                         <div class="space-y-6">
-                            <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Timeline Bukti Transfer ({selectedOrder.paymentProofs.length})</p>
+                            <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Timeline Bukti Transfer ({selectedOrderProofHistory.length})</p>
                             <div class="grid grid-cols-1 gap-6">
-                                {#each selectedOrder.paymentProofs as proof}
+                                {#each selectedOrderProofHistory as proof}
                                     <div class="bg-white dark:bg-zinc-900 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 overflow-hidden shadow-sm hover:shadow-lg transition-all">
                                         <div class="flex flex-col md:flex-row">
                                             <!-- Image -->
