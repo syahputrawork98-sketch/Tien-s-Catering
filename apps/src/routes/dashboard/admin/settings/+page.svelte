@@ -1,6 +1,6 @@
 <script lang="ts">
     import { mockAdminSettings } from '$lib/mock/admin';
-    import { fade } from 'svelte/transition';
+    import { fade, fly } from 'svelte/transition';
 
     let settings = $state([...mockAdminSettings]);
 
@@ -13,12 +13,16 @@
 
 <div class="space-y-10">
     <header class="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div>
-            <h1 class="text-3xl font-black text-brand-charcoal dark:text-white tracking-tighter">Settings ⚙️</h1>
-            <p class="text-zinc-500 font-medium mt-1">Konfigurasi parameter bisnis dan preferensi sistem.</p>
+        <div in:fly={{ y: -20, duration: 500 }}>
+            <div class="inline-flex items-center gap-2 px-3 py-1 bg-brand-primary/10 rounded-full mb-4">
+                <span class="w-1.5 h-1.5 rounded-full bg-brand-primary animate-pulse"></span>
+                <span class="text-[9px] font-black text-brand-primary uppercase tracking-widest italic">Local Settings Simulation</span>
+            </div>
+            <h1 class="text-4xl lg:text-5xl font-black text-brand-charcoal dark:text-white tracking-tighter italic uppercase">Settings ⚙️</h1>
+            <p class="text-zinc-500 font-medium mt-1">Konfigurasi parameter bisnis dan preferensi sistem dalam lingkungan simulasi lokal.</p>
         </div>
-        <button onclick={saveSettings} class="bg-brand-primary text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-brand-primary/20 hover:scale-105 transition-all">
-            Simpan Perubahan
+        <button onclick={saveSettings} class="bg-brand-charcoal dark:bg-brand-primary text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-brand-primary/20 hover:scale-105 transition-all">
+            Simpan Simulasi
         </button>
     </header>
 

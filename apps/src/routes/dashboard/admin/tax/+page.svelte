@@ -255,10 +255,12 @@
         <div>
             <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-red-50 dark:bg-red-900/20 rounded-full mb-4">
                 <span class="w-2 h-2 rounded-full bg-red-500"></span>
-                <span class="text-[10px] font-black text-red-600 dark:text-red-400 uppercase tracking-widest">Admin Billing</span>
+                <span class="text-[10px] font-black text-red-600 dark:text-red-400 uppercase tracking-widest italic">Local Billing Simulation (Hold Production)</span>
             </div>
-            <h1 class="text-4xl lg:text-5xl font-black text-brand-charcoal dark:text-white tracking-tighter italic">Pajak & Invoice 🧾</h1>
-            <p class="text-zinc-500 font-medium mt-2">Atur pajak, invoice, dan aturan billing berdasarkan tipe customer.</p>
+            <h1 class="text-4xl lg:text-5xl font-black text-brand-charcoal dark:text-white tracking-tighter italic uppercase">Pajak & Invoice 🧾</h1>
+            <p class="text-zinc-500 font-medium mt-2 max-w-2xl">
+                Atur parameter pajak dan billing untuk simulasi invoice. <span class="text-red-500 font-black italic uppercase">Penting:</span> Integrasi invoice otomatis & pelaporan pajak resmi masih dalam status **Hold Production**.
+            </p>
         </div>
     </header>
 
@@ -415,18 +417,18 @@
             <div class="flex items-center gap-4">
                 <div class="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-2xl flex items-center justify-center text-2xl">💳</div>
                 <div>
-                    <h2 class="text-2xl font-black text-brand-charcoal dark:text-white tracking-tighter italic uppercase">Rekening Pembayaran</h2>
-                    <p class="text-xs text-zinc-500 font-medium">Kelola rekening bank dan QRIS untuk metode pembayaran customer.</p>
+                    <h2 class="text-2xl font-black text-brand-charcoal dark:text-white tracking-tighter italic uppercase">Rekening Pembayaran (Manual)</h2>
+                    <p class="text-xs text-zinc-500 font-medium italic">Konfigurasi rekening untuk transfer manual. Gateway otomatis tetap **Hold Production**.</p>
                 </div>
             </div>
             <button 
                 onclick={openAddPayment}
-                class="px-6 py-4 bg-emerald-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
+                class="px-6 py-4 bg-brand-charcoal dark:bg-emerald-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
             >
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
-                Tambah Rekening
+                Tambah Rekening Lokal
             </button>
         </div>
 
@@ -673,8 +675,9 @@
 
             {#if paymentForm.type === 'qris'}
                 <div class="space-y-1 col-span-2">
-                    <label for="pQr" class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">URL Gambar QRIS</label>
-                    <input id="pQr" type="text" bind:value={paymentForm.qrImageUrl} placeholder="https://..." class="w-full px-5 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary" />
+                    <label for="pQr" class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">URL Gambar QRIS (Local Simulation)</label>
+                    <input id="pQr" type="text" bind:value={paymentForm.qrImageUrl} placeholder="Contoh: https://api.qrserver.com/v1/..." class="w-full px-5 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-primary" />
+                    <p class="text-[9px] text-zinc-400 italic mt-1 uppercase tracking-widest">⚠️ Fitur upload gambar resmi masih dalam status **Hold Production**.</p>
                     {#if paymentForm.qrImageUrl}
                         <div class="mt-4 p-4 bg-white rounded-2xl border border-zinc-100 flex justify-center">
                             <img src={paymentForm.qrImageUrl} alt="Preview QRIS" class="h-32 object-contain" />
