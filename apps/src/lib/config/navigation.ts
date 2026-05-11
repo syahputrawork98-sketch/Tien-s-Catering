@@ -19,6 +19,11 @@ export const dashboardNavigation: Record<MockRole, DashboardNavItem[]> = {
       description: 'Riwayat dan status pesanan'
     },
     {
+      label: 'Request Paket',
+      href: '/dashboard/package-requests',
+      description: 'Riwayat permintaan paket catering'
+    },
+    {
       label: 'Alamat Saya',
       href: '/dashboard/addresses',
       description: 'Manajemen lokasi pengiriman'
