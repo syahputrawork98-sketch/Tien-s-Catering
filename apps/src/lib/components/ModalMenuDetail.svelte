@@ -129,6 +129,7 @@
 			onclick={(e) => e.stopPropagation()}
 			onkeydown={(e) => e.stopPropagation()}
 			role="dialog"
+			tabindex="-1"
 			aria-modal="true"
 			aria-labelledby="modal-title"
 		>
