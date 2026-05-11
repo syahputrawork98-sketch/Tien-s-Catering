@@ -107,13 +107,21 @@
 </script>
 
 <div class="space-y-10">
-    <header class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <header in:fly={{ y: -20, duration: 500 }} class="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-            <h1 class="text-4xl font-black text-brand-charcoal dark:text-white tracking-tighter">Users & Role 👤</h1>
-            <p class="text-zinc-500 font-medium mt-1">Kelola akun admin, CS, dan customer Tien’s Catering.</p>
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-full mb-4">
+                <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                <span class="text-[10px] font-black text-blue-600 dark:text-blue-300 uppercase tracking-widest">Simulasi User Management Lokal</span>
+            </div>
+            <h1 class="text-4xl font-black text-brand-charcoal dark:text-white tracking-tighter italic">Users & Role 👤</h1>
+            <p class="text-zinc-500 font-medium mt-1">Kelola akun admin, CS, dan customer. Fitur ini masih simulasi lokal (Hold).</p>
         </div>
-        <button class="bg-brand-primary text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-brand-primary/20 hover:scale-105 transition-all">
-            + Tambah Akun
+        <button 
+            disabled
+            aria-label="Tambah akun baru (Hold)"
+            class="bg-zinc-100 dark:bg-zinc-800 text-zinc-400 px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest border border-zinc-200 dark:border-zinc-700 cursor-not-allowed opacity-70"
+        >
+            + Tambah Akun (Hold)
         </button>
     </header>
 
@@ -291,13 +299,19 @@
                                     <button 
                                         onclick={() => toggleStatus(user.id)}
                                         class="p-2.5 bg-zinc-50 dark:bg-zinc-800 rounded-xl text-zinc-400 hover:text-brand-primary transition-all border border-transparent hover:border-brand-primary/20"
-                                        title="Ubah Status"
+                                        aria-label="Ubah Status User (Simulasi Lokal)"
+                                        title="Ubah Status (Simulasi)"
                                     >
                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                                         </svg>
                                     </button>
-                                    <button class="p-2.5 bg-zinc-50 dark:bg-zinc-800 rounded-xl text-zinc-400 hover:text-brand-primary transition-all border border-transparent hover:border-brand-primary/20">
+                                    <button 
+                                        disabled
+                                        aria-label="Edit User (Hold)"
+                                        title="Edit User (Hold)"
+                                        class="p-2.5 bg-zinc-50 dark:bg-zinc-800 rounded-xl text-zinc-400 opacity-50 cursor-not-allowed border border-transparent"
+                                    >
                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                         </svg>
