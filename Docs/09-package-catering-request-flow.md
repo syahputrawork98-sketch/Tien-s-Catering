@@ -63,25 +63,19 @@
 
 ## Status Implemented
 
-- Admin package management minimal sudah aktif di `/dashboard/admin/packages`:
-  - `POST /api/packages`
-  - `PATCH /api/packages/[id]`
-  - `PATCH /api/packages/[id]/status`
-  - create/update/toggle active-inactive, tanpa hard delete.
-- Admin package request page sudah punya search/filter/status summary/no-result state (client-side).
-- Convert package request ke order tetap Hold/disabled.
+- Admin package management aktif di `/dashboard/admin/packages` (CRUD + Multiple Images).
+- Admin package request review aktif di `/dashboard/admin/package-requests` (Status, Estimasi, Catatan).
+- Customer package request visibility aktif di `/dashboard/package-requests` (History + Progress Timeline).
+- Sinkronisasi data riil via `GET/POST/PATCH /api/package-requests`.
 
 ## Fitur Hold
 
-- Convert package request to order.
-- Super Admin package management.
-- Package payment/invoice.
-- Package masuk checkout/cart.
-- Upload bukti pembayaran/payment gateway.
-- Auth/RBAC production.
+- Convert package request to order (Hold).
+- Package payment/invoice production (Hold).
+- Auth/RBAC production (Hold).
 - Hard delete package/request.
 
 ## Roadmap Berikutnya
 
-- User Dashboard DB untuk history order/request.
-- Super Admin local role management (tahap berikutnya).
+- Batch 31-35: Tahap Evaluasi Final & Persiapan Serah Terima (Handover).
+- Batch 36+: Final Simulation of Advanced Admin Features (Inventory/Suppliers).

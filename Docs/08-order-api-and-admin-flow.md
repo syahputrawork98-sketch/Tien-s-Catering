@@ -25,63 +25,51 @@ Dokumen ini merangkum alur order lokal setelah payment manual, transaksi stok, d
 - `PATCH /api/orders/[id]/status`
 - `PATCH /api/orders/[id]/payment-status`
 
-## Status Stabilisasi Batch 11-19 (Accepted)
+## Status Stabilisasi Batch 21-29 (Accepted)
 
-- Batch 11: Customer order dashboard (`/dashboard/orders`) sudah database-backed via `GET /api/orders`.
-- Batch 12: CS orders dashboard (`/dashboard/cs/orders`) sudah database-backed via `GET /api/orders`.
-- Batch 13: Payment status clarity diselaraskan lintas role (Customer, CS, Admin) dengan wording "Simulasi" untuk local-development.
-- Batch 14: Customer package request visibility aktif via `/dashboard/package-requests` dan `GET /api/package-requests`.
-- Batch 16: Customer Profile & Address management ditambahkan sebagai local-simulation clarity.
-- Batch 17: Admin Users local management clarity (simulation-only).
-- Batch 18: Manual Payment Review UX enhancement di Admin & CS Dashboard.
-- Batch 19: Admin Reports DB-backed basic via `GET /api/orders` (overview summary).
+- Batch 21: Admin package request review aktif (status, estimasi harga, catatan admin) via `PATCH /api/package-requests`.
+- Batch 22: Customer dashboard home summary (`/dashboard`) aktif dengan data ringkasan database SQLite.
+- Batch 23: CS customers handling clarity (simulasi lokal).
+- Batch 24: Admin settings clarity (Hold production governance).
+- Batch 25: Public menu detail a11y & visual polish.
+- Batch 26: Admin Reports Phase 2: Full local summary terintegrasi `GET /api/orders` (Revenue, Sales, Orders, Finance).
+- Batch 27: Customer Profile & Address local CRUD simulation polish.
+- Batch 28: Admin Users management local simulation Phase 2.
+- Batch 29: End-to-End Demo Flow Polish & Unified Local Simulation Labeling.
 
 ## Data yang Sudah Database-Backed
 
 - Menu harian + stok harian.
-- Order header.
-- Item order.
-- Informasi pengantaran order.
-- Informasi pembayaran sederhana order.
-- Status stok order (`stock_status`, `stock_deducted_at`, `stock_released_at`).
-- Admin order list/detail + aksi minimal status/payment.
-- Customer dashboard order history.
-- CS dashboard order list + aksi minimal status/payment.
-- Customer package request history (visibility).
-- Admin Reports summary (Revenue, Orders, Status counts).
+- Order header & items.
+- Informasi pengantaran & pembayaran dasar.
+- Status stok order (`stock_status`).
+- Admin order list/detail + aksi status/payment.
+- Customer dashboard summary & order history.
+- CS dashboard order & customer list.
+- Admin Reports summary & detail (Revenue, Sales, Orders, Finance tabs).
+- Package request list & review (Admin/Customer).
 
 ## Aturan Transaksi Stok
 
 - Stok tidak berkurang saat checkout submit.
 - Stok berkurang saat status order menjadi `confirmed`.
 - Stok dikembalikan saat status order menjadi `cancelled`, hanya jika status stok sebelumnya `deducted`.
-- Jika stok kurang saat confirm, request status gagal (`400`) dan status order tetap.
-- Item tanpa `menuId` diabaikan untuk backward compatibility.
-- Status stok order:
-  - `not_deducted`
-  - `deducted`
-  - `released`
+- Guard transaksi stok memakai `orders.stock_status`: `not_deducted`, `deducted`, `released`.
 
 ## Data/Flow yang Masih Mock atau Hold
 
-- Admin reports masih terbatas (detail sales/customer/finance masih mock).
-- Payment verification otomatis.
-- Payment gateway/QRIS production.
-- Upload bukti pembayaran production.
-- Super Admin flow final (RBAC production).
-- Auth production (login/JWT/session/password/RBAC).
-- Profile & Address management customer (local simulation).
 - Convert package request ke order (Hold).
-- Export PDF/CSV production.
+- Export PDF/CSV production (Hold).
+- Payment verification otomatis & Payment gateway production.
+- Auth production (Login/JWT/Session/RBAC).
+- Invoice & Pajak riil production.
 
 ## Known Issue (Project-wide)
 
-- `npm run check` sudah `0 errors` dengan sisa baseline warnings (a11y/css).
-- Area warning utama:
-  - `src/lib/components/ModalMenuDetail.svelte` (A11y)
-  - `src/routes/dashboard/admin/users/+page.svelte` (A11y)
+- `npm run check` sudah `0 errors` dengan sisa baseline warnings minor.
+- Area warning utama: `src/lib/components/ModalMenuDetail.svelte` (A11y).
 
 ## Arah Strategis (Roadmap)
 
-- Batch 21+: Stabilisasi Admin Operational (Package Request to Order Flow simulation).
-- Batch 22+: Finalisasi local-development documentation & demo-ready polish.
+- Batch 31-35: Tahap Evaluasi Final & Persiapan Serah Terima (Handover).
+- Batch 36+: Final Simulation of Advanced Admin Features (Inventory/Suppliers).

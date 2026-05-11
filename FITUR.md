@@ -1,30 +1,34 @@
 ## Status Order & Dashboard Batch (Accepted)
 
-- Batch 11:
-  - Customer Order Dashboard (`/dashboard/orders`) sudah DB-backed via `GET /api/orders`.
-  - Data order menampilkan riwayat riil dari database SQLite lokal.
-- Batch 12:
-  - CS Orders Dashboard (`/dashboard/cs/orders`) sudah DB-backed via `GET /api/orders`.
-  - Aksi CS (konfirmasi order/payment) selaras dengan endpoint API existing.
-- Batch 13:
-  - Payment status clarity diselaraskan lintas Customer, CS, dan Admin dashboard.
-  - Label status pembayaran (Belum Bayar, Menunggu Verifikasi, Lunas, COD) dan warna badge konsisten.
-  - Wording ditegaskan sebagai "Simulasi" / "Manual" untuk mode local-development.
-- Batch 14:
-  - Customer Package Request visibility ditambahkan via `/dashboard/package-requests`.
-  - Customer dapat melihat riwayat request paket yang dibuat via `GET /api/package-requests`.
-- Batch 16:
-  - Customer Profile & Address Management ditambahkan sebagai simulasi lokal/clatiry.
-  - Menegaskan status simulasi untuk Profile dan Alamat agar tidak menyesatkan sebagai data produksi.
-- Batch 17:
-  - Admin Users management diperjelas sebagai local user management simulation.
-  - Role "Super Admin" dan "Admin" diperjelas batasan fungsionalitasnya di mode lokal.
-- Batch 18:
-  - Manual Payment Review UX ditingkatkan di dashboard Admin dan CS.
-  - Penegasan alur verifikasi manual tanpa payment gateway otomatis.
-- Batch 19:
-  - Admin Reports dasar sudah DB-backed via `GET /api/orders`.
-  - Ringkasan total revenue, total order, dan pending verification berbasis data riil database.
+- Batch 21:
+  - Package Request Operational Completion: Admin dapat melakukan review (status, estimasi harga, catatan admin) via `PATCH /api/package-requests`.
+  - Sinkronisasi data request paket antara Customer dan Admin dashboard.
+- Batch 22:
+  - Customer Dashboard Home Summary (`/dashboard`) aktif.
+  - Menampilkan ringkasan pesanan aktif, total transaksi, dan status request paket terbaru dari database.
+- Batch 23:
+  - CS Customer Handling Clarity ditingkatkan pada `/dashboard/cs/customers`.
+  - Penambahan label simulasi lokal dan filter pencarian pelanggan yang lebih informatif.
+- Batch 24:
+  - Admin Settings / Tax / Payment Config Clarity.
+  - Penegasan status "Hold Production" pada area konfigurasi sensitif untuk mencegah kebingungan demo.
+- Batch 25:
+  - Public Menu Detail Polish & A11y.
+  - Peningkatan aksesibilitas dan transisi visual pada modal detail menu.
+- Batch 26:
+  - Admin Reports Phase 2 (Local Summary).
+  - Laporan penjualan, pesanan, dan keuangan kini terintegrasi dengan database SQLite lokal (`GET /api/orders`).
+  - Pembedaan jelas antara data riil database dan data simulasi visual (tren/grafik).
+- Batch 27:
+  - Customer Profile & Address Local CRUD Polish.
+  - Peningkatan UX untuk pengeditan profil dan alamat dalam mode simulasi lokal.
+- Batch 28:
+  - Admin Users Local Simulation Phase 2.
+  - Peningkatan manajemen user admin dengan summary cards, search/filter, dan penegasan status RBAC Hold.
+- Batch 29:
+  - End-to-End Demo Flow Polish.
+  - Penyelarasan alur navigasi dari publik (order success) ke dashboard operasional.
+  - Standardisasi label "Local SQLite Database Simulation" di seluruh dashboard.
 
 ## Selesai
 
@@ -32,42 +36,26 @@
 - Cart sudah stock-aware (batas qty mengikuti stok).
 - Checkout submit order ke API (`POST /api/orders`).
 - Order tersimpan ke database SQLite lokal.
-- Order-success menampilkan response order API.
+- Order-success menampilkan response order API + link ke dashboard.
 - Admin order list dan order detail membaca database (`GET /api/orders`).
 - Admin update status order minimal aktif (`PATCH /api/orders/[id]/status`).
 - Admin update payment status manual aktif (`PATCH /api/orders/[id]/payment-status`).
-- Transaksi stok aktif:
-  - stok tidak berkurang saat checkout submit,
-  - stok berkurang saat order dikonfirmasi,
-  - stok dikembalikan saat order dibatalkan jika sebelumnya sudah dipotong.
-- Guard transaksi stok memakai `orders.stock_status` (`not_deducted`, `deducted`, `released`).
-- Admin order flow polish aktif (label status order/payment/stock lebih jelas).
-- Local backend foundation aktif (`/api/health`, `/api/menus`, `/api/orders`, patch admin minimal).
-- Public `/paket-catering` membaca package API (`GET /api/packages`) dan hanya menampilkan package `active/available`.
-- Package tetap by request.
-- Admin package management `/dashboard/admin/packages` aktif:
-  - `POST /api/packages`,
-  - `PATCH /api/packages/[id]`,
-  - `PATCH /api/packages/[id]/status`,
-  - update package dan toggle active/nonaktif tanpa hard delete,
-  - multiple images via textarea URL per baris,
-  - search/filter sederhana di admin package page.
-- Public package detail submit request ke database (`POST /api/package-requests`).
-- Admin package request list aktif (`GET /api/package-requests`).
-- Admin package request review minimal aktif (`PATCH /api/package-requests/[id]/status`).
-- Customer dashboard orders DB-backed (`/dashboard/orders`).
-- CS dashboard orders DB-backed (`/dashboard/cs/orders`).
-- Customer package request visibility aktif (`/dashboard/package-requests`).
-- Konsistensi status pembayaran lintas role dashboard.
-- Customer Profile & Address local simulation clarity.
-- Admin Users local management clarity.
-- Manual Payment Review enhancement (UX clarity).
-- Admin Reports DB-backed basic summary.
+- Transaksi stok aktif (Stock-aware operations).
+- Local backend foundation aktif (`/api/health`, `/api/menus`, `/api/orders`, `/api/package-requests`).
+- Public `/paket-catering` membaca package API (`GET /api/packages`).
+- Admin package management `/dashboard/admin/packages` aktif.
+- Admin package request review aktif (status, estimasi, catatan).
+- Customer dashboard orders & summary DB-backed (`/dashboard`).
+- CS dashboard orders & customers handling clarity.
+- Admin Reports DB-backed summary (Revenue, Orders, Finance).
+- Customer Profile & Address local simulation.
+- Admin Users management local simulation.
+- End-to-End demo flow consistency (Public -> Customer -> Admin/CS).
 
 ## Berjalan / Local-Compatible
 
-- Admin operational package request fokus review minimal (status + estimasi + catatan).
-- Visibility request paket customer (read-only history).
+- Seluruh operasional dashboard (Orders, Packages, Reports) berjalan di atas SQLite lokal.
+- Simulasi CRUD lokal untuk profil, alamat, dan user admin.
 
 ## Hold
 
@@ -86,16 +74,12 @@
 
 ## Known Issue (Project-wide)
 
-- `npm run check` sudah `0 errors` dan baseline warnings berkurang secara bertahap (a11y/css).
+- `npm run check` sudah `0 errors` dan baseline warnings berkurang secara bertahap.
 - Area warning tersisa:
-  - `src/lib/components/ModalMenuDetail.svelte` (A11y/div interactions)
-  - `src/routes/dashboard/admin/users/+page.svelte` (A11y)
-- Batch 20 telah melakukan pembersihan warning di:
-  - `admin/settings` (aria-labels)
-  - `admin/tax` (aria-labels)
-  - `cs/customers` (label assoc)
+  - `src/lib/components/ModalMenuDetail.svelte` (A11y click/key events)
+- Batch 29 telah menstandardisasi label "Local SQLite Database Simulation" di seluruh aplikasi.
 
 ## Roadmap Berikutnya
 
-- Batch 21+: Stabilisasi Admin Operational (Package Request to Order Flow simulation).
-- Batch 22+: Finalisasi local-development documentation & demo-ready polish.
+- Batch 31-35: Tahap Evaluasi Final & Persiapan Serah Terima (Handover).
+- Batch 36+: Final Simulation of Advanced Admin Features (Inventory/Suppliers).

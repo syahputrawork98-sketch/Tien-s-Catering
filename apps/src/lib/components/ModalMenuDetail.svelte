@@ -112,9 +112,14 @@
 		class="fixed inset-0 z-[140] flex items-center justify-center p-4 bg-brand-charcoal/60 backdrop-blur-md"
 		transition:fade
 		onclick={onClose}
-		onkeydown={(e) => e.key === 'Escape' && onClose()}
+		onkeydown={(e) => {
+			if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
+				e.preventDefault();
+				onClose();
+			}
+		}}
 		role="button"
-		tabindex="-1"
+		tabindex="0"
 		aria-label="Tutup modal"
 	>
 		<!-- Panel -->
