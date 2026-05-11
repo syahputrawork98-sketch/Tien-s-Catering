@@ -112,12 +112,20 @@
 		class="fixed inset-0 z-[140] flex items-center justify-center p-4 bg-brand-charcoal/60 backdrop-blur-md"
 		transition:fade
 		onclick={onClose}
+		onkeydown={(e) => e.key === 'Escape' && onClose()}
+		role="button"
+		tabindex="-1"
+		aria-label="Tutup modal"
 	>
 		<!-- Panel -->
 		<div 
 			class="bg-white w-full max-w-2xl rounded-[2.5rem] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.3)] relative flex flex-col md:flex-row"
 			transition:fly={{ y: 50, duration: 500 }}
 			onclick={(e) => e.stopPropagation()}
+			onkeydown={(e) => e.stopPropagation()}
+			role="dialog"
+			aria-modal="true"
+			aria-labelledby="modal-title"
 		>
 			<!-- Close Button -->
 			<button 
@@ -150,7 +158,7 @@
 						{/if}
 					</div>
 					
-					<h2 class="text-3xl font-black text-brand-charcoal mb-4 tracking-tighter uppercase">{item.name}</h2>
+					<h2 id="modal-title" class="text-3xl font-black text-brand-charcoal mb-4 tracking-tighter uppercase italic">{item.name}</h2>
 					<p class="text-zinc-500 text-sm leading-relaxed mb-8">
 						{item.description || "Nikmati perpaduan rasa autentik dari bahan-bahan pilihan berkualitas tinggi. Dimasak segar setiap hari untuk menjaga cita rasa katering yang maksimal."}
 					</p>
@@ -177,12 +185,16 @@
 						<!-- Quantity Selector -->
 						<div class="flex items-center bg-zinc-50 border border-zinc-100 rounded-2xl overflow-hidden p-1 shadow-inner">
 							<button 
+								type="button"
+								aria-label="Kurangi jumlah"
 								disabled={quantity <= 1 || maxSelectableQuantity <= 0}
 								onclick={() => quantity = Math.max(1, quantity - 1)}
 								class="w-10 h-10 flex items-center justify-center hover:bg-white text-zinc-400 hover:text-brand-charcoal transition-all font-bold text-xl rounded-xl disabled:opacity-40 disabled:cursor-not-allowed"
 							>-</button>
 							<span class="w-12 text-center text-sm font-black text-brand-charcoal">{quantity}</span>
 							<button 
+								type="button"
+								aria-label="Tambah jumlah"
 								disabled={maxSelectableQuantity <= 0 || quantity >= maxSelectableQuantity}
 								onclick={() => quantity = Math.min(maxSelectableQuantity, quantity + 1)}
 								class="w-10 h-10 flex items-center justify-center hover:bg-white text-zinc-400 hover:text-brand-charcoal transition-all font-bold text-xl rounded-xl disabled:opacity-40 disabled:cursor-not-allowed"
@@ -191,17 +203,17 @@
 					</div>
 
 					{#if maxSelectableQuantity <= 0}
-						<p class="text-[11px] font-bold text-red-500">
+						<p class="text-[11px] font-bold text-red-500 italic">
 							Stok tidak tersedia untuk ditambahkan dari modal ini.
 						</p>
 					{:else}
-						<p class="text-[11px] font-bold text-zinc-500">
+						<p class="text-[11px] font-bold text-zinc-500 italic">
 							Maksimal tambah dari modal: {maxSelectableQuantity} porsi.
 						</p>
 					{/if}
 
 					{#if stockWarning}
-						<p class="text-[11px] font-bold text-orange-600">{stockWarning}</p>
+						<p class="text-[11px] font-bold text-orange-600 italic">{stockWarning}</p>
 					{/if}
 
 					<button 
