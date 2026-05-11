@@ -91,7 +91,8 @@
                 method: apiOrder.paymentMethod === 'qris' ? 'qris' : 'bank_transfer',
                 amount: apiOrder.total, // Simplified for now
                 stage: 'full', // Default for simulation
-                uploadedBy: 'user' // Default for simulation
+                uploadedBy: 'user', // Default for simulation
+                rejectionReason: apiOrder.paymentProof.verificationNote // Display admin note as rejection reason
             } : undefined,
             paymentPlan: apiOrder.paymentMethod === 'cod' ? 'cod_full' : 'full_prepaid',
             deliveryInfo: apiOrder.deliveryInfo ? {

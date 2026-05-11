@@ -76,6 +76,9 @@ function ensureOrderStockColumns(db: ReturnType<typeof getDatabase>) {
 			file_size INTEGER,
 			uploaded_at TEXT NOT NULL,
 			status TEXT DEFAULT 'pending',
+			verification_note TEXT,
+			verified_at TEXT,
+			verified_by TEXT,
 			FOREIGN KEY (order_id) REFERENCES orders(id)
 		);
 		CREATE INDEX IF NOT EXISTS idx_payment_proofs_order_id ON order_payment_proofs(order_id);
@@ -397,7 +400,9 @@ export function listOrderRecords(): OrderListRecord[] {
 	const paymentProofQuery = db.prepare(
 		`SELECT 
 			id, order_id AS orderId, file_name AS fileName, 
-			file_path AS filePath, status, uploaded_at AS uploadedAt
+			file_path AS filePath, status, uploaded_at AS uploadedAt,
+			verification_note AS verificationNote, verified_at AS verifiedAt,
+			verified_by AS verifiedBy
 		FROM order_payment_proofs 
 		ORDER BY uploaded_at DESC;`
 	);
@@ -433,7 +438,10 @@ export function listOrderRecords(): OrderListRecord[] {
 				fileName: row.fileName,
 				filePath: row.filePath,
 				status: row.status,
-				uploadedAt: row.uploadedAt
+				uploadedAt: row.uploadedAt,
+				verificationNote: row.verificationNote,
+				verifiedAt: row.verifiedAt,
+				verifiedBy: row.verifiedBy
 			});
 		}
 	}
@@ -774,6 +782,9 @@ export type PaymentProofRecord = {
 	fileSize: number | null;
 	uploadedAt: string;
 	status: 'pending' | 'verified' | 'rejected';
+	verificationNote: string | null;
+	verifiedAt: string | null;
+	verifiedBy: string | null;
 };
 
 export function savePaymentProofRecord(payload: Omit<PaymentProofRecord, 'id' | 'uploadedAt' | 'status'>): PaymentProofRecord {
@@ -806,7 +817,10 @@ export function savePaymentProofRecord(payload: Omit<PaymentProofRecord, 'id' | 
 		mimeType: payload.mimeType,
 		fileSize: payload.fileSize,
 		uploadedAt: timestamp,
-		status: 'pending'
+		status: 'pending',
+		verificationNote: null,
+		verifiedAt: null,
+		verifiedBy: null
 	};
 }
 
@@ -814,16 +828,45 @@ export function getLatestPaymentProofByOrderId(orderId: string): PaymentProofRec
 	ensureDatabaseInitialized();
 	const db = getDatabase();
 
-	const row = db.prepare(`
-		SELECT 
+	const row = db.prepare(
+		`SELECT 
 			id, order_id AS orderId, file_name AS fileName, 
 			file_path AS filePath, mime_type AS mimeType, 
-			file_size AS fileSize, uploaded_at AS uploadedAt, status
+			file_size AS fileSize, uploaded_at AS uploadedAt, status,
+			verification_note AS verificationNote, verified_at AS verifiedAt,
+			verified_by AS verifiedBy
 		FROM order_payment_proofs 
 		WHERE order_id = ? 
 		ORDER BY uploaded_at DESC 
-		LIMIT 1
-	`).get(orderId) as PaymentProofRecord | undefined;
+		LIMIT 1`
+	).get(orderId) as PaymentProofRecord | undefined;
 
 	return row || null;
+}
+
+export function updatePaymentProofStatusRecord(
+	proofId: string,
+	status: 'verified' | 'rejected',
+	metadata: { note?: string; verifiedBy?: string }
+): boolean {
+	ensureDatabaseInitialized();
+	const db = getDatabase();
+	const timestamp = new Date().toISOString();
+
+	const result = db.prepare(`
+		UPDATE order_payment_proofs 
+		SET status = @status, 
+			verification_note = @note, 
+			verified_at = @timestamp, 
+			verified_by = @verifiedBy
+		WHERE id = @proofId
+	`).run({
+		status,
+		note: metadata.note || null,
+		timestamp,
+		verifiedBy: metadata.verifiedBy || 'Admin',
+		proofId
+	});
+
+	return result.changes > 0;
 }

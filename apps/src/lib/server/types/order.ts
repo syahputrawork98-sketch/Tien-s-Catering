@@ -1,5 +1,5 @@
 export const paymentMethods = ['cash', 'transfer', 'qris', 'cod'] as const;
-export const paymentStatuses = ['unpaid', 'waiting_verification', 'paid', 'cod'] as const;
+export const paymentStatuses = ['unpaid', 'waiting_verification', 'paid', 'partially_paid', 'cod_pending', 'rejected'] as const;
 export const orderStatuses = [
 	'new',
 	'confirmed',
@@ -137,4 +137,7 @@ export type OrderPaymentProof = {
 	fileSize: number | null;
 	uploadedAt: string;
 	status: 'pending' | 'verified' | 'rejected';
+	verificationNote: string | null;
+	verifiedAt: string | null;
+	verifiedBy: string | null;
 };

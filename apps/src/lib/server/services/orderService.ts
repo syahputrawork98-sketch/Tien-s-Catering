@@ -4,7 +4,8 @@ import {
 	updateOrderPaymentStatusRecord,
 	updateOrderStatusRecord,
 	savePaymentProofRecord,
-	getLatestPaymentProofByOrderId
+	getLatestPaymentProofByOrderId,
+	updatePaymentProofStatusRecord
 } from '$lib/server/repositories/orderRepository';
 import {
 	type OrderListRecord,
@@ -85,7 +86,7 @@ function parseNonNegativeNumber(value: unknown): number | null {
 }
 
 function resolvePaymentStatus(paymentMethod: PaymentMethod): PaymentStatus {
-	return paymentMethod === 'cod' ? 'cod' : 'unpaid';
+	return paymentMethod === 'cod' ? 'cod_pending' : 'unpaid';
 }
 
 function parseCreateOrderPayload(payload: unknown): ParseCreateOrderPayloadResult {
@@ -293,7 +294,10 @@ export function uploadPaymentProof(
 		fileName: fileData.fileName,
 		filePath: fileData.filePath,
 		mimeType: fileData.mimeType,
-		fileSize: fileData.fileSize
+		fileSize: fileData.fileSize,
+		verificationNote: null,
+		verifiedAt: null,
+		verifiedBy: null
 	});
 
 	// 3. Update payment status to waiting_verification
@@ -307,6 +311,69 @@ export function uploadPaymentProof(
 		ok: true,
 		paymentStatus: 'waiting_verification',
 		proof
+	};
+}
+
+export type VerifyOrderPaymentResult =
+	| {
+			ok: true;
+			paymentStatus: PaymentStatus;
+	  }
+	| {
+			ok: false;
+			status: number;
+			message: string;
+	  };
+
+export function verifyOrderPayment(
+	orderId: string,
+	payload: { action: 'approve' | 'reject'; note?: string; verifiedBy?: string }
+): VerifyOrderPaymentResult {
+	const normalizedOrderId = orderId.trim();
+	if (!normalizedOrderId) {
+		return { ok: false, status: 400, message: 'order id wajib diisi.' };
+	}
+
+	// 1. Get order
+	const allOrders = listOrderRecords();
+	const order = allOrders.find((o) => o.id === normalizedOrderId);
+
+	if (!order) {
+		return { ok: false, status: 404, message: 'Order tidak ditemukan.' };
+	}
+
+	if (order.paymentStatus !== 'waiting_verification') {
+		return { ok: false, status: 400, message: 'Hanya pesanan yang menunggu verifikasi yang dapat diproses.' };
+	}
+
+	// 2. Get latest proof
+	const proof = getLatestPaymentProofByOrderId(normalizedOrderId);
+	if (!proof) {
+		return { ok: false, status: 400, message: 'Bukti pembayaran tidak ditemukan.' };
+	}
+
+	// 3. Update proof status
+	const newProofStatus = payload.action === 'approve' ? 'verified' : 'rejected';
+	const updateProof = updatePaymentProofStatusRecord(proof.id, newProofStatus, {
+		note: payload.note,
+		verifiedBy: payload.verifiedBy
+	});
+
+	if (!updateProof) {
+		return { ok: false, status: 500, message: 'Gagal memperbarui data bukti pembayaran.' };
+	}
+
+	// 4. Update order payment status
+	const newOrderPaymentStatus = payload.action === 'approve' ? 'paid' : 'rejected';
+	const updateOrder = updateOrderPaymentStatusRecord(normalizedOrderId, newOrderPaymentStatus);
+
+	if (!updateOrder) {
+		return { ok: false, status: 500, message: 'Gagal memperbarui status pembayaran order.' };
+	}
+
+	return {
+		ok: true,
+		paymentStatus: newOrderPaymentStatus
 	};
 }
 

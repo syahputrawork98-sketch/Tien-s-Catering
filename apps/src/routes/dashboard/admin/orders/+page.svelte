@@ -5,7 +5,7 @@
 
 	type TabType = 'ALL' | 'NEW' | 'PROCESS' | 'DONE' | 'CANCELLED';
 	type OrderStatus = 'new' | 'confirmed' | 'processing' | 'ready' | 'delivered' | 'completed' | 'cancelled';
-	type PaymentStatus = 'unpaid' | 'waiting_verification' | 'paid' | 'cod';
+	type PaymentStatus = 'unpaid' | 'waiting_verification' | 'paid' | 'cod' | 'rejected';
 	type PaymentMethod = 'cash' | 'transfer' | 'qris' | 'cod' | 'unknown';
 	type PaymentFilter = 'ALL' | PaymentStatus;
 	type OrderStockStatus = 'not_deducted' | 'deducted' | 'released';
@@ -54,6 +54,16 @@
 		};
 		payment: AdminOrderPayment;
 		items: AdminOrderItem[];
+		paymentProof: {
+			id: string;
+			fileName: string;
+			filePath: string;
+			status: string;
+			uploadedAt: string;
+			verificationNote: string | null;
+			verifiedAt: string | null;
+			verifiedBy: string | null;
+		} | null;
 		sourceType: string | null;
 		sourceId: string | null;
 	};
@@ -98,12 +108,14 @@
 	let paymentUpdatingOrderId = $state<string | null>(null);
 	let paymentActionError = $state('');
 	let paymentActionSuccess = $state('');
+	let verificationNote = $state('');
+	let isVerifying = $state(false);
 	let paymentStatusDraftByOrderId = $state<Record<string, PaymentStatus>>({});
 	let searchQuery = $state('');
 	let paymentFilter = $state<PaymentFilter>('ALL');
 
 	const orderStatusFlow: OrderStatus[] = ['new', 'confirmed', 'processing', 'ready', 'delivered', 'completed'];
-	const manualPaymentStatuses: PaymentStatus[] = ['unpaid', 'waiting_verification', 'paid', 'cod'];
+	const manualPaymentStatuses: PaymentStatus[] = ['unpaid', 'waiting_verification', 'paid', 'cod', 'rejected'];
 	const allowedOrderStatuses: OrderStatus[] = [
 		'new',
 		'confirmed',
@@ -240,6 +252,16 @@
 				remainingAmount: getNumber(paymentObject?.remainingAmount, total)
 			},
 			items,
+			paymentProof: isRecord(raw.paymentProof) ? {
+				id: getString(raw.paymentProof.id),
+				fileName: getString(raw.paymentProof.fileName),
+				filePath: getString(raw.paymentProof.filePath),
+				status: getString(raw.paymentProof.status),
+				uploadedAt: getString(raw.paymentProof.uploadedAt),
+				verificationNote: getString(raw.paymentProof.verificationNote) || null,
+				verifiedAt: getString(raw.paymentProof.verifiedAt) || null,
+				verifiedBy: getString(raw.paymentProof.verifiedBy) || null
+			} : null,
 			sourceType: getString(raw.sourceType) || 'catalog',
 			sourceId: getString(raw.sourceId) || null
 		};
@@ -395,7 +417,8 @@
 			unpaid: 'Belum Bayar',
 			waiting_verification: 'Menunggu Verifikasi',
 			paid: 'Lunas',
-			cod: 'COD / Bayar di Tempat'
+			cod: 'COD / Bayar di Tempat',
+			rejected: 'Pembayaran Ditolak'
 		};
 
 		return map[status];
@@ -446,7 +469,8 @@
 			unpaid: 'text-zinc-500',
 			waiting_verification: 'text-amber-600',
 			paid: 'text-emerald-600',
-			cod: 'text-sky-600'
+			cod: 'text-sky-600',
+			rejected: 'text-red-600'
 		};
 
 		return map[status];
@@ -616,6 +640,43 @@
 			paymentActionError = 'Gagal terhubung ke server saat memperbarui status pembayaran.';
 		} finally {
 			paymentUpdatingOrderId = null;
+		}
+	}
+
+	async function verifyPayment(orderId: string, action: 'approve' | 'reject') {
+		if (action === 'reject' && !verificationNote.trim()) {
+			paymentActionError = 'Alasan penolakan wajib diisi.';
+			return;
+		}
+
+		isVerifying = true;
+		paymentActionError = '';
+		paymentActionSuccess = '';
+
+		try {
+			const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/verify-payment`, {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({ 
+					action, 
+					note: verificationNote,
+					verifiedBy: 'Admin (Demo)'
+				})
+			});
+
+			const body = await response.json();
+			if (!response.ok) {
+				paymentActionError = body.message || 'Gagal memproses verifikasi.';
+				return;
+			}
+
+			paymentActionSuccess = body.message;
+			verificationNote = '';
+			await loadOrders();
+		} catch (e) {
+			paymentActionError = 'Gagal terhubung ke server.';
+		} finally {
+			isVerifying = false;
 		}
 	}
 
@@ -1043,11 +1104,86 @@
 				<p class="text-sm">{selectedOrder.notes || '-'}</p>
 			</div>
 
-			<div class="p-4 bg-zinc-50 dark:bg-zinc-800 rounded-2xl border border-zinc-100 dark:border-zinc-700">
-				<p class="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Simulasi Payment Proof</p>
-				<p class="text-xs font-semibold text-zinc-500 mt-1 italic">
-					Workflow upload bukti/gateway belum aktif (Hold). Update status pembayaran dilakukan secara manual melalui daftar order.
-				</p>
+			<div class="p-6 bg-zinc-50 dark:bg-zinc-800 rounded-[2rem] border border-zinc-100 dark:border-zinc-700 space-y-6">
+				<div class="flex items-center justify-between">
+					<p class="text-[10px] font-black text-zinc-500 uppercase tracking-widest italic">Payment Proof Verification</p>
+					{#if selectedOrder.paymentProof}
+						<span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider 
+							{selectedOrder.paymentProof.status === 'verified' ? 'bg-emerald-100 text-emerald-700' : 
+							 selectedOrder.paymentProof.status === 'rejected' ? 'bg-red-100 text-red-700' : 
+							 'bg-amber-100 text-amber-700'}">
+							{selectedOrder.paymentProof.status}
+						</span>
+					{/if}
+				</div>
+
+				{#if selectedOrder.paymentProof}
+					<div class="space-y-4">
+						<div class="aspect-video w-full bg-zinc-100 dark:bg-zinc-900 rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-700 group relative">
+							{#if selectedOrder.paymentProof.filePath.startsWith('data:image/')}
+								<img src={selectedOrder.paymentProof.filePath} alt="Payment Proof" class="w-full h-full object-contain" />
+							{:else}
+								<div class="w-full h-full flex flex-col items-center justify-center space-y-2">
+									<span class="text-4xl">📄</span>
+									<p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{selectedOrder.paymentProof.fileName}</p>
+									<a href={selectedOrder.paymentProof.filePath} target="_blank" class="px-4 py-2 bg-zinc-900 text-white rounded-lg text-[9px] font-black uppercase tracking-widest">Buka Dokumen</a>
+								</div>
+							{/if}
+						</div>
+
+						<div class="grid grid-cols-2 gap-4 text-[10px]">
+							<div>
+								<p class="text-zinc-400 font-black uppercase tracking-widest mb-1">Nama File</p>
+								<p class="font-bold truncate">{selectedOrder.paymentProof.fileName}</p>
+							</div>
+							<div>
+								<p class="text-zinc-400 font-black uppercase tracking-widest mb-1">Waktu Unggah</p>
+								<p class="font-bold">{formatDate(selectedOrder.paymentProof.uploadedAt)}</p>
+							</div>
+						</div>
+
+						{#if selectedOrder.paymentStatus === 'waiting_verification'}
+							<div class="space-y-4 pt-4 border-t border-zinc-200 dark:border-zinc-700">
+								<textarea 
+									bind:value={verificationNote}
+									placeholder="Catatan verifikasi atau alasan penolakan (wajib jika reject)..."
+									class="w-full px-4 py-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl text-xs font-medium focus:ring-2 focus:ring-brand-primary"
+									rows="2"
+								></textarea>
+
+								<div class="flex gap-3">
+									<button 
+										onclick={() => verifyPayment(selectedOrder!.id, 'reject')}
+										disabled={isVerifying}
+										class="flex-1 py-3 bg-red-50 text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest border border-red-100 hover:bg-red-100 transition-all disabled:opacity-50"
+									>
+										Reject Proof
+									</button>
+									<button 
+										onclick={() => verifyPayment(selectedOrder!.id, 'approve')}
+										disabled={isVerifying}
+										class="flex-1 py-3 bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-600/20 hover:scale-[1.02] transition-all disabled:opacity-50"
+									>
+										Approve Payment
+									</button>
+								</div>
+							</div>
+						{:else if selectedOrder.paymentProof.verificationNote}
+							<div class="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-700">
+								<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Catatan Admin</p>
+								<p class="text-xs italic">"{selectedOrder.paymentProof.verificationNote}"</p>
+								<div class="mt-2 flex justify-between text-[8px] font-black text-zinc-400 uppercase tracking-tighter">
+									<span>Oleh: {selectedOrder.paymentProof.verifiedBy}</span>
+									<span>{formatDate(selectedOrder.paymentProof.verifiedAt || '')}</span>
+								</div>
+							</div>
+						{/if}
+					</div>
+				{:else}
+					<p class="text-xs font-semibold text-zinc-500 mt-1 italic text-center py-4">
+						Belum ada bukti pembayaran yang diunggah customer.
+					</p>
+				{/if}
 			</div>
 
 			<div class="p-4 bg-zinc-50 dark:bg-zinc-800 rounded-2xl border border-zinc-100 dark:border-zinc-700">
