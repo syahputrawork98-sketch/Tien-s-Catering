@@ -25,12 +25,16 @@ Dokumen ini merangkum alur order lokal setelah payment manual, transaksi stok, d
 - `PATCH /api/orders/[id]/status`
 - `PATCH /api/orders/[id]/payment-status`
 
-## Status Stabilisasi Batch 11-14 (Accepted)
+## Status Stabilisasi Batch 11-19 (Accepted)
 
 - Batch 11: Customer order dashboard (`/dashboard/orders`) sudah database-backed via `GET /api/orders`.
 - Batch 12: CS orders dashboard (`/dashboard/cs/orders`) sudah database-backed via `GET /api/orders`.
 - Batch 13: Payment status clarity diselaraskan lintas role (Customer, CS, Admin) dengan wording "Simulasi" untuk local-development.
 - Batch 14: Customer package request visibility aktif via `/dashboard/package-requests` dan `GET /api/package-requests`.
+- Batch 16: Customer Profile & Address management ditambahkan sebagai local-simulation clarity.
+- Batch 17: Admin Users local management clarity (simulation-only).
+- Batch 18: Manual Payment Review UX enhancement di Admin & CS Dashboard.
+- Batch 19: Admin Reports DB-backed basic via `GET /api/orders` (overview summary).
 
 ## Data yang Sudah Database-Backed
 
@@ -44,6 +48,7 @@ Dokumen ini merangkum alur order lokal setelah payment manual, transaksi stok, d
 - Customer dashboard order history.
 - CS dashboard order list + aksi minimal status/payment.
 - Customer package request history (visibility).
+- Admin Reports summary (Revenue, Orders, Status counts).
 
 ## Aturan Transaksi Stok
 
@@ -59,27 +64,24 @@ Dokumen ini merangkum alur order lokal setelah payment manual, transaksi stok, d
 
 ## Data/Flow yang Masih Mock atau Hold
 
-- Admin reports masih simulasi lokal/mock (bukan reporting engine production).
+- Admin reports masih terbatas (detail sales/customer/finance masih mock).
 - Payment verification otomatis.
 - Payment gateway/QRIS production.
 - Upload bukti pembayaran production.
-- Super Admin flow final.
+- Super Admin flow final (RBAC production).
 - Auth production (login/JWT/session/password/RBAC).
-- Profile & Address management customer (masih mock/local-only).
+- Profile & Address management customer (local simulation).
 - Convert package request ke order (Hold).
+- Export PDF/CSV production.
 
 ## Known Issue (Project-wide)
 
 - `npm run check` sudah `0 errors` dengan sisa baseline warnings (a11y/css).
 - Area warning utama:
-  - `src/lib/components/ModalMenuDetail.svelte`
-  - `src/routes/dashboard/admin/settings/+page.svelte`
-  - `src/routes/dashboard/admin/tax/+page.svelte`
-  - `src/routes/dashboard/admin/users/+page.svelte`
-  - `src/routes/dashboard/cs/customers/+page.svelte`
+  - `src/lib/components/ModalMenuDetail.svelte` (A11y)
+  - `src/routes/dashboard/admin/users/+page.svelte` (A11y)
 
 ## Arah Strategis (Roadmap)
 
-- Batch 16+: Super Admin local role management.
-- Batch 17+: Profile & Address management database-backed.
-- Batch 18+: Penguatan alur manual review payment.
+- Batch 21+: Stabilisasi Admin Operational (Package Request to Order Flow simulation).
+- Batch 22+: Finalisasi local-development documentation & demo-ready polish.

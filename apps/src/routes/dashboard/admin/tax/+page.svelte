@@ -451,7 +451,7 @@
                                 </div>
                             </div>
                             <div class="flex items-center gap-2">
-                                <button onclick={() => togglePaymentActive(pay.id)} class="w-8 h-4 rounded-full relative transition-all {pay.isActive ? 'bg-emerald-500' : 'bg-zinc-200 dark:bg-zinc-800'}">
+                                <button aria-label="Toggle status pembayaran" onclick={() => togglePaymentActive(pay.id)} class="w-8 h-4 rounded-full relative transition-all {pay.isActive ? 'bg-emerald-500' : 'bg-zinc-200 dark:bg-zinc-800'}">
                                     <div class="absolute top-0.5 w-3 h-3 bg-white rounded-full transition-all {pay.isActive ? 'left-4.5' : 'left-0.5'} shadow-sm"></div>
                                 </button>
                             </div>

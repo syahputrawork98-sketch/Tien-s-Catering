@@ -431,7 +431,7 @@
                             </div>
 
                             <div class="pt-6 border-t border-zinc-200 dark:border-zinc-700">
-                                <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-3 block">Tentukan Tipe Akun Final</label>
+                                <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-3 block">Tentukan Tipe Akun Final</p>
                                 <div class="grid grid-cols-3 gap-3">
                                     {#each ['personal', 'company', 'institution'] as type}
                                         <button 

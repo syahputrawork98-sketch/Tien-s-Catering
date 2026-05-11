@@ -13,6 +13,18 @@
 - Batch 14:
   - Customer Package Request visibility ditambahkan via `/dashboard/package-requests`.
   - Customer dapat melihat riwayat request paket yang dibuat via `GET /api/package-requests`.
+- Batch 16:
+  - Customer Profile & Address Management ditambahkan sebagai simulasi lokal/clatiry.
+  - Menegaskan status simulasi untuk Profile dan Alamat agar tidak menyesatkan sebagai data produksi.
+- Batch 17:
+  - Admin Users management diperjelas sebagai local user management simulation.
+  - Role "Super Admin" dan "Admin" diperjelas batasan fungsionalitasnya di mode lokal.
+- Batch 18:
+  - Manual Payment Review UX ditingkatkan di dashboard Admin dan CS.
+  - Penegasan alur verifikasi manual tanpa payment gateway otomatis.
+- Batch 19:
+  - Admin Reports dasar sudah DB-backed via `GET /api/orders`.
+  - Ringkasan total revenue, total order, dan pending verification berbasis data riil database.
 
 ## Selesai
 
@@ -47,6 +59,10 @@
 - CS dashboard orders DB-backed (`/dashboard/cs/orders`).
 - Customer package request visibility aktif (`/dashboard/package-requests`).
 - Konsistensi status pembayaran lintas role dashboard.
+- Customer Profile & Address local simulation clarity.
+- Admin Users local management clarity.
+- Manual Payment Review enhancement (UX clarity).
+- Admin Reports DB-backed basic summary.
 
 ## Berjalan / Local-Compatible
 
@@ -58,28 +74,28 @@
 - Convert package request ke order.
 - Package payment/invoice production.
 - Hard delete package/request.
-- Super Admin flow final.
-- Role management.
+- Super Admin flow final (RBAC production).
+- Role management production (JWT/Session).
 - Payment verification otomatis.
 - Payment gateway / QRIS production.
 - Upload bukti pembayaran production.
 - Rekening/payment account integration production.
 - Auth production (login/JWT/session/password/RBAC).
 - Invoice/pajak production.
-- Reporting engine/export production.
+- Reporting engine/export production (PDF/CSV).
 
 ## Known Issue (Project-wide)
 
 - `npm run check` sudah `0 errors` dan baseline warnings berkurang secara bertahap (a11y/css).
 - Area warning tersisa:
-  - `src/lib/components/ModalMenuDetail.svelte`
-  - `src/routes/dashboard/admin/settings/+page.svelte`
-  - `src/routes/dashboard/admin/tax/+page.svelte`
-  - `src/routes/dashboard/admin/users/+page.svelte`
-  - `src/routes/dashboard/cs/customers/+page.svelte`
+  - `src/lib/components/ModalMenuDetail.svelte` (A11y/div interactions)
+  - `src/routes/dashboard/admin/users/+page.svelte` (A11y)
+- Batch 20 telah melakukan pembersihan warning di:
+  - `admin/settings` (aria-labels)
+  - `admin/tax` (aria-labels)
+  - `cs/customers` (label assoc)
 
 ## Roadmap Berikutnya
 
-- Batch 16+: Super Admin local role management (tahap berikutnya).
-- Batch 17+: Payment verification minimal (manual review enhancement).
-- Batch 18+: Profile & Address management DB-backed.
+- Batch 21+: Stabilisasi Admin Operational (Package Request to Order Flow simulation).
+- Batch 22+: Finalisasi local-development documentation & demo-ready polish.
