@@ -293,7 +293,9 @@ export function convertPackageRequestToOrder(requestId: string): {
 			deliveryFee: 0,
 			total
 		},
-		devPersonaCode: 'admin' // Dikonversi oleh admin
+		devPersonaCode: 'admin', // Dikonversi oleh admin
+		sourceType: 'package_request',
+		sourceId: normalizedRequestId
 	};
 
 	const result = createOrder(orderPayload);

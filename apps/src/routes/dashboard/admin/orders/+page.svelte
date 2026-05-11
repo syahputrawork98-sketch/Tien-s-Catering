@@ -54,6 +54,8 @@
 		};
 		payment: AdminOrderPayment;
 		items: AdminOrderItem[];
+		sourceType: string | null;
+		sourceId: string | null;
 	};
 
 	type OrdersApiResponse = {
@@ -237,7 +239,9 @@
 				paidAmount: getNumber(paymentObject?.paidAmount, 0),
 				remainingAmount: getNumber(paymentObject?.remainingAmount, total)
 			},
-			items
+			items,
+			sourceType: getString(raw.sourceType) || 'catalog',
+			sourceId: getString(raw.sourceId) || null
 		};
 	}
 
@@ -632,6 +636,11 @@
 	}
 
 	onMount(() => {
+		const urlParams = new URLSearchParams(window.location.search);
+		const searchParam = urlParams.get('search');
+		if (searchParam) {
+			searchQuery = searchParam;
+		}
 		void loadOrders();
 	});
 
@@ -782,6 +791,13 @@
 									<span class="text-[10px] font-black uppercase {paymentColor(order.paymentStatus)}">{paymentLabel(order.paymentStatus)}</span>
 									<span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider {stockStatusColor(order.stockStatus)}">{stockStatusLabel(order.stockStatus)}</span>
 									<span class="px-3 py-1 rounded-full text-[10px] font-black bg-zinc-100 dark:bg-zinc-800 text-zinc-500 uppercase tracking-wider">Pembayaran: {paymentMethodLabel(order.paymentMethod)}</span>
+									
+									{#if order.sourceType === 'package_request'}
+										<span class="px-3 py-1 rounded-full text-[10px] font-black bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 uppercase tracking-wider border border-indigo-100 dark:border-indigo-900/50">
+											🍱 Paket Katering
+										</span>
+									{/if}
+
 									<span class="px-3 py-1 rounded-full text-[10px] font-black bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 uppercase tracking-wider">Data Database Lokal</span>
 								</div>
 

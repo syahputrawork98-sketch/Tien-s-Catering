@@ -665,8 +665,18 @@
 
 									<div class="space-y-3 pt-6 border-t border-zinc-100 dark:border-zinc-800/50">
 										{#if request.status === 'converted_to_order' || request.convertedOrderId}
-											<div class="w-full py-3.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-[9px] font-black uppercase tracking-[0.2em] rounded-xl border border-emerald-100 dark:border-emerald-800 flex items-center justify-center gap-2">
-												<span>✅</span> Sudah Menjadi Order
+											<div class="space-y-3">
+												<div class="w-full py-3.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-[9px] font-black uppercase tracking-[0.2em] rounded-xl border border-emerald-100 dark:border-emerald-800 flex items-center justify-center gap-2">
+													<span>✅</span> Sudah Menjadi Order
+												</div>
+												{#if request.convertedOrderId}
+													<a 
+														href="/dashboard/admin/orders?search={request.convertedOrderId.split('-')[0]}"
+														class="flex items-center justify-center gap-2 w-full py-3 bg-white dark:bg-zinc-900 text-brand-primary text-[9px] font-black uppercase tracking-widest rounded-xl border border-brand-primary/20 hover:bg-brand-primary/5 transition-all"
+													>
+														🔍 Lihat Order
+													</a>
+												{/if}
 											</div>
 										{:else}
 											<button

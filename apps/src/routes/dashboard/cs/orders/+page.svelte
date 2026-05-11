@@ -245,7 +245,9 @@
             completedConfirmedByCs: false, // Simulation
             completedConfirmedByUser: false, // Simulation
             completedConfirmedByAdmin: false, // Simulation
-            completionNote: undefined
+            completionNote: undefined,
+            sourceType: apiOrder.sourceType || 'catalog',
+            sourceId: apiOrder.sourceId || null
         };
     }
 
@@ -586,6 +588,13 @@
                                             <div class="flex flex-col">
                                                 <span class="text-sm font-black text-brand-charcoal dark:text-white group-hover:text-brand-primary transition-colors italic truncate max-w-[150px]" title={order.id}>#{order.id.split('-')[0]}...</span>
                                                 <span class="text-sm font-bold text-zinc-400">{order.customerName}</span>
+                                                {#if order.sourceType === 'package_request'}
+                                                    <div class="mt-1">
+                                                        <span class="px-2 py-0.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 text-[8px] font-black uppercase rounded border border-indigo-100 dark:border-indigo-900/50">
+                                                            🍱 Paket Katering
+                                                        </span>
+                                                    </div>
+                                                {/if}
                                             </div>
                                         </td>
                                         <td class="px-10 py-8">

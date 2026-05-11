@@ -25,6 +25,7 @@
 		adminNote: string | null;
 		estimatedPrice: number | null;
 		reviewedAt: string | null;
+		convertedOrderId: string | null;
 		createdAt: string;
 		updatedAt: string;
 	};
@@ -94,6 +95,7 @@
 					? null
 					: Math.max(0, Math.floor(getNumber(raw.estimatedPrice, 0))),
 			reviewedAt: getString(raw.reviewedAt) || null,
+			convertedOrderId: getString(raw.convertedOrderId) || null,
 			createdAt: getString(raw.createdAt, '-'),
 			updatedAt: getString(raw.updatedAt, '-')
 		};
@@ -330,17 +332,31 @@
 								</div>
 								
 								<div class="space-y-4">
-									<button 
-										disabled
-										class="w-full py-5 bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl border border-zinc-200 dark:border-zinc-700 cursor-not-allowed opacity-70 shadow-inner"
-									>
-										Convert ke Order (Hold)
-									</button>
-									<div class="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-zinc-800 text-center">
-										<p class="text-[9px] font-black text-zinc-400 uppercase tracking-tighter italic">
-											Demo: Perubahan menjadi order tetap Hold sesuai kebijakan local-development.
-										</p>
-									</div>
+									{#if request.status === 'converted_to_order' || request.convertedOrderId}
+										<div class="space-y-3">
+											<div class="w-full py-4 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl border border-emerald-100 dark:border-emerald-800 flex items-center justify-center gap-2">
+												<span>✅</span> Sudah Menjadi Order
+											</div>
+											<a 
+												href="/dashboard/orders"
+												class="w-full py-4 bg-brand-charcoal text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl shadow-xl hover:bg-brand-primary transition-all flex items-center justify-center gap-2"
+											>
+												🛍️ Lihat Pesanan Resmi
+											</a>
+										</div>
+									{:else}
+										<button 
+											disabled
+											class="w-full py-5 bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl border border-zinc-200 dark:border-zinc-700 cursor-not-allowed opacity-70 shadow-inner"
+										>
+											Convert ke Order (Hold)
+										</button>
+										<div class="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-zinc-800 text-center">
+											<p class="text-[9px] font-black text-zinc-400 uppercase tracking-tighter italic">
+												Demo: Perubahan menjadi order tetap Hold sesuai kebijakan local-development.
+											</p>
+										</div>
+									{/if}
 								</div>
 							</div>
 						</div>

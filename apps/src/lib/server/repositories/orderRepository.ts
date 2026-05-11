@@ -56,6 +56,14 @@ function ensureOrderStockColumns(db: ReturnType<typeof getDatabase>) {
 	if (!hasColumn(db, 'orders', 'stock_released_at')) {
 		db.exec(`ALTER TABLE orders ADD COLUMN stock_released_at TEXT;`);
 	}
+
+	if (!hasColumn(db, 'orders', 'source_type')) {
+		db.exec(`ALTER TABLE orders ADD COLUMN source_type TEXT;`);
+	}
+
+	if (!hasColumn(db, 'orders', 'source_id')) {
+		db.exec(`ALTER TABLE orders ADD COLUMN source_id TEXT;`);
+	}
 }
 
 function normalizeStockStatus(value: string | null | undefined): OrderStockStatus {
@@ -91,6 +99,8 @@ export function createOrderRecord(input: CreateOrderInput): CreatedOrderSummary 
 			delivery_fee,
 			total_amount,
 			dev_persona_code,
+			source_type,
+			source_id,
 			created_at,
 			updated_at
 		) VALUES (
@@ -107,6 +117,8 @@ export function createOrderRecord(input: CreateOrderInput): CreatedOrderSummary 
 			@deliveryFee,
 			@totalAmount,
 			@devPersonaCode,
+			@sourceType,
+			@sourceId,
 			@createdAt,
 			@updatedAt
 		);`
@@ -190,6 +202,8 @@ export function createOrderRecord(input: CreateOrderInput): CreatedOrderSummary 
 			deliveryFee: payload.totals.deliveryFee,
 			totalAmount: payload.totals.total,
 			devPersonaCode: payload.devPersonaCode,
+			sourceType: payload.sourceType ?? 'catalog',
+			sourceId: payload.sourceId ?? null,
 			createdAt: timestamp,
 			updatedAt: timestamp
 		});
@@ -258,6 +272,8 @@ type RawOrderRow = {
 	stockStatus: string | null;
 	stockDeductedAt: string | null;
 	stockReleasedAt: string | null;
+	sourceType: string | null;
+	sourceId: string | null;
 	departmentOrUnit: string | null;
 	floor: string | null;
 	locationNote: string | null;
@@ -332,6 +348,8 @@ export function listOrderRecords(): OrderListRecord[] {
 			o.stock_status AS stockStatus,
 			o.stock_deducted_at AS stockDeductedAt,
 			o.stock_released_at AS stockReleasedAt,
+			o.source_type AS sourceType,
+			o.source_id AS sourceId,
 			d.department_or_unit AS departmentOrUnit,
 			d.floor AS floor,
 			d.location_note AS locationNote,
@@ -409,6 +427,8 @@ export function listOrderRecords(): OrderListRecord[] {
 			stockStatus: normalizeStockStatus(row.stockStatus),
 			stockDeductedAt: row.stockDeductedAt ?? null,
 			stockReleasedAt: row.stockReleasedAt ?? null,
+			sourceType: row.sourceType ?? 'catalog',
+			sourceId: row.sourceId ?? null,
 			deliveryInfo: {
 				departmentOrUnit: row.departmentOrUnit,
 				floor: row.floor,

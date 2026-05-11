@@ -15,6 +15,7 @@
 		total: number;
 		menuName: string;
 		createdAt: string;
+		sourceType?: string | null;
 	}
 
 	interface DashboardPackageRequest {
@@ -79,7 +80,8 @@
 					paymentStatus: mapPaymentStatus(apiOrder.paymentStatus),
 					total: apiOrder.total,
 					menuName: extractMenuName(apiOrder.items),
-					createdAt: apiOrder.createdAt || apiOrder.orderDate
+					createdAt: apiOrder.createdAt || apiOrder.orderDate,
+					sourceType: apiOrder.sourceType || 'catalog'
 				}));
 			}
 
@@ -256,6 +258,10 @@
 										<span class="text-[10px] font-bold text-zinc-500 uppercase">{latestOrder.status}</span>
 										<span class="w-1 h-1 rounded-full bg-zinc-300"></span>
 										<span class="text-[10px] font-bold text-zinc-400">{latestOrder.paymentStatus.replace('_', ' ')}</span>
+										{#if latestOrder.sourceType === 'package_request'}
+											<span class="w-1 h-1 rounded-full bg-zinc-300"></span>
+											<span class="text-[9px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest italic">🍱 Paket Catering</span>
+										{/if}
 									</div>
 								</div>
 							</div>
