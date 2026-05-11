@@ -851,9 +851,10 @@
                             <button 
                                 onclick={handleConfirmCod}
                                 disabled={isActionLoading}
+                                aria-label="Konfirmasi Terima Tunai/COD"
                                 class="w-full py-4 bg-brand-charcoal dark:bg-brand-primary text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:scale-105 transition-all disabled:opacity-50"
                             >
-                                {isActionLoading ? 'Memproses...' : 'Konfirmasi Terima Tunai/COD'}
+                                {isActionLoading ? 'Memproses...' : 'Tandai Lunas COD (Manual)'}
                             </button>
                         </div>
                     {:else}
@@ -870,16 +871,17 @@
                             </div>
 
                             <div class="space-y-4">
-                                <p class="text-[9px] font-black text-blue-500 uppercase tracking-widest text-center bg-blue-50 dark:bg-blue-900/20 py-2 rounded-lg">Mode Simulasi Verifikasi Bukti</p>
+                                <p class="text-[9px] font-black text-blue-500 uppercase tracking-widest text-center bg-blue-50 dark:bg-blue-900/20 py-2 rounded-lg">Review Pembayaran Manual (Simulasi)</p>
                                 <div class="bg-white dark:bg-zinc-900 p-6 rounded-2xl border-2 border-dashed border-zinc-100 dark:border-zinc-800 text-center">
-                                    <p class="text-[10px] font-black text-zinc-300 uppercase tracking-widest italic">Penyimpanan bukti (proof) sedang Hold</p>
+                                    <p class="text-[10px] font-black text-zinc-300 uppercase tracking-widest italic">Verifikasi bukti (proof) sedang Hold</p>
                                 </div>
                                 <button 
                                     onclick={() => handleVerifyPayment()}
                                     disabled={isActionLoading}
+                                    aria-label="Tandai Lunas Manual (Simulasi)"
                                     class="w-full py-4 bg-brand-charcoal dark:bg-brand-primary text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:scale-105 transition-all disabled:opacity-50"
                                 >
-                                    {isActionLoading ? 'Memproses...' : 'Tandai Lunas Manual (Local)'}
+                                    {isActionLoading ? 'Memproses...' : 'Verifikasi Lunas Manual (Local)'}
                                 </button>
                             </div>
                         </div>

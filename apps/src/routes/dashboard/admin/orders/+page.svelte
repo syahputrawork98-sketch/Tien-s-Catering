@@ -849,9 +849,10 @@
 								{/if}
 								<div class="p-3 bg-sky-50 dark:bg-sky-900/20 border border-sky-200 dark:border-sky-900/40 rounded-xl space-y-2">
 									<p class="text-[9px] font-black text-sky-700 dark:text-sky-300 uppercase tracking-widest">
-										Payment Manual
+										Review Pembayaran (Manual)
 									</p>
 									<select
+										aria-label="Pilih Status Pembayaran (Simulasi)"
 										value={paymentStatusDraftByOrderId[order.id] ?? normalizeManualPaymentStatus(order.paymentStatus)}
 										disabled={paymentUpdatingOrderId !== null}
 										onchange={(event) =>
@@ -865,18 +866,19 @@
 										</select>
 										<button
 											type="button"
+											aria-label="Simpan Status Pembayaran Manual"
 											disabled={paymentUpdatingOrderId !== null || !hasPaymentStatusChanged(order)}
 											onclick={() => applyPaymentStatus(order)}
 											class="w-full px-3 py-2 bg-sky-600 text-white text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-sky-700 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
 										>
 											{paymentUpdatingOrderId === order.id
-												? 'Menyimpan Payment...'
+												? 'Memproses...'
 												: hasPaymentStatusChanged(order)
-													? 'Simpan Payment Status'
-													: 'Tidak Ada Perubahan'}
+													? 'Tandai Lunas (Manual)'
+													: 'Status Sesuai (Lokal)'}
 										</button>
-										<p class="text-[9px] font-semibold text-sky-700/80 dark:text-sky-300/80">
-											Tanpa gateway/upload bukti. Workflow manual lokal.
+										<p class="text-[9px] font-semibold text-sky-700/80 dark:text-sky-300/80 italic">
+											Workflow simulasi tanpa gateway/upload bukti.
 									</p>
 								</div>
 							</div>
