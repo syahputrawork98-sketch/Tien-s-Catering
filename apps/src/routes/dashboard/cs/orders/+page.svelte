@@ -1,7 +1,6 @@
 <script lang="ts">
-    import { mockCsOrders, type MockCsOrder } from '$lib/mock/cs';
-    import type { MockPaymentBreakdown, MockPaymentProof } from '$lib/mock/orders';
     import { fade, fly, scale } from 'svelte/transition';
+    import { onMount } from 'svelte';
 
     function formatPrice(val: number) {
 		return new Intl.NumberFormat('id-ID', {
@@ -13,8 +12,12 @@
 
     type TabType = 'NEW' | 'VERIFIKASI' | 'PROSES' | 'SELESAI' | 'BATAL' | 'HISTORY' | 'LUNAS' | 'BELUM_BAYAR';
     
-    // Local state to simulate changes
-    let orders = $state<MockCsOrder[]>([...mockCsOrders]);
+    // DB-backed state
+    let orders = $state<any[]>([]);
+    let loading = $state(true);
+    let error = $state('');
+    let isActionLoading = $state(false);
+
     let activeTab = $state<TabType>('NEW');
     let historyDateFilter = $state<string>('');
     let searchQuery = $state('');
@@ -95,7 +98,7 @@
             return isProsesStatus && !isConfirmedCompleted;
         }).length,
         lunas: orders.filter(o => o.paymentStatus === 'paid').length,
-        belumBayar: orders.filter(o => o.paymentStatus === 'unpaid').length,
+        belumBayar: orders.filter(o => o.paymentStatus === 'unpaid' || o.paymentStatus === 'cod_pending').length,
         selesai: orders.filter(o => {
             const isCompletedStatus = o.status === 'completed';
             const isProsesStatus = o.status === 'confirmed' || o.status === 'processing' || o.status === 'ready' || o.status === 'delivered';
@@ -124,7 +127,7 @@
                     matchesTab = order.paymentStatus === 'paid';
                     break;
                 case 'BELUM_BAYAR':
-                    matchesTab = order.paymentStatus === 'unpaid';
+                    matchesTab = order.paymentStatus === 'unpaid' || order.paymentStatus === 'cod_pending';
                     break;
                 case 'PROSES': 
                     matchesTab = isProsesStatus && !isConfirmedCompleted; 
@@ -169,7 +172,74 @@
         }
     }
 
-    function openDetail(order: MockCsOrder) {
+    function mapPaymentStatus(status: string): any {
+        const s = status.toLowerCase();
+        if (s === 'unpaid') return 'unpaid';
+        if (s === 'waiting_verification') return 'waiting_verification';
+        if (s === 'paid') return 'paid';
+        if (s === 'cod') return 'cod_pending';
+        return 'unpaid';
+    }
+
+    function mapApiOrderToCsOrder(apiOrder: any): any {
+        return {
+            id: apiOrder.id,
+            customerName: apiOrder.customerName,
+            whatsapp: apiOrder.whatsapp,
+            deliveryDate: apiOrder.deliveryDate,
+            address: apiOrder.deliveryInfo?.addressSummary || [
+                apiOrder.deliveryInfo?.departmentOrUnit,
+                apiOrder.deliveryInfo?.floor,
+                apiOrder.deliveryInfo?.locationNote
+            ].filter(Boolean).join(', ') || 'Alamat tidak tersedia',
+            total: apiOrder.total,
+            status: apiOrder.status,
+            paymentStatus: mapPaymentStatus(apiOrder.paymentStatus),
+            items: apiOrder.items.map((i: any) => ({
+                name: i.name,
+                quantity: i.quantity,
+                price: i.price
+            })),
+            notes: apiOrder.notes,
+            paymentMethod: apiOrder.payment?.method || apiOrder.paymentMethod,
+            paymentBreakdown: {
+                totalAmount: apiOrder.payment?.totalAmount ?? apiOrder.total,
+                paidAmount: apiOrder.payment?.paidAmount ?? 0,
+                remainingAmount: apiOrder.payment?.remainingAmount ?? apiOrder.total,
+                dpRequired: false
+            },
+            paymentProofs: [], 
+            paymentProof: undefined,
+            completedConfirmedByCs: false, // Simulation
+            completedConfirmedByUser: false, // Simulation
+            completedConfirmedByAdmin: false, // Simulation
+            completionNote: undefined
+        };
+    }
+
+    async function loadOrders() {
+        loading = true;
+        error = '';
+        try {
+            const response = await fetch('/api/orders');
+            if (!response.ok) throw new Error('Gagal memuat data pesanan.');
+            const data = await response.json();
+            if (Array.isArray(data.items)) {
+                orders = data.items.map(mapApiOrderToCsOrder);
+            }
+        } catch (e: any) {
+            console.error(e);
+            error = e.message || 'Terjadi kesalahan server.';
+        } finally {
+            loading = false;
+        }
+    }
+
+    onMount(() => {
+        loadOrders();
+    });
+
+    function openDetail(order: any) {
         selectedOrder = { ...order };
         showModal = true;
         showCancelReason = false;
@@ -185,186 +255,102 @@
         selectedOrder = null;
     }
 
-    function handleConfirm() {
+    async function handleConfirm() {
         if (!selectedOrder) return;
-        const selectedOrderId = selectedOrder.id;
-        
-        orders = orders.map(o => 
-            o.id === selectedOrderId
-                ? { ...o, status: 'confirmed' as const } 
-                : o
-        );
-        
-        alert(`Pesanan #${selectedOrderId} telah dikonfirmasi dan masuk ke tab Proses.`);
-        closeModal();
-        activeTab = 'PROSES';
+        isActionLoading = true;
+        try {
+            const response = await fetch(`/api/orders/${encodeURIComponent(selectedOrder.id)}/status`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'confirmed' })
+            });
+            if (!response.ok) throw new Error('Gagal mengonfirmasi pesanan.');
+            
+            alert(`Pesanan #${selectedOrder.id} telah dikonfirmasi.`);
+            await loadOrders();
+            closeModal();
+            activeTab = 'PROSES';
+        } catch (e: any) {
+            alert(e.message);
+        } finally {
+            isActionLoading = false;
+        }
     }
 
-    function handleVerifyPayment(proofId?: string) {
+    async function handleVerifyPayment(proofId?: string) {
         if (!selectedOrder) return;
-        const selectedOrderId = selectedOrder.id;
-
-        orders = orders.map(o => {
-            if (o.id === selectedOrderId) {
-                let updatedProofs: MockPaymentProof[] = o.paymentProofs || [];
-                let newPaidAmount = getPaymentBreakdown(o).paidAmount;
-                
-                if (proofId) {
-                    updatedProofs = updatedProofs.map((p): MockPaymentProof => {
-                        if (p.id === proofId) {
-                            newPaidAmount += p.amount;
-                            return {
-                                ...p,
-                                status: 'verified',
-                                verification: {
-                                    verifiedBy: 'CS Demo',
-                                    verifiedByRole: 'cs',
-                                    verifiedAt: new Date().toISOString(),
-                                    note: verificationNote || undefined
-                                }
-                            };
-                        }
-                        return p;
-                    });
-                } else if (o.paymentProof) {
-                    // Legacy support
-                    updatedProofs = [{
-                        ...o.paymentProof,
-                        status: 'verified',
-                        verification: {
-                            verifiedBy: 'CS Demo',
-                            verifiedByRole: 'cs',
-                            verifiedAt: new Date().toISOString(),
-                            note: verificationNote || undefined
-                        }
-                    }];
-                    newPaidAmount = o.total;
-                }
-
-                const totalAmount = o.total;
-                const isFullyPaid = newPaidAmount >= totalAmount;
-                
-                const currentBreakdown = getPaymentBreakdown(o);
-                const breakdown: MockPaymentBreakdown = {
-                    ...currentBreakdown,
-                    totalAmount,
-                    paidAmount: newPaidAmount,
-                    remainingAmount: Math.max(0, totalAmount - newPaidAmount)
-                };
-
-                return {
-                    ...o,
-                    paymentStatus: isFullyPaid ? 'paid' : 'partially_paid',
-                    paymentProofs: updatedProofs,
-                    paymentBreakdown: breakdown,
-                    paymentProof: updatedProofs.find((p) => p.id === proofId) || o.paymentProof // legacy
-                };
-            }
-            return o;
-        });
-
-        alert(`Pembayaran untuk Pesanan #${selectedOrderId} telah diverifikasi.`);
-        verificationNote = '';
-        selectedOrder = orders.find((x) => x.id === selectedOrderId) || null;
+        isActionLoading = true;
+        try {
+            const response = await fetch(`/api/orders/${encodeURIComponent(selectedOrder.id)}/payment-status`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ paymentStatus: 'paid' })
+            });
+            if (!response.ok) throw new Error('Gagal memverifikasi pembayaran.');
+            
+            alert(`Pembayaran untuk Pesanan #${selectedOrder.id} telah diverifikasi (Mode Lunas).`);
+            await loadOrders();
+            selectedOrder = orders.find(o => o.id === selectedOrder?.id) || null;
+            verificationNote = '';
+        } catch (e: any) {
+            alert(e.message);
+        } finally {
+            isActionLoading = false;
+        }
     }
 
     function handleRejectPayment(proofId?: string) {
-        if (!selectedOrder) return;
-        if (!rejectionReason) {
-            alert('Alasan penolakan wajib diisi.');
-            return;
-        }
-        const selectedOrderId = selectedOrder.id;
-
-        orders = orders.map(o => {
-            if (o.id === selectedOrderId) {
-                const updatedProofs: MockPaymentProof[] = (o.paymentProofs || []).map((p): MockPaymentProof => {
-                    if (p.id === proofId) {
-                        return {
-                            ...p,
-                            status: 'rejected',
-                            rejectedBy: 'CS Demo',
-                            rejectedByRole: 'cs',
-                            rejectedAt: new Date().toISOString(),
-                            rejectionReason: rejectionReason
-                        };
-                    }
-                    return p;
-                });
-
-                const hasAnyVerified = updatedProofs.some(p => p.status === 'verified');
-                
-                return {
-                    ...o,
-                    paymentStatus: hasAnyVerified ? 'partially_paid' : 'unpaid',
-                    paymentProofs: updatedProofs,
-                    paymentProof: updatedProofs.find(p => p.id === proofId) // legacy
-                };
-            }
-            return o;
-        });
-
-        alert(`Bukti pembayaran untuk Pesanan #${selectedOrderId} telah ditolak.`);
-        rejectionReason = '';
+        // Payment proof rejection is simulation only for now
+        alert('Simulasi: Bukti pembayaran ditolak. (Fitur verifikasi proof real sedang Hold)');
         showRejectionReason = false;
-        selectedOrder = orders.find((x) => x.id === selectedOrderId) || null;
+        rejectionReason = '';
     }
 
-    function handleConfirmCod() {
+    async function handleConfirmCod() {
         if (!selectedOrder) return;
-        const selectedOrderId = selectedOrder.id;
-
-        orders = orders.map(o => {
-            if (o.id === selectedOrderId) {
-                const currentBreakdown = getPaymentBreakdown(o);
-                return {
-                    ...o,
-                    paymentStatus: 'paid',
-                    paymentBreakdown: {
-                        ...currentBreakdown,
-                        totalAmount: o.total,
-                        paidAmount: o.total,
-                        remainingAmount: 0
-                    },
-                    codCollection: {
-                        ...(o.codCollection || { expectedAmount: o.total }),
-                        collectedAt: new Date().toISOString(),
-                        collectedBy: 'CS Demo',
-                        collectedByRole: 'cs',
-                        collectedAmount: o.total,
-                        method: o.paymentMethod === 'cod_transfer' ? 'transfer' : 'cash'
-                    }
-                };
-            }
-            return o;
-        });
-
-        alert(`Pembayaran COD untuk Pesanan #${selectedOrderId} telah dikonfirmasi.`);
-        selectedOrder = orders.find((x) => x.id === selectedOrderId) || null;
+        isActionLoading = true;
+        try {
+            const response = await fetch(`/api/orders/${encodeURIComponent(selectedOrder.id)}/payment-status`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ paymentStatus: 'paid' })
+            });
+            if (!response.ok) throw new Error('Gagal mengonfirmasi pembayaran COD.');
+            
+            alert(`Pembayaran COD untuk Pesanan #${selectedOrder.id} telah dikonfirmasi (Lunas).`);
+            await loadOrders();
+            selectedOrder = orders.find(o => o.id === selectedOrder?.id) || null;
+        } catch (e: any) {
+            alert(e.message);
+        } finally {
+            isActionLoading = false;
+        }
     }
 
-    function handleCancel() {
+    async function handleCancel() {
         if (!selectedOrder) return;
         if (!cancellationReason) {
             alert('Silakan pilih atau isi alasan pembatalan.');
             return;
         }
-        const selectedOrderId = selectedOrder.id;
-
-        orders = orders.map(o => 
-            o.id === selectedOrderId
-                ? { 
-                    ...o, 
-                    status: 'cancelled' as const, 
-                    cancelledBy: 'cs', 
-                    cancellationReason: cancellationReason 
-                  } 
-                : o
-        );
-
-        alert(`Pesanan #${selectedOrderId} telah dibatalkan.`);
-        closeModal();
-        activeTab = 'BATAL';
+        isActionLoading = true;
+        try {
+            const response = await fetch(`/api/orders/${encodeURIComponent(selectedOrder.id)}/status`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'cancelled' })
+            });
+            if (!response.ok) throw new Error('Gagal membatalkan pesanan.');
+            
+            alert(`Pesanan #${selectedOrder.id} telah dibatalkan.`);
+            await loadOrders();
+            closeModal();
+            activeTab = 'BATAL';
+        } catch (e: any) {
+            alert(e.message);
+        } finally {
+            isActionLoading = false;
+        }
     }
 
     function confirmCompletionByCs() {
@@ -527,10 +513,27 @@
                 </div>
             {/if}
         </div>
-
+        
         <!-- Orders List -->
         <div class="min-h-[500px] pt-4">
-            {#if filteredOrders.length > 0}
+            {#if loading}
+                <div class="flex flex-col items-center justify-center py-32 space-y-4" in:fade>
+                    <div class="w-12 h-12 border-4 border-brand-primary border-t-transparent rounded-full animate-spin"></div>
+                    <p class="text-zinc-500 font-bold uppercase tracking-widest text-[10px]">Memuat data pesanan...</p>
+                </div>
+            {:else if error}
+                <div class="bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/20 p-20 rounded-[3.5rem] text-center space-y-6" in:fade>
+                    <span class="text-5xl block">⚠️</span>
+                    <h3 class="text-2xl font-black text-red-700 dark:text-red-400 italic">Gagal Memuat Data</h3>
+                    <p class="text-zinc-500 font-medium">{error}</p>
+                    <button 
+                        onclick={loadOrders}
+                        class="px-10 py-4 bg-brand-charcoal text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:scale-105 transition-all"
+                    >
+                        Coba Lagi
+                    </button>
+                </div>
+            {:else if filteredOrders.length > 0}
                 <div class="bg-white dark:bg-zinc-900 rounded-[3rem] border border-zinc-100 dark:border-zinc-800 shadow-sm overflow-hidden" in:fade>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse min-w-[1100px]">
@@ -549,7 +552,7 @@
                                     <tr class="hover:bg-zinc-50/30 dark:hover:bg-zinc-800/20 transition-all group">
                                         <td class="px-10 py-8">
                                             <div class="flex flex-col">
-                                                <span class="text-base font-black text-brand-charcoal dark:text-white group-hover:text-brand-primary transition-colors italic">#{order.id}</span>
+                                                <span class="text-sm font-black text-brand-charcoal dark:text-white group-hover:text-brand-primary transition-colors italic truncate max-w-[150px]" title={order.id}>#{order.id.split('-')[0]}...</span>
                                                 <span class="text-sm font-bold text-zinc-400">{order.customerName}</span>
                                             </div>
                                         </td>
@@ -577,46 +580,17 @@
                                                          {order.paymentStatus === 'paid' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 
                                                           order.paymentStatus === 'waiting_verification' ? 'bg-amber-50 text-amber-600 border border-amber-100 animate-pulse' : 
                                                           'bg-zinc-50 text-zinc-400 border border-zinc-100'}">
-                                                         {order.paymentStatus === 'waiting_verification' ? 'Verifikasi Pembayaran' : order.paymentStatus}
+                                                         {order.paymentStatus === 'waiting_verification' ? 'Verifikasi Bayar' : 
+                                                          order.paymentStatus === 'cod_pending' ? 'COD' : order.paymentStatus}
                                                      </span>
-                                                     {#if getLatestProof(order)}
-                                                         <div class="w-6 h-8 bg-zinc-100 rounded-md overflow-hidden border border-zinc-200">
-                                                             <img src={getLatestProof(order)?.imageUrl} alt="Proof" class="w-full h-full object-cover" />
-                                                         </div>
-                                                     {/if}
                                                  </div>
                                                  
                                                  {#if order.status !== 'new' && order.status !== 'cancelled'}
                                                      <div class="flex flex-wrap gap-1">
-                                                         {#if !order.completedConfirmedByCs && !order.completedConfirmedByUser && !order.completedConfirmedByAdmin}
-                                                             <span class="px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-[9px] font-black uppercase rounded-md">Belum Selesai</span>
-                                                         {:else}
-                                                             {#if order.completedConfirmedByUser}
-                                                                 <span class="px-2 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-500 text-[9px] font-black uppercase rounded-md border border-blue-100 dark:border-blue-800/50">User ✓</span>
-                                                             {/if}
-                                                             {#if order.completedConfirmedByCs}
-                                                                 <span class="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-500 text-[9px] font-black uppercase rounded-md border border-emerald-100 dark:border-emerald-800/50">CS ✓</span>
-                                                             {/if}
-                                                             {#if order.completedConfirmedByAdmin}
-                                                                 <span class="px-2 py-0.5 bg-purple-50 dark:bg-purple-900/30 text-purple-500 text-[9px] font-black uppercase rounded-md border border-purple-100 dark:border-purple-800/50">Admin ✓</span>
-                                                             {/if}
-                                                         {/if}
+                                                         <span class="px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-[9px] font-black uppercase rounded-md border border-zinc-200/50 dark:border-zinc-700">Simulasi Konfirmasi</span>
                                                      </div>
                                                  {/if}
-
-                                                {#if order.status === 'cancelled'}
-                                                    <div class="flex flex-col gap-1">
-                                                        <span class="text-[9px] font-black uppercase text-zinc-400">
-                                                            Oleh: <span class={order.cancelledBy === 'cs' ? 'text-red-500' : 'text-blue-500'}>{order.cancelledBy === 'cs' ? 'CS' : 'User'}</span>
-                                                        </span>
-                                                        {#if order.cancellationReason}
-                                                            <span class="text-[10px] font-medium text-zinc-400 italic max-w-[150px] truncate" title={order.cancellationReason}>
-                                                                "{order.cancellationReason}"
-                                                            </span>
-                                                        {/if}
-                                                    </div>
-                                                {/if}
-                                            </div>
+                                             </div>
                                         </td>
                                         <td class="px-10 py-8 text-right">
                                             <button 
@@ -661,7 +635,6 @@
                         <button onclick={() => { activeTab = 'NEW'; resetHistoryFilter(); }} class="mt-10 px-10 py-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-zinc-200 transition-all">Lihat Pesanan Baru</button>
                     {/if}
                 </div>
-            {/if}
         </div>
     </div>
 </div>
@@ -807,7 +780,8 @@
                              selectedOrder.paymentStatus === 'partially_paid' ? 'bg-blue-100 text-blue-700' : 
                              selectedOrder.paymentStatus === 'waiting_verification' ? 'bg-amber-100 text-amber-700' : 
                              'bg-zinc-100 text-zinc-400'}">
-                            {selectedOrder.paymentStatus.replace('_', ' ')}
+                            {selectedOrder.paymentStatus === 'cod_pending' ? 'COD' : 
+                             selectedOrder.paymentStatus.replace('_', ' ').toUpperCase()}
                         </span>
                     </div>
                     <!-- Financial Summary -->
@@ -830,168 +804,58 @@
                         </div>
                     </div>
 
-                    {#if selectedOrder.paymentPlan === 'cod_full'}
-                        <!-- COD Confirmation UI -->
-                        <div class="bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30 p-8 rounded-[2.5rem] space-y-6">
+                <!-- Proof Section Simulation -->
+                <div class="space-y-6 mt-8">
+                    <h4 class="text-xs font-black uppercase tracking-widest text-zinc-400">Verifikasi Pembayaran</h4>
+                    
+                    {#if selectedOrder.paymentStatus === 'paid'}
+                        <div class="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900/30 p-8 rounded-[2.5rem] text-center space-y-3">
+                            <span class="text-4xl block">✅</span>
+                            <h5 class="text-lg font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-tighter italic">Pembayaran Lunas</h5>
+                            <p class="text-xs text-emerald-600/70 font-medium">Transaksi telah selesai diverifikasi.</p>
+                        </div>
+                    {:else if selectedOrder.paymentMethod === 'cod'}
+                        <div class="bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30 p-8 rounded-[2.5rem] space-y-4">
                             <div class="flex items-center gap-4">
                                 <span class="text-4xl">🚚</span>
                                 <div>
-                                    <h5 class="text-base font-black text-amber-700 dark:text-amber-400 uppercase tracking-tighter italic text-shadow-sm">Konfirmasi Koleksi COD</h5>
-                                    <p class="text-[9px] text-amber-600/70 font-bold uppercase tracking-widest italic">Pesanan dengan metode bayar di tempat</p>
+                                    <h5 class="text-base font-black text-amber-700 dark:text-amber-400 uppercase tracking-tighter italic">Mode COD Aktif</h5>
+                                    <p class="text-[9px] text-amber-600/70 font-bold uppercase tracking-widest">Bayar saat antar</p>
                                 </div>
                             </div>
-                            
-                            {#if selectedOrder.codCollection?.collectedAt}
-                                <div class="bg-emerald-50 dark:bg-emerald-900/20 p-6 rounded-3xl flex items-center gap-4 border border-emerald-100">
-                                    <div class="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center text-white text-xl">✓</div>
-                                    <div class="flex-1">
-                                        <p class="text-sm font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-tighter">Uang Diterima & Lunas</p>
-                                        <p class="text-[10px] text-zinc-500 font-medium">Dikonfirmasi oleh {selectedOrder.codCollection.collectedBy || '-'} • {selectedOrder.codCollection.collectedAt}</p>
-                                    </div>
-                                </div>
-                            {:else}
-                                <div class="space-y-4">
-                                    <p class="text-xs text-amber-700 dark:text-amber-500 font-medium leading-relaxed bg-white/50 dark:bg-black/20 p-5 rounded-2xl border-l-4 border-amber-400 italic">
-                                        Pastikan kurir telah menerima uang tunai atau customer telah menunjukkan bukti transfer di tempat sebesar <span class="font-black underline decoration-2">{formatPrice(selectedOrder.total)}</span>.
-                                    </p>
-                                    <button 
-                                        onclick={handleConfirmCod}
-                                        class="w-full py-5 bg-amber-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-amber-600 transition-all hover:scale-[1.01] active:scale-[0.99] shadow-amber-500/20"
-                                    >
-                                        Konfirmasi Uang COD Diterima
-                                    </button>
-                                </div>
-                            {/if}
+                            <button 
+                                onclick={handleConfirmCod}
+                                disabled={isActionLoading}
+                                class="w-full py-4 bg-brand-charcoal dark:bg-brand-primary text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:scale-105 transition-all disabled:opacity-50"
+                            >
+                                {isActionLoading ? 'Memproses...' : 'Konfirmasi Terima Tunai/COD'}
+                            </button>
                         </div>
-                    {/if}
-
-                    <!-- Payment Proof Timeline -->
-                    {#if selectedOrderProofHistory.length > 0}
-                        <div class="space-y-6">
-                            <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Timeline Bukti Transfer ({selectedOrderProofHistory.length})</p>
-                            <div class="grid grid-cols-1 gap-6">
-                                {#each selectedOrderProofHistory as proof}
-                                    <div class="bg-white dark:bg-zinc-900 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 overflow-hidden shadow-sm hover:shadow-lg transition-all">
-                                        <div class="flex flex-col md:flex-row">
-                                            <!-- Image -->
-                                            <div class="w-full md:w-56 aspect-[3/4] md:aspect-auto bg-zinc-50 dark:bg-zinc-800 relative group overflow-hidden">
-                                                <img src={proof.imageUrl} alt="Proof" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                                                <a href={proof.imageUrl} target="_blank" class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[10px] font-black uppercase tracking-widest">Perbesar Gambar ↗</a>
-                                            </div>
-
-                                            <!-- Content -->
-                                            <div class="flex-1 p-8 flex flex-col justify-between space-y-6">
-                                                <div class="space-y-6">
-                                                    <div class="flex justify-between items-start">
-                                                        <div class="space-y-2">
-                                                            <div class="flex items-center gap-2">
-                                                                <span class="px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest
-                                                                    {proof.stage === 'dp' ? 'bg-blue-100 text-blue-600' : 
-                                                                     proof.stage === 'remaining' ? 'bg-purple-100 text-purple-600' : 
-                                                                     'bg-zinc-100 text-zinc-600'}">
-                                                                    {proof.stage === 'dp' ? 'Uang Muka' : proof.stage === 'remaining' ? 'Pelunasan' : 'Penuh'}
-                                                                </span>
-                                                                {#if proof.status === 'verified'}
-                                                                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                                                                {/if}
-                                                            </div>
-                                                            <h5 class="text-2xl font-black italic tracking-tighter text-brand-charcoal dark:text-white">{formatPrice(proof.amount)}</h5>
-                                                        </div>
-                                                        <div class="text-right space-y-1">
-                                                            <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border
-                                                                {proof.status === 'verified' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 
-                                                                 proof.status === 'rejected' ? 'bg-red-50 text-red-600 border-red-100' : 
-                                                                 'bg-amber-50 text-amber-600 border-amber-100'}">
-                                                                {proof.status}
-                                                            </span>
-                                                            <p class="text-[9px] font-bold text-zinc-400 mt-1 uppercase tracking-widest">{proof.uploadedAt.split('T')[0]}</p>
-                                                        </div>
-                                                    </div>
-
-                                                    {#if proof.note}
-                                                        <div class="bg-zinc-50 dark:bg-zinc-800/50 p-4 rounded-2xl border-l-4 border-zinc-200">
-                                                            <p class="text-[8px] font-black text-zinc-400 uppercase tracking-widest mb-1">Catatan User</p>
-                                                            <p class="text-xs font-medium italic text-zinc-600 dark:text-zinc-400 leading-relaxed">"{proof.note}"</p>
-                                                        </div>
-                                                    {/if}
-
-                                                    {#if proof.status === 'verified'}
-                                                        <div class="bg-emerald-50/50 dark:bg-emerald-900/10 p-5 rounded-2xl border border-emerald-100 dark:border-emerald-900/20">
-                                                            <div class="flex items-center gap-3 mb-2">
-                                                                <div class="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center text-white text-[10px]">✓</div>
-                                                                <p class="text-[10px] font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-widest">Diverifikasi CS</p>
-                                                            </div>
-                                                            <p class="text-xs font-bold text-zinc-700 dark:text-zinc-300">Penanggung Jawab: {proof.verification?.verifiedBy || '-'}</p>
-                                                            {#if proof.verification?.note}
-                                                                <p class="text-xs text-zinc-500 italic mt-2 border-t border-emerald-100 pt-2">"{proof.verification.note}"</p>
-                                                            {/if}
-                                                        </div>
-                                                    {:else if proof.status === 'rejected'}
-                                                        <div class="bg-red-50/50 dark:bg-red-900/10 p-5 rounded-2xl border border-red-100 dark:border-red-900/20">
-                                                            <div class="flex items-center gap-3 mb-2">
-                                                                <div class="w-6 h-6 rounded-full bg-red-500 flex items-center justify-center text-white text-[10px]">✗</div>
-                                                                <p class="text-[10px] font-black text-red-700 dark:text-red-400 uppercase tracking-widest">Ditolak CS</p>
-                                                            </div>
-                                                            <p class="text-xs font-bold text-red-700 dark:text-red-400">Alasan: "{proof.rejectionReason}"</p>
-                                                            <p class="text-[9px] text-zinc-400 mt-2 font-medium italic">Diproses oleh {proof.rejectedBy} pada {proof.rejectedAt?.split('T')[0]}</p>
-                                                        </div>
-                                                    {/if}
-                                                </div>
-
-                                                <!-- Controls -->
-                                                {#if proof.status === 'uploaded'}
-                                                    <div class="pt-6 border-t border-zinc-100 dark:border-zinc-800 space-y-4">
-                                                        {#if !showRejectionReason}
-                                                            <div class="space-y-4">
-                                                                <textarea 
-                                                                    bind:value={verificationNote} 
-                                                                    placeholder="Catatan verifikasi nominal ini (opsional)..." 
-                                                                    class="w-full bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl text-xs font-medium p-5 focus:ring-2 focus:ring-emerald-500 shadow-inner" 
-                                                                    rows="2"
-                                                                ></textarea>
-                                                                <div class="flex gap-3">
-                                                                    <button 
-                                                                        onclick={() => showRejectionReason = true} 
-                                                                        class="flex-1 py-4 bg-white dark:bg-zinc-900 text-red-500 text-[10px] font-black uppercase rounded-2xl border border-red-100 hover:bg-red-50 transition-all shadow-sm"
-                                                                    >Tolak Bukti</button>
-                                                                    <button 
-                                                                        onclick={() => handleVerifyPayment(proof.id)} 
-                                                                        class="flex-[2] py-4 bg-emerald-500 text-white text-[10px] font-black uppercase rounded-2xl shadow-xl hover:bg-emerald-600 transition-all hover:scale-[1.01] active:scale-[0.99] shadow-emerald-500/20"
-                                                                    >Validasi Transaksi</button>
-                                                                </div>
-                                                            </div>
-                                                        {:else}
-                                                            <div class="space-y-4" in:fade>
-                                                                <p class="text-[9px] font-black text-red-500 uppercase tracking-widest">Alasan Penolakan Wajib Diisi</p>
-                                                                <textarea 
-                                                                    bind:value={rejectionReason} 
-                                                                    placeholder="Jelaskan mengapa bukti ini tidak valid (misal: nominal tidak sesuai, gambar tidak terbaca)..." 
-                                                                    class="w-full bg-white dark:bg-zinc-900 border-2 border-red-100 rounded-2xl text-xs font-medium p-5 focus:ring-2 focus:ring-red-500 shadow-inner" 
-                                                                    rows="3"
-                                                                ></textarea>
-                                                                <div class="flex gap-3">
-                                                                    <button onclick={() => showRejectionReason = false} class="px-6 py-4 text-[10px] font-black uppercase text-zinc-400 hover:text-zinc-600 transition-all">Batal</button>
-                                                                    <button 
-                                                                        onclick={() => handleRejectPayment(proof.id)} 
-                                                                        class="flex-1 py-4 bg-red-600 text-white text-[10px] font-black uppercase rounded-2xl shadow-xl hover:bg-red-700 transition-all shadow-red-600/20"
-                                                                    >Konfirmasi Tolak Bukti</button>
-                                                                </div>
-                                                            </div>
-                                                        {/if}
-                                                    </div>
-                                                {/if}
-                                            </div>
-                                        </div>
-                                    </div>
-                                {/each}
+                    {:else}
+                        <div class="bg-zinc-50 dark:bg-zinc-800 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 space-y-6">
+                            <div class="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-700 pb-4">
+                                <div>
+                                    <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Metode</p>
+                                    <p class="text-sm font-black text-brand-charcoal dark:text-white uppercase italic">{selectedOrder.paymentMethod}</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Sisa</p>
+                                    <p class="text-sm font-black text-brand-primary italic">{formatPrice(selectedOrderPaymentBreakdown?.remainingAmount ?? selectedOrder.total)}</p>
+                                </div>
                             </div>
-                        </div>
-                    {:else if selectedOrder.paymentStatus !== 'paid' && selectedOrder.paymentPlan !== 'cod_full'}
-                        <div class="py-20 bg-zinc-50 dark:bg-zinc-800/50 rounded-[3rem] border-2 border-dashed border-zinc-200 dark:border-zinc-800 text-center space-y-4">
-                            <span class="text-5xl block grayscale opacity-20">📥</span>
-                            <div class="space-y-1">
-                                <p class="text-sm font-black text-zinc-400 uppercase tracking-tighter">Menunggu Upload User</p>
-                                <p class="text-[10px] text-zinc-400 font-medium">Customer belum mengunggah bukti pembayaran apa pun.</p>
+
+                            <div class="space-y-4">
+                                <p class="text-[9px] font-black text-blue-500 uppercase tracking-widest text-center bg-blue-50 dark:bg-blue-900/20 py-2 rounded-lg">Verifikasi Proof Simulation Mode</p>
+                                <div class="bg-white dark:bg-zinc-900 p-6 rounded-2xl border-2 border-dashed border-zinc-100 dark:border-zinc-800 text-center">
+                                    <p class="text-[10px] font-black text-zinc-300 uppercase tracking-widest">No Proof Available in DB yet</p>
+                                </div>
+                                <button 
+                                    onclick={() => handleVerifyPayment()}
+                                    disabled={isActionLoading}
+                                    class="w-full py-4 bg-brand-charcoal dark:bg-brand-primary text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:scale-105 transition-all disabled:opacity-50"
+                                >
+                                    {isActionLoading ? 'Memproses...' : 'Tandai Lunas Manual (Local)'}
+                                </button>
                             </div>
                         </div>
                     {/if}
@@ -1027,28 +891,64 @@
                     {#if !showCancelReason}
                         <button 
                             onclick={() => showCancelReason = true}
-                            class="flex-1 py-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-red-500 text-[11px] font-black uppercase tracking-widest rounded-2xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
+                            disabled={isActionLoading}
+                            class="flex-1 py-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-red-500 text-[11px] font-black uppercase tracking-widest rounded-2xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-all disabled:opacity-50"
                         >
                             Batalkan
                         </button>
                         <button 
                             onclick={handleConfirm}
-                            class="flex-[2] py-4 bg-brand-charcoal dark:bg-brand-primary text-white text-[11px] font-black uppercase tracking-widest rounded-2xl shadow-xl hover:scale-105 active:scale-95 transition-all"
+                            disabled={isActionLoading}
+                            class="flex-[2] py-4 bg-brand-charcoal dark:bg-brand-primary text-white text-[11px] font-black uppercase tracking-widest rounded-2xl shadow-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
                         >
-                            Konfirmasi Pesanan
+                            {isActionLoading ? 'Memproses...' : 'Konfirmasi Pesanan'}
                         </button>
                     {:else}
                         <button 
                             onclick={() => showCancelReason = false}
-                            class="px-8 py-4 text-zinc-400 text-[11px] font-black uppercase tracking-widest"
+                            disabled={isActionLoading}
+                            class="px-8 py-4 text-zinc-400 text-[11px] font-black uppercase tracking-widest disabled:opacity-50"
                         >
                             Kembali
                         </button>
                         <button 
                             onclick={handleCancel}
-                            class="flex-1 py-4 bg-red-600 text-white text-[11px] font-black uppercase tracking-widest rounded-2xl shadow-xl hover:scale-105 active:scale-95 transition-all"
+                            disabled={isActionLoading}
+                            class="flex-1 py-4 bg-red-600 text-white text-[11px] font-black uppercase tracking-widest rounded-2xl shadow-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
                         >
-                            Konfirmasi Pembatalan
+                            {isActionLoading ? 'Memproses...' : 'Konfirmasi Pembatalan'}
+                        </button>
+                    {/if}
+                {:else if selectedOrder.status !== 'cancelled' && selectedOrder.status !== 'completed'}
+                    {#if !showCancelReason}
+                        <button 
+                            onclick={() => showCancelReason = true}
+                            disabled={isActionLoading}
+                            class="flex-1 py-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-red-500 text-[11px] font-black uppercase tracking-widest rounded-2xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-all disabled:opacity-50"
+                        >
+                            Batalkan Pesanan
+                        </button>
+                        <button 
+                            onclick={closeModal}
+                            disabled={isActionLoading}
+                            class="flex-[2] py-4 bg-brand-charcoal dark:bg-white text-white dark:text-brand-charcoal text-[11px] font-black uppercase tracking-widest rounded-2xl transition-all disabled:opacity-50"
+                        >
+                            Tutup
+                        </button>
+                    {:else}
+                         <button 
+                            onclick={() => showCancelReason = false}
+                            disabled={isActionLoading}
+                            class="px-8 py-4 text-zinc-400 text-[11px] font-black uppercase tracking-widest disabled:opacity-50"
+                        >
+                            Kembali
+                        </button>
+                        <button 
+                            onclick={handleCancel}
+                            disabled={isActionLoading}
+                            class="flex-1 py-4 bg-red-600 text-white text-[11px] font-black uppercase tracking-widest rounded-2xl shadow-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+                        >
+                            {isActionLoading ? 'Memproses...' : 'Konfirmasi Pembatalan'}
                         </button>
                     {/if}
                 {:else}
