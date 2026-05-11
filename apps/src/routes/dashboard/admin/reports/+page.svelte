@@ -294,14 +294,16 @@
 <div class="space-y-10">
     <header class="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-            <h1 class="text-4xl font-black text-brand-charcoal dark:text-white tracking-tighter italic uppercase">Laporan <span class="text-brand-primary">Bisnis</span> 📈</h1>
-            <p class="text-zinc-500 font-medium mt-1">Pantau penjualan, pesanan, customer, produk, dan keuangan Tien’s Catering.</p>
-            <div class="flex items-center gap-2 mt-3">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <p class="text-[11px] font-black text-amber-700 dark:text-amber-300 uppercase tracking-wider italic">
-                    {reportsSourceLabel}
-                </p>
+            <div class="flex flex-wrap gap-2 mb-4">
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-full border border-blue-100 dark:border-blue-900/30">
+                    <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                    <span class="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest">Local SQLite Database Simulation</span>
+                </div>
             </div>
+            <h1 class="text-4xl font-black text-brand-charcoal dark:text-white tracking-tighter italic uppercase">Laporan Bisnis 📈</h1>
+            <p class="text-zinc-500 font-medium mt-1">
+                Monitoring performa bisnis berdasarkan data transaksi lokal. Analisa tren menggunakan data simulasi untuk melengkapi visibilitas operasional.
+            </p>
         </div>
         <div class="flex gap-3">
             <button

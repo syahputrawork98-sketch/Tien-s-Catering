@@ -383,15 +383,21 @@
 
 <div class="space-y-10 pb-24">
 	<header in:fly={{ y: -20, duration: 500 }}>
-		<div class="inline-flex items-center gap-2 px-4 py-1.5 bg-brand-primary/5 rounded-full mb-4">
-			<span class="w-2 h-2 rounded-full bg-brand-primary animate-pulse"></span>
-			<span class="text-[10px] font-black text-brand-primary uppercase tracking-widest">Operasional Request Paket</span>
+		<div class="flex flex-wrap gap-2 mb-4">
+			<div class="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-full border border-blue-100 dark:border-blue-900/30">
+				<span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+				<span class="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest">Local SQLite Database Simulation</span>
+			</div>
+			<div class="inline-flex items-center gap-2 px-4 py-1.5 bg-brand-primary/5 rounded-full border border-brand-primary/10">
+				<span class="w-2 h-2 rounded-full bg-brand-primary"></span>
+				<span class="text-[10px] font-black text-brand-primary uppercase tracking-widest">Conversion Flow Hold</span>
+			</div>
 		</div>
 		<h1 class="text-4xl lg:text-5xl font-black text-brand-charcoal dark:text-white tracking-tighter italic uppercase">
-			Package Requests Admin
+			Package Requests 🍱
 		</h1>
-	<p class="text-zinc-500 font-medium mt-2 max-w-2xl">
-			Review permintaan paket catering dari pelanggan. Kelola estimasi harga dan berikan catatan review untuk proses penawaran selanjutnya.
+		<p class="text-zinc-500 font-medium mt-2 max-w-2xl">
+			Review dan kelola permintaan paket katering dari database lokal. Berikan estimasi harga dan catatan penawaran untuk memandu pelanggan menuju kesepakatan final.
 		</p>
 	</header>
 

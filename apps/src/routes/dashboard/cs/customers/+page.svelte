@@ -367,6 +367,9 @@
                                                     {customer.registrationStatus === 'pending' ? 'Konfirmasi' : 'Manage'}
                                                 </button>
                                             </div>
+                                            <p class="text-[7px] font-black text-zinc-300 uppercase tracking-tighter mt-2 italic opacity-60">
+                                                CRM Write Hold
+                                            </p>
                                         </td>
                                     </tr>
                                 {/each}

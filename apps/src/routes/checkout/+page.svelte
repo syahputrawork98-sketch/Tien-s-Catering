@@ -355,7 +355,7 @@
 							<label
 								for="checkout-payment-method"
 								class="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1"
-								>Metode Pembayaran</label
+								>Metode Pembayaran (Simulasi)</label
 							>
 							<select
 								id="checkout-payment-method"
@@ -363,11 +363,14 @@
 								required
 								class="w-full px-6 py-4 bg-zinc-50 border border-zinc-100 rounded-2xl focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all font-bold text-brand-charcoal"
 							>
-								<option value="cash">Cash</option>
-								<option value="transfer">Transfer</option>
-								<option value="qris">QRIS</option>
-								<option value="cod">COD</option>
+								<option value="cash">Cash (Simulation)</option>
+								<option value="transfer">Transfer (Simulation)</option>
+								<option value="qris">QRIS (Simulation)</option>
+								<option value="cod">COD (Simulation)</option>
 							</select>
+							<p class="text-[9px] font-bold text-zinc-400 mt-2 ml-1 italic">
+								* Tidak ada integrasi payment gateway pada versi demo ini.
+							</p>
 						</div>
 
 						<div>
@@ -441,7 +444,10 @@
 
 			<div class="lg:col-span-1">
 				<div class="bg-brand-charcoal rounded-[3rem] p-10 text-white sticky top-10 shadow-2xl shadow-brand-charcoal/40">
-					<h2 class="text-2xl font-black mb-10 uppercase tracking-tighter italic">Billing Info</h2>
+					<div class="flex justify-between items-start mb-10">
+						<h2 class="text-2xl font-black uppercase tracking-tighter italic">Billing Info</h2>
+						<span class="px-3 py-1 bg-white/10 rounded-full text-[8px] font-black text-brand-primary uppercase tracking-widest border border-white/5">Local Demo</span>
+					</div>
 
 					<div class="space-y-6 mb-10">
 						<div class="flex justify-between items-center text-zinc-400 text-sm font-medium">

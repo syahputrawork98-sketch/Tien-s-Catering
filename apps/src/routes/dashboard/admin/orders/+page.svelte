@@ -647,17 +647,19 @@
 <div class="space-y-10 pb-24 relative">
 	<header class="flex flex-col md:flex-row md:items-start justify-between gap-6" in:fly={{ y: -20, duration: 500 }}>
 		<div>
-			<div class="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-full mb-4">
-				<span class="w-2 h-2 rounded-full bg-blue-500"></span>
-				<span class="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest">Status Update Minimal Aktif</span>
+			<div class="flex flex-wrap gap-2 mb-4">
+				<div class="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-full border border-blue-100 dark:border-blue-900/30">
+					<span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+					<span class="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest">Local SQLite Database Simulation</span>
+				</div>
+				<div class="inline-flex items-center gap-2 px-4 py-1.5 bg-amber-50 dark:bg-amber-900/20 rounded-full border border-amber-100 dark:border-amber-900/30">
+					<span class="w-2 h-2 rounded-full bg-amber-500"></span>
+					<span class="text-[10px] font-black text-amber-700 dark:text-amber-300 uppercase tracking-widest">Payment & Invoice Hold</span>
+				</div>
 			</div>
-			<div class="inline-flex items-center gap-2 px-4 py-1.5 bg-amber-50 dark:bg-amber-900/20 rounded-full mb-4">
-				<span class="w-2 h-2 rounded-full bg-amber-500"></span>
-				<span class="text-[10px] font-black text-amber-700 dark:text-amber-300 uppercase tracking-widest">Payment Gateway/Proof Hold</span>
-			</div>
-			<h1 class="text-4xl lg:text-5xl font-black text-brand-charcoal dark:text-white tracking-tighter italic">Manajemen Pesanan Admin</h1>
-			<p class="text-zinc-500 font-medium mt-2">
-				Data order dibaca dari database lokal. Status order + transaksi stok aktif, payment masih manual tanpa gateway/upload bukti.
+			<h1 class="text-4xl lg:text-5xl font-black text-brand-charcoal dark:text-white tracking-tighter italic uppercase">Manajemen Pesanan 📦</h1>
+			<p class="text-zinc-500 font-medium mt-2 max-w-3xl">
+				Data pesanan dikelola secara riil melalui database lokal. Status alur kerja dan mutasi stok telah aktif, sementara modul pembayaran otomatis tetap berada dalam fase simulasi operasional.
 			</p>
 		</div>
 	</header>
