@@ -1,6 +1,8 @@
 <script lang="ts">
     import { fade, fly, scale } from 'svelte/transition';
     import { onMount } from 'svelte';
+    import type { MockCsOrder } from '$lib/mock/cs';
+    import type { MockPaymentBreakdown, MockPaymentProof } from '$lib/mock/orders';
 
     function formatPrice(val: number) {
 		return new Intl.NumberFormat('id-ID', {
@@ -9,6 +11,32 @@
 			minimumFractionDigits: 0
 		}).format(val);
 	}
+    
+    function getPaymentStatusClass(status: string, isDetailed = false) {
+        if (isDetailed) {
+            switch (status) {
+                case 'paid': return 'bg-emerald-100 text-emerald-700';
+                case 'partially_paid': return 'bg-blue-100 text-blue-700';
+                case 'waiting_verification': return 'bg-amber-100 text-amber-700';
+                case 'cod_pending': return 'bg-zinc-100 text-zinc-400';
+                default: return 'bg-zinc-100 text-zinc-400';
+            }
+        } else {
+            switch (status) {
+                case 'paid': return 'bg-emerald-50 text-emerald-600 border border-emerald-100';
+                case 'waiting_verification': return 'bg-amber-50 text-amber-600 border border-amber-100 animate-pulse';
+                case 'cod_pending': return 'bg-zinc-50 text-zinc-400 border border-zinc-100';
+                default: return 'bg-zinc-50 text-zinc-400 border border-zinc-100';
+            }
+        }
+    }
+
+    function getPaymentStatusText(status: string) {
+        if (!status) return '-';
+        if (status === 'cod_pending') return 'COD';
+        if (status === 'waiting_verification') return 'VERIFIKASI BAYAR';
+        return status.replace('_', ' ').toUpperCase();
+    }
 
     type TabType = 'NEW' | 'VERIFIKASI' | 'PROSES' | 'SELESAI' | 'BATAL' | 'HISTORY' | 'LUNAS' | 'BELUM_BAYAR';
     
@@ -77,7 +105,7 @@
             order.address,
             order.notes,
             order.cancellationReason,
-            ...order.items.map((item) => item.name)
+            ...order.items.map((item: any) => item.name)
         ];
 
         return searchableValues
@@ -576,12 +604,8 @@
                                                  </span>
 
                                                  <div class="flex items-center gap-2">
-                                                     <span class="px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-widest
-                                                         {order.paymentStatus === 'paid' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 
-                                                          order.paymentStatus === 'waiting_verification' ? 'bg-amber-50 text-amber-600 border border-amber-100 animate-pulse' : 
-                                                          'bg-zinc-50 text-zinc-400 border border-zinc-100'}">
-                                                         {order.paymentStatus === 'waiting_verification' ? 'Verifikasi Bayar' : 
-                                                          order.paymentStatus === 'cod_pending' ? 'COD' : order.paymentStatus}
+                                                     <span class="px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-widest {getPaymentStatusClass(order.paymentStatus, false)}">
+                                                         {getPaymentStatusText(order.paymentStatus)}
                                                      </span>
                                                  </div>
                                                  
@@ -635,6 +659,7 @@
                         <button onclick={() => { activeTab = 'NEW'; resetHistoryFilter(); }} class="mt-10 px-10 py-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-zinc-200 transition-all">Lihat Pesanan Baru</button>
                     {/if}
                 </div>
+            {/if}
         </div>
     </div>
 </div>
@@ -775,13 +800,8 @@
                 <div class="mt-12 pt-12 border-t border-zinc-100 dark:border-zinc-800 space-y-8">
                     <div class="flex items-center justify-between">
                         <h4 class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Orkestrasi Pembayaran</h4>
-                        <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase
-                            {selectedOrder.paymentStatus === 'paid' ? 'bg-emerald-100 text-emerald-700' : 
-                             selectedOrder.paymentStatus === 'partially_paid' ? 'bg-blue-100 text-blue-700' : 
-                             selectedOrder.paymentStatus === 'waiting_verification' ? 'bg-amber-100 text-amber-700' : 
-                             'bg-zinc-100 text-zinc-400'}">
-                            {selectedOrder.paymentStatus === 'cod_pending' ? 'COD' : 
-                             selectedOrder.paymentStatus.replace('_', ' ').toUpperCase()}
+                        <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase {getPaymentStatusClass(selectedOrder.paymentStatus, true)}">
+                            {getPaymentStatusText(selectedOrder.paymentStatus)}
                         </span>
                     </div>
                     <!-- Financial Summary -->
@@ -803,6 +823,7 @@
                             <p class="text-xs font-black text-amber-600 italic">{formatPrice(selectedOrderPaymentBreakdown?.remainingAmount ?? selectedOrder.total)}</p>
                         </div>
                     </div>
+                </div>
 
                 <!-- Proof Section Simulation -->
                 <div class="space-y-6 mt-8">
@@ -814,7 +835,7 @@
                             <h5 class="text-lg font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-tighter italic">Pembayaran Lunas</h5>
                             <p class="text-xs text-emerald-600/70 font-medium">Transaksi telah selesai diverifikasi.</p>
                         </div>
-                    {:else if selectedOrder.paymentMethod === 'cod'}
+                    {:else if selectedOrder.paymentMethod === 'cod_cash' || selectedOrder.paymentMethod === 'cod_transfer'}
                         <div class="bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30 p-8 rounded-[2.5rem] space-y-4">
                             <div class="flex items-center gap-4">
                                 <span class="text-4xl">🚚</span>
