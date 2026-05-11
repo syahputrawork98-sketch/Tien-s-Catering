@@ -286,8 +286,8 @@
 
 			<footer class="text-center space-y-4 pt-10 border-t border-zinc-50 dark:border-zinc-800">
 				<div class="inline-flex items-center gap-3 px-6 py-2 bg-zinc-50 dark:bg-zinc-800/50 rounded-full border border-zinc-100 dark:border-zinc-700">
-					<span class="w-1.5 h-1.5 rounded-full bg-zinc-300"></span>
-					<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest italic">Simulasi Local-Development: Profil & Alamat tetap statis (Hold)</p>
+					<span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+					<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest italic">Simulasi Lokal Aktif: Kelola Profil & Alamat Anda di menu terkait (Demo Mode)</p>
 				</div>
 			</footer>
 		</div>
