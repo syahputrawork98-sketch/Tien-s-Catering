@@ -45,6 +45,9 @@
 
     function confirmPaymentPlan() {
         if (!selectedOrder || !selectedPlan) return;
+
+        const plan = selectedPlan;
+        const method = selectedMethod;
         
         orders = orders.map(o => {
             if (o.id === selectedOrder.id) {
@@ -52,18 +55,18 @@
                     totalAmount: o.total,
                     paidAmount: 0,
                     remainingAmount: o.total,
-                    dpRequired: selectedPlan === 'dp_then_remaining',
-                    dpPercent: selectedPlan === 'dp_then_remaining' ? 30 : undefined,
-                    dpAmount: selectedPlan === 'dp_then_remaining' ? Math.round(o.total * 0.3) : undefined
+                    dpRequired: plan === 'dp_then_remaining',
+                    dpPercent: plan === 'dp_then_remaining' ? 30 : undefined,
+                    dpAmount: plan === 'dp_then_remaining' ? Math.round(o.total * 0.3) : undefined
                 };
                 
                 return {
                     ...o,
-                    paymentPlan: selectedPlan,
-                    paymentMethod: selectedMethod || (selectedPlan === 'cod_full' ? 'cod_cash' : 'bank_transfer'),
-                    paymentStatus: selectedPlan === 'cod_full' ? 'cod_pending' : 'unpaid',
+                    paymentPlan: plan,
+                    paymentMethod: method || (plan === 'cod_full' ? 'cod_cash' : 'bank_transfer'),
+                    paymentStatus: plan === 'cod_full' ? 'cod_pending' : 'unpaid',
                     paymentBreakdown: breakdown,
-                    codCollection: selectedPlan === 'cod_full' ? { expectedAmount: o.total } : undefined
+                    codCollection: plan === 'cod_full' ? { expectedAmount: o.total } : undefined
                 };
             }
             return o;
@@ -465,4 +468,3 @@
         </div>
     {/if}
 </Modal>
-
