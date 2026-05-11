@@ -14,6 +14,18 @@
     const TODAY = '2026-05-06';
     
     type TabType = 'TODAY' | 'HISTORY';
+    type MenuFormStatus = 'available' | 'sold_out' | 'draft';
+    type MenuForm = {
+        id: string;
+        name: string;
+        category: string;
+        price: number;
+        activeDate: string;
+        status: MenuFormStatus;
+        stockLabel: string;
+        description: string;
+        image: string;
+    };
     
     // Local state
     let menus = $state<MockCsMenu[]>([...mockCsMenus]);
@@ -26,7 +38,7 @@
     let showEditModal = $state(false);
     let selectedMenu = $state<MockCsMenu | null>(null);
 
-    let menuForm = $state({
+    let menuForm = $state<MenuForm>({
         id: '',
         name: '',
         category: '',
@@ -103,9 +115,9 @@
             name: menu.name,
             category: menu.category,
             price: menu.price,
-            activeDate: menu.activeDate,
+            activeDate: menu.activeDate ?? TODAY,
             status: menu.isAvailable ? 'available' : 'sold_out',
-            stockLabel: menu.stockLabel,
+            stockLabel: menu.stockLabel || (menu.isAvailable ? 'Tersedia' : 'Habis'),
             description: menu.description || '',
             image: menu.image || ''
         };
@@ -396,7 +408,12 @@
                 Tutup
             </button>
             <button 
-                onclick={() => handleEdit(selectedMenu!)}
+                onclick={() => {
+                    if (selectedMenu) {
+                        handleEdit(selectedMenu);
+                    }
+                }}
+                disabled={!selectedMenu}
                 class="px-10 py-4 bg-brand-charcoal dark:bg-brand-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 transition-all"
             >
                 Edit Menu

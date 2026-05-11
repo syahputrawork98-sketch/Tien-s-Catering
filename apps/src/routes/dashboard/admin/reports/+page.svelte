@@ -1,14 +1,18 @@
 <script lang="ts">
     import { mockAdminMetrics, mockAdminSalesReports } from '$lib/mock/reports';
-    import { mockOrders, getTotalRevenue } from '$lib/mock/orders';
+    import { mockOrders, getTotalRevenue, type MockOrderStatus } from '$lib/mock/orders';
     import { mockAccounts } from '$lib/mock/accounts';
     import { mockCatalogItems } from '$lib/mock/catalog';
     import { fade, fly } from 'svelte/transition';
 
+    type ReportTabId = 'overview' | 'sales' | 'orders' | 'customers' | 'products' | 'finance';
+    type PeriodFilter = 'today' | 'week' | 'month' | '3months' | 'year' | 'all';
+    type SummaryCard = { label: string; count: number; color: string };
+
     // State
-    let activeTab = $state<'overview' | 'sales' | 'orders' | 'customers' | 'products' | 'finance'>('overview');
+    let activeTab = $state<ReportTabId>('overview');
     let searchQuery = $state('');
-    let periodFilter = $state('month');
+    let periodFilter = $state<PeriodFilter>('month');
 
     // Helper: format rupiah
     function formatRupiah(value: number): string {
@@ -20,7 +24,7 @@
     }
 
     // Tab items configuration
-    const tabs = [
+    const tabs: ReadonlyArray<{ id: ReportTabId; label: string; icon: string }> = [
         { id: 'overview', label: 'Ringkasan', icon: '📊' },
         { id: 'sales', label: 'Penjualan', icon: '💰' },
         { id: 'orders', label: 'Pesanan', icon: '📦' },
@@ -60,6 +64,28 @@
             p.category.toLowerCase().includes(searchQuery.toLowerCase())
         )
     );
+
+    const orderSummaryCards = $derived<SummaryCard[]>([
+        { label: 'Pending', count: mockOrders.filter((o) => o.status === 'new').length, color: 'text-orange-500' },
+        { label: 'Processing', count: mockOrders.filter((o) => o.status === 'processing').length, color: 'text-blue-500' },
+        {
+            label: 'Completed',
+            count: mockOrders.filter((o) => o.status === 'completed' || o.status === 'delivered').length,
+            color: 'text-emerald-500'
+        },
+        { label: 'Cancelled', count: mockOrders.filter((o) => o.status === 'cancelled').length, color: 'text-red-500' }
+    ]);
+
+    function orderStatusBadgeClass(status: MockOrderStatus): string {
+        if (status === 'completed' || status === 'delivered') return 'bg-emerald-100 text-emerald-600';
+        if (status === 'new') return 'bg-orange-100 text-orange-600';
+        if (status === 'cancelled') return 'bg-red-100 text-red-600';
+        return 'bg-blue-100 text-blue-600';
+    }
+
+    function orderStatusLabel(status: MockOrderStatus): string {
+        return status === 'new' ? 'pending' : status;
+    }
 
     function handleExport() {
         alert(`Laporan ${activeTab.toUpperCase()} berhasil diekspor (Simulasi PDF/CSV).`);
@@ -129,7 +155,7 @@
     <div class="flex items-center gap-2 overflow-x-auto pb-4 no-scrollbar -mx-2 px-2">
         {#each tabs as tab}
             <button 
-                onclick={() => activeTab = tab.id as any}
+                onclick={() => activeTab = tab.id}
                 class="flex items-center gap-3 px-8 py-4 rounded-full font-black text-[10px] uppercase tracking-[0.2em] transition-all shrink-0
                     {activeTab === tab.id 
                         ? 'bg-brand-charcoal text-white shadow-xl shadow-brand-charcoal/20 scale-105' 
@@ -251,12 +277,7 @@
         {:else if activeTab === 'orders'}
             <!-- Tab: Pesanan -->
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                {#each [
-                    { label: 'Pending', count: mockOrders.filter(o => o.status === 'pending').length, color: 'text-orange-500' },
-                    { label: 'Processing', count: mockOrders.filter(o => o.status === 'processing').length, color: 'text-blue-500' },
-                    { label: 'Completed', count: mockOrders.filter(o => o.status === 'completed').length, color: 'text-emerald-500' },
-                    { label: 'Cancelled', count: mockOrders.filter(o => o.status === 'cancelled').length, color: 'text-red-500' }
-                ] as stat}
+                {#each orderSummaryCards as stat}
                     <div class="bg-white dark:bg-zinc-900 p-6 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 text-center">
                         <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">{stat.label}</p>
                         <p class="text-2xl font-black {stat.color} italic tracking-tighter">{stat.count}</p>
@@ -284,10 +305,8 @@
                                     <td class="px-8 py-6 text-xs text-zinc-500 font-bold italic">{order.deliveryDate}</td>
                                     <td class="px-8 py-6">
                                         <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest
-                                            {order.status === 'completed' ? 'bg-emerald-100 text-emerald-600' : 
-                                             order.status === 'pending' ? 'bg-orange-100 text-orange-600' : 
-                                             order.status === 'cancelled' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}">
-                                            {order.status}
+                                            {orderStatusBadgeClass(order.status)}">
+                                            {orderStatusLabel(order.status)}
                                         </span>
                                     </td>
                                     <td class="px-8 py-6 text-right font-black text-brand-charcoal dark:text-white">{formatRupiah(order.total)}</td>
