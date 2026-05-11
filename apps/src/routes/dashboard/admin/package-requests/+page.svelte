@@ -57,17 +57,17 @@
 	};
 
 	const reviewStatuses: Array<{ value: PackageRequestReviewStatus; label: string }> = [
-		{ value: 'new', label: 'Baru' },
+		{ value: 'new', label: 'Menunggu Review' },
 		{ value: 'reviewing', label: 'Sedang Ditinjau' },
-		{ value: 'quoted', label: 'Sudah Diquote' },
-		{ value: 'rejected', label: 'Ditolak' },
+		{ value: 'quoted', label: 'Penawaran Diberikan' },
+		{ value: 'rejected', label: 'Dibatalkan/Ditolak' },
 		{ value: 'cancelled', label: 'Dibatalkan' }
 	];
 	const requestStatusFilters: Array<{ value: PackageRequestFilterStatus; label: string }> = [
-		{ value: 'all', label: 'Semua' },
-		{ value: 'new', label: 'Baru' },
+		{ value: 'all', label: 'Semua Status' },
+		{ value: 'new', label: 'Menunggu Review' },
 		{ value: 'reviewing', label: 'Sedang Ditinjau' },
-		{ value: 'quoted', label: 'Sudah Diquote' },
+		{ value: 'quoted', label: 'Penawaran Diberikan' },
 		{ value: 'rejected', label: 'Ditolak' },
 		{ value: 'cancelled', label: 'Dibatalkan' }
 	];
@@ -215,12 +215,12 @@
 
 	function statusLabel(status: PackageRequestStatus): string {
 		const labels: Record<PackageRequestStatus, string> = {
-			new: 'Baru',
+			new: 'Menunggu Review',
 			reviewing: 'Sedang Ditinjau',
-			quoted: 'Sudah Diquote',
-			rejected: 'Ditolak',
+			quoted: 'Penawaran Diberikan',
+			rejected: 'Dibatalkan/Ditolak',
 			cancelled: 'Dibatalkan',
-			converted_to_order: 'Dikonversi ke Order'
+			converted_to_order: 'Sudah Menjadi Order'
 		};
 
 		return labels[status];
@@ -228,12 +228,12 @@
 
 	function statusColor(status: PackageRequestStatus): string {
 		const colors: Record<PackageRequestStatus, string> = {
-			new: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-			reviewing: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
-			quoted: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
-			rejected: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
-			cancelled: 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300',
-			converted_to_order: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+			new: 'bg-blue-50 text-blue-600 border border-blue-100',
+			reviewing: 'bg-amber-50 text-amber-600 border border-amber-100',
+			quoted: 'bg-indigo-50 text-indigo-600 border border-indigo-100',
+			rejected: 'bg-red-50 text-red-600 border border-red-100',
+			cancelled: 'bg-zinc-50 text-zinc-400 border border-zinc-100',
+			converted_to_order: 'bg-emerald-50 text-emerald-600 border border-emerald-100'
 		};
 
 		return colors[status];
@@ -304,7 +304,8 @@
 
 			requests = body.items
 				.map((item) => normalizeRequest(item))
-				.filter((item): item is AdminPackageRequest => item !== null);
+				.filter((item): item is AdminPackageRequest => item !== null)
+				.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
 			reviewDraftById = requests.reduce<Record<string, ReviewDraft>>((acc, request) => {
 				acc[request.id] = {
@@ -382,73 +383,82 @@
 
 <div class="space-y-10 pb-24">
 	<header in:fly={{ y: -20, duration: 500 }}>
-		<div class="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-full mb-4">
-			<span class="w-2 h-2 rounded-full bg-blue-500"></span>
-			<span class="text-[10px] font-black text-blue-600 dark:text-blue-300 uppercase tracking-widest">Read-only Request Paket</span>
+		<div class="inline-flex items-center gap-2 px-4 py-1.5 bg-brand-primary/5 rounded-full mb-4">
+			<span class="w-2 h-2 rounded-full bg-brand-primary animate-pulse"></span>
+			<span class="text-[10px] font-black text-brand-primary uppercase tracking-widest">Operasional Request Paket</span>
 		</div>
-		<h1 class="text-4xl lg:text-5xl font-black text-brand-charcoal dark:text-white tracking-tighter italic">
+		<h1 class="text-4xl lg:text-5xl font-black text-brand-charcoal dark:text-white tracking-tighter italic uppercase">
 			Package Requests Admin
 		</h1>
-	<p class="text-zinc-500 font-medium mt-2">
-			Review request paket minimal aktif. Convert ke order/payment/invoice tetap Hold.
+	<p class="text-zinc-500 font-medium mt-2 max-w-2xl">
+			Review permintaan paket catering dari pelanggan. Kelola estimasi harga dan berikan catatan review untuk proses penawaran selanjutnya.
 		</p>
 	</header>
 
 	{#if reviewError}
-		<div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/40 rounded-2xl p-4" in:fade>
-			<p class="text-xs font-bold text-red-700 dark:text-red-300">{reviewError}</p>
+		<div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/40 rounded-2xl p-6 shadow-sm" in:fade>
+			<div class="flex items-center gap-3">
+				<span class="text-xl">⚠️</span>
+				<p class="text-sm font-bold text-red-700 dark:text-red-300">{reviewError}</p>
+			</div>
 		</div>
 	{/if}
 
 	{#if reviewSuccess}
-		<div class="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-900/40 rounded-2xl p-4" in:fade>
-			<p class="text-xs font-bold text-emerald-700 dark:text-emerald-300">{reviewSuccess}</p>
+		<div class="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-900/40 rounded-2xl p-6 shadow-sm" in:fade>
+			<div class="flex items-center gap-3">
+				<span class="text-xl">✅</span>
+				<p class="text-sm font-bold text-emerald-700 dark:text-emerald-300">{reviewSuccess}</p>
+			</div>
 		</div>
 	{/if}
 
 	{#if loading}
-		<div class="bg-white dark:bg-zinc-900 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 p-10 shadow-sm" in:fade>
-			<p class="text-sm font-bold text-zinc-500">Memuat request paket dari database...</p>
+		<div class="bg-white dark:bg-zinc-900 rounded-[3rem] border border-zinc-100 dark:border-zinc-800 p-20 text-center shadow-sm" in:fade>
+			<div class="w-12 h-12 border-4 border-brand-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+			<p class="text-sm font-bold text-zinc-500 uppercase tracking-widest">Sinkronisasi Database...</p>
 		</div>
 	{:else if error}
-		<div class="bg-white dark:bg-zinc-900 rounded-[2.5rem] border border-red-100 dark:border-red-900/30 p-10 shadow-sm" in:fade>
-			<p class="text-sm font-bold text-red-600 dark:text-red-400">{error}</p>
+		<div class="bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 rounded-[3rem] p-16 text-center shadow-sm" in:fade>
+			<p class="text-sm font-bold text-red-600 dark:text-red-400 mb-6">{error}</p>
 			<button
 				type="button"
 				onclick={loadPackageRequests}
-				class="mt-6 px-6 py-3 rounded-xl bg-brand-charcoal text-white text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-colors"
+				class="px-8 py-4 rounded-2xl bg-brand-charcoal text-white text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-all shadow-xl"
 			>
-				Coba Muat Ulang
+				Muat Ulang Data
 			</button>
 		</div>
 	{:else if requests.length === 0}
-		<div class="bg-white dark:bg-zinc-900 rounded-[2.5rem] border border-dashed border-zinc-200 dark:border-zinc-800 p-16 text-center" in:fade>
-			<p class="text-2xl font-black text-zinc-300 dark:text-zinc-700">Belum ada request paket</p>
+		<div class="bg-white dark:bg-zinc-900 rounded-[3rem] border border-dashed border-zinc-200 dark:border-zinc-800 p-24 text-center" in:fade>
+			<div class="text-5xl mb-6 opacity-20 grayscale">📭</div>
+			<p class="text-2xl font-black text-brand-charcoal dark:text-white italic tracking-tighter uppercase">Belum ada request masuk</p>
+			<p class="text-zinc-500 mt-2 font-medium">Semua permintaan paket dari pelanggan akan tampil di sini untuk proses review.</p>
 		</div>
 	{:else}
-		<div class="space-y-6" in:fade={{ delay: 120 }}>
-			<div class="bg-white dark:bg-zinc-900 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 shadow-sm p-5 space-y-4">
-				<div class="grid gap-3 lg:grid-cols-[1fr_260px]">
-					<div>
-						<label for="request-search" class="mb-1 block text-[10px] font-black text-zinc-500 uppercase tracking-widest">
-							Cari Request
+		<div class="space-y-8" in:fade={{ delay: 120 }}>
+			<div class="bg-white dark:bg-zinc-900 rounded-[3rem] border border-zinc-100 dark:border-zinc-800 shadow-sm p-10 space-y-8">
+				<div class="grid gap-6 lg:grid-cols-[1fr_300px]">
+					<div class="space-y-2">
+						<label for="request-search" class="mb-1 block text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] ml-1">
+							🔍 Cari Database
 						</label>
 						<input
 							id="request-search"
 							type="text"
 							bind:value={searchQuery}
-							placeholder="Nomor request, paket, pemesan, WA, lokasi, catatan"
-							class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-xs font-bold text-zinc-700 dark:text-zinc-200"
+							placeholder="Cari nomor, paket, pelanggan, whatsapp, lokasi..."
+							class="w-full rounded-2xl border border-zinc-100 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 px-6 py-4 text-xs font-bold text-brand-charcoal dark:text-white focus:ring-4 focus:ring-brand-primary/10 transition-all outline-none"
 						/>
 					</div>
-					<div>
-						<label for="request-status-filter" class="mb-1 block text-[10px] font-black text-zinc-500 uppercase tracking-widest">
-							Filter Status
+					<div class="space-y-2">
+						<label for="request-status-filter" class="mb-1 block text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] ml-1">
+							📂 Filter Status
 						</label>
 						<select
 							id="request-status-filter"
 							bind:value={statusFilter}
-							class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-xs font-bold text-zinc-700 dark:text-zinc-200"
+							class="w-full rounded-2xl border border-zinc-100 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 px-6 py-4 text-xs font-bold text-brand-charcoal dark:text-white focus:ring-4 focus:ring-brand-primary/10 transition-all outline-none appearance-none"
 						>
 							{#each requestStatusFilters as item}
 								<option value={item.value}>{item.label}</option>
@@ -457,177 +467,175 @@
 					</div>
 				</div>
 
-				<div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
-					<div class="rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 px-3 py-2">
-						<p class="text-[9px] font-black uppercase tracking-widest text-zinc-400">Total</p>
-						<p class="text-sm font-black text-brand-charcoal dark:text-white">{requestSummary.total}</p>
+				<div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
+					<div class="rounded-2xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 px-5 py-4">
+						<p class="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-1">Total Request</p>
+						<p class="text-xl font-black text-brand-charcoal dark:text-white">{requestSummary.total}</p>
 					</div>
-					<div class="rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/30 px-3 py-2">
-						<p class="text-[9px] font-black uppercase tracking-widest text-blue-500">Baru</p>
-						<p class="text-sm font-black text-blue-700 dark:text-blue-300">{requestSummary.new}</p>
+					<div class="rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/30 px-5 py-4">
+						<p class="text-[9px] font-black uppercase tracking-widest text-blue-500 mb-1">Baru</p>
+						<p class="text-xl font-black text-blue-700 dark:text-blue-300">{requestSummary.new}</p>
 					</div>
-					<div class="rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-900/30 px-3 py-2">
-						<p class="text-[9px] font-black uppercase tracking-widest text-amber-500">Reviewing</p>
-						<p class="text-sm font-black text-amber-700 dark:text-amber-300">{requestSummary.reviewing}</p>
+					<div class="rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-900/30 px-5 py-4">
+						<p class="text-[9px] font-black uppercase tracking-widest text-amber-500 mb-1">Ditinjau</p>
+						<p class="text-xl font-black text-amber-700 dark:text-amber-300">{requestSummary.reviewing}</p>
 					</div>
-					<div class="rounded-xl bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-900/30 px-3 py-2">
-						<p class="text-[9px] font-black uppercase tracking-widest text-purple-500">Quoted</p>
-						<p class="text-sm font-black text-purple-700 dark:text-purple-300">{requestSummary.quoted}</p>
+					<div class="rounded-2xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-900/30 px-5 py-4">
+						<p class="text-[9px] font-black uppercase tracking-widest text-indigo-500 mb-1">Quoted</p>
+						<p class="text-xl font-black text-indigo-700 dark:text-indigo-300">{requestSummary.quoted}</p>
 					</div>
-					<div class="rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 px-3 py-2">
-						<p class="text-[9px] font-black uppercase tracking-widest text-red-500">Reject/Cancel</p>
-						<p class="text-sm font-black text-red-700 dark:text-red-300">{requestSummary.rejectedOrCancelled}</p>
+					<div class="rounded-2xl bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 px-5 py-4">
+						<p class="text-[9px] font-black uppercase tracking-widest text-red-500 mb-1">Batal/Tolak</p>
+						<p class="text-xl font-black text-red-700 dark:text-red-300">{requestSummary.rejectedOrCancelled}</p>
 					</div>
 				</div>
-				<p class="text-[11px] text-zinc-500">
-					Menampilkan {filteredRequests.length} dari {requests.length} request.
+				<p class="text-[11px] text-zinc-500 font-bold italic">
+					✨ Menampilkan {filteredRequests.length} dari {requests.length} data dalam database.
 				</p>
 			</div>
 
 			{#if filteredRequests.length === 0}
-				<div class="bg-white dark:bg-zinc-900 rounded-[2.5rem] border border-dashed border-zinc-200 dark:border-zinc-800 p-16 text-center" in:fade>
-					<p class="text-xl font-black text-zinc-400 dark:text-zinc-600">
-						Tidak ada request yang cocok dengan filter
+				<div class="bg-white dark:bg-zinc-900 rounded-[3rem] border border-dashed border-zinc-200 dark:border-zinc-800 p-24 text-center shadow-inner" in:fade>
+					<p class="text-xl font-black text-zinc-300 dark:text-zinc-700 uppercase tracking-tighter italic">
+						Tidak ada hasil yang sesuai kriteria filter
 					</p>
 				</div>
 			{:else}
-				<div class="space-y-4">
+				<div class="space-y-6">
 					{#each filteredRequests as request (request.id)}
-						<div class="bg-white dark:bg-zinc-900 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm p-8" in:scale={{ start: 0.98, duration: 220 }}>
-							<div class="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
-								<div class="space-y-4 flex-1">
+						<div class="bg-white dark:bg-zinc-900 rounded-[3rem] border border-zinc-100 dark:border-zinc-800 shadow-sm overflow-hidden group hover:border-brand-primary/20 transition-all" in:scale={{ start: 0.98, duration: 220 }}>
+							<div class="flex flex-col lg:flex-row lg:items-stretch">
+								<div class="flex-1 p-10 space-y-8">
 									<div class="flex flex-wrap items-center gap-3">
-										<span class="text-sm font-black text-brand-charcoal dark:text-white">{request.requestNumber}</span>
-										<span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider {statusColor(request.status)}">{statusLabel(request.status)}</span>
-										<span class="px-3 py-1 rounded-full text-[10px] font-black bg-zinc-100 dark:bg-zinc-800 text-zinc-500 uppercase tracking-wider">Data Database Lokal</span>
+										<span class="px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.1em] {statusColor(request.status)}">{statusLabel(request.status)}</span>
+										<span class="px-5 py-2 rounded-full text-[10px] font-black bg-zinc-50 dark:bg-zinc-800 text-zinc-400 border border-zinc-100 dark:border-zinc-700 italic">#{request.requestNumber}</span>
 									</div>
 
-									<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-										<div>
-											<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Paket</p>
-											<p class="text-sm font-bold text-brand-charcoal dark:text-white">{request.packageName}</p>
-											<p class="text-[11px] text-zinc-500">ID: {request.packageId}</p>
+									<div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+										<div class="space-y-6">
+											<div class="space-y-1">
+												<p class="text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em]">📦 Paket Yang Diminta</p>
+												<p class="text-xl font-black text-brand-charcoal dark:text-white uppercase italic">{request.packageName}</p>
+												<p class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest tracking-tighter">ID: {request.packageId}</p>
+											</div>
+											<div class="space-y-1">
+												<p class="text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em]">👤 Informasi Pelanggan</p>
+												<p class="text-xl font-black text-brand-charcoal dark:text-white uppercase italic">{request.customerName}</p>
+												<p class="text-[10px] font-bold text-brand-primary uppercase tracking-widest">{request.whatsapp}</p>
+											</div>
 										</div>
-										<div>
-											<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Pemesan</p>
-											<p class="text-sm font-bold text-brand-charcoal dark:text-white">{request.customerName}</p>
-											<p class="text-[11px] text-zinc-500">{request.whatsapp}</p>
-										</div>
-										<div>
-											<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Tanggal Acara</p>
-											<p class="text-sm font-bold text-brand-charcoal dark:text-white">{formatDate(request.eventDate)}</p>
+										<div class="grid grid-cols-2 gap-6">
+											<div>
+												<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">📅 Tanggal Acara</p>
+												<p class="text-sm font-black text-brand-charcoal dark:text-white uppercase tracking-tighter">{formatDate(request.eventDate)}</p>
+											</div>
+											<div>
+												<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">👥 Peserta</p>
+												<p class="text-sm font-black text-brand-charcoal dark:text-white uppercase tracking-tighter">{request.pax} Pax</p>
+											</div>
+											<div>
+												<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">🕒 Diajukan</p>
+												<p class="text-sm font-bold text-zinc-500 uppercase tracking-tighter">{formatDate(request.createdAt)}</p>
+											</div>
+											<div>
+												<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">🛠️ Review Terakhir</p>
+												<p class="text-sm font-bold text-zinc-500 uppercase tracking-tighter">
+													{request.reviewedAt ? formatDate(request.reviewedAt) : 'Belum Ada'}
+												</p>
+											</div>
 										</div>
 									</div>
 
-									<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-										<div>
-											<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Jumlah Pax</p>
-											<p class="text-sm font-bold text-brand-charcoal dark:text-white">{request.pax}</p>
-										</div>
-										<div>
-											<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Dibuat</p>
-											<p class="text-sm font-bold text-brand-charcoal dark:text-white">{formatDate(request.createdAt)}</p>
-										</div>
-										<div>
-											<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Estimasi Harga</p>
-											<p class="text-sm font-bold text-brand-charcoal dark:text-white">
-												{request.estimatedPrice === null ? '-' : formatPrice(request.estimatedPrice)}
-											</p>
-										</div>
-										<div>
-											<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Direview</p>
-											<p class="text-sm font-bold text-brand-charcoal dark:text-white">
-												{request.reviewedAt ? formatDate(request.reviewedAt) : '-'}
-											</p>
-										</div>
-										<div class="md:col-span-2">
-											<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Lokasi / Acara</p>
-											<p class="text-sm font-medium text-zinc-600 dark:text-zinc-300">{request.location}</p>
-										</div>
-										<div class="md:col-span-2">
-											<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Catatan Kebutuhan</p>
-											<p class="text-sm font-medium text-zinc-600 dark:text-zinc-300">{request.notes || '-'}</p>
-										</div>
-										<div class="md:col-span-2">
-											<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Catatan Admin</p>
-											<p class="text-sm font-medium text-zinc-600 dark:text-zinc-300">{request.adminNote || '-'}</p>
+									<div class="space-y-6 pt-8 border-t border-zinc-50 dark:border-zinc-800/50">
+										<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+											<div class="space-y-2">
+												<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest ml-1">📍 Lokasi / Alamat</p>
+												<div class="p-6 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-zinc-100 dark:border-zinc-700/50">
+													<p class="text-xs font-medium text-zinc-600 dark:text-zinc-300 leading-relaxed italic">{request.location}</p>
+												</div>
+											</div>
+											<div class="space-y-2">
+												<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest ml-1">📝 Catatan Kebutuhan</p>
+												<div class="p-6 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-zinc-100 dark:border-zinc-700/50">
+													<p class="text-xs font-medium text-zinc-600 dark:text-zinc-300 leading-relaxed italic">"{request.notes || 'Tidak ada catatan khusus.'}"</p>
+												</div>
+											</div>
 										</div>
 									</div>
 								</div>
 
-								<div class="lg:min-w-[300px] space-y-3">
-									<div class="p-4 bg-zinc-50 dark:bg-zinc-800 rounded-2xl border border-zinc-100 dark:border-zinc-700 space-y-3">
-										<p class="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Review Request</p>
-										<div>
-											<label for={`status-${request.id}`} class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1 block">Status</label>
-											<select
-												id={`status-${request.id}`}
-												value={reviewDraftById[request.id]?.status ?? normalizeReviewStatus(request.status)}
+								<div class="lg:w-[360px] bg-zinc-50/50 dark:bg-zinc-800/30 border-l border-zinc-50 dark:border-zinc-800/50 p-10 space-y-8 flex flex-col justify-between">
+									<div class="space-y-6">
+										<div class="space-y-1">
+											<p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Panel Review Admin</p>
+											<p class="text-xs font-bold text-zinc-500 italic">Update Status & Penawaran</p>
+										</div>
+
+										<div class="space-y-4">
+											<div class="space-y-2">
+												<label for={`status-${request.id}`} class="text-[9px] font-black text-zinc-400 uppercase tracking-widest ml-1">Status Final</label>
+												<select
+													id={`status-${request.id}`}
+													value={reviewDraftById[request.id]?.status ?? normalizeReviewStatus(request.status)}
+													disabled={reviewSavingId !== null}
+													onchange={(event) => setDraftStatus(request.id, (event.currentTarget as HTMLSelectElement).value)}
+													class="w-full rounded-2xl border border-zinc-100 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-xs font-bold text-brand-charcoal dark:text-white focus:ring-4 focus:ring-brand-primary/10 outline-none transition-all disabled:opacity-60"
+												>
+													{#each reviewStatuses as item}
+														<option value={item.value}>{item.label}</option>
+													{/each}
+												</select>
+											</div>
+											<div class="space-y-2">
+												<label for={`estimated-${request.id}`} class="text-[9px] font-black text-zinc-400 uppercase tracking-widest ml-1">Estimasi Total Harga</label>
+												<input
+													id={`estimated-${request.id}`}
+													type="number"
+													min="0"
+													step="1"
+													value={reviewDraftById[request.id]?.estimatedPrice ?? ''}
+													disabled={reviewSavingId !== null}
+													oninput={(event) => setDraftEstimatedPrice(request.id, (event.currentTarget as HTMLInputElement).value)}
+													class="w-full rounded-2xl border border-zinc-100 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-xs font-bold text-brand-charcoal dark:text-white focus:ring-4 focus:ring-brand-primary/10 outline-none transition-all disabled:opacity-60"
+													placeholder="Rp 0"
+												/>
+											</div>
+											<div class="space-y-2">
+												<label for={`note-${request.id}`} class="text-[9px] font-black text-zinc-400 uppercase tracking-widest ml-1">Catatan Review Untuk Customer</label>
+												<textarea
+													id={`note-${request.id}`}
+													rows="3"
+													disabled={reviewSavingId !== null}
+													oninput={(event) => setDraftAdminNote(request.id, (event.currentTarget as HTMLTextAreaElement).value)}
+													class="w-full rounded-2xl border border-zinc-100 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-xs font-medium text-brand-charcoal dark:text-white focus:ring-4 focus:ring-brand-primary/10 outline-none transition-all disabled:opacity-60 resize-none"
+													placeholder="Tulis balasan atau rincian penawaran..."
+												>{reviewDraftById[request.id]?.adminNote ?? ''}</textarea>
+											</div>
+											<button
+												type="button"
 												disabled={reviewSavingId !== null}
-												onchange={(event) => setDraftStatus(request.id, (event.currentTarget as HTMLSelectElement).value)}
-												class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-[11px] font-bold text-zinc-700 dark:text-zinc-200 disabled:opacity-60"
+												onclick={() => saveReview(request)}
+												class="w-full py-4 bg-brand-charcoal text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl shadow-xl hover:bg-brand-primary transition-all disabled:opacity-60 disabled:cursor-not-allowed"
 											>
-												{#each reviewStatuses as item}
-													<option value={item.value}>{item.label}</option>
-												{/each}
-											</select>
+												{reviewSavingId === request.id ? 'Menyimpan...' : 'Simpan Perubahan'}
+											</button>
 										</div>
-										<div>
-											<label for={`estimated-${request.id}`} class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1 block">Estimasi Harga</label>
-											<input
-												id={`estimated-${request.id}`}
-												type="number"
-												min="0"
-												step="1"
-												value={reviewDraftById[request.id]?.estimatedPrice ?? ''}
-												disabled={reviewSavingId !== null}
-												oninput={(event) => setDraftEstimatedPrice(request.id, (event.currentTarget as HTMLInputElement).value)}
-												class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-[11px] font-bold text-zinc-700 dark:text-zinc-200 disabled:opacity-60"
-												placeholder="Contoh: 2500000"
-											/>
-										</div>
-										<div>
-											<label for={`note-${request.id}`} class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1 block">Catatan Admin</label>
-											<textarea
-												id={`note-${request.id}`}
-												rows="2"
-												disabled={reviewSavingId !== null}
-												oninput={(event) => setDraftAdminNote(request.id, (event.currentTarget as HTMLTextAreaElement).value)}
-												class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-[11px] font-bold text-zinc-700 dark:text-zinc-200 disabled:opacity-60 resize-none"
-												placeholder="Contoh: butuh konfirmasi jumlah pax final H-2."
-											>{reviewDraftById[request.id]?.adminNote ?? ''}</textarea>
-										</div>
-										<button
-											type="button"
-											disabled={reviewSavingId !== null}
-											onclick={() => saveReview(request)}
-											class="w-full px-5 py-2.5 bg-brand-charcoal text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-zinc-800 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
-										>
-											{reviewSavingId === request.id ? 'Menyimpan Review...' : 'Simpan Review'}
-										</button>
 									</div>
 
-									<button
-										type="button"
-										disabled
-										class="w-full px-5 py-2.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 text-[10px] font-black uppercase tracking-widest rounded-xl border border-zinc-200 dark:border-zinc-700 opacity-70 cursor-not-allowed"
-									>
-										Review Request (Hold)
-									</button>
-									<button
-										type="button"
-										disabled
-										class="w-full px-5 py-2.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 text-[10px] font-black uppercase tracking-widest rounded-xl border border-zinc-200 dark:border-zinc-700 opacity-70 cursor-not-allowed"
-									>
-										Buat Quote (Hold)
-									</button>
-									<button
-										type="button"
-										disabled
-										class="w-full px-5 py-2.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 text-[10px] font-black uppercase tracking-widest rounded-xl border border-zinc-200 dark:border-zinc-700 opacity-70 cursor-not-allowed"
-									>
-										Convert ke Order (Hold)
-									</button>
+									<div class="space-y-3 pt-6 border-t border-zinc-100 dark:border-zinc-800/50">
+										<button
+											type="button"
+											disabled
+											class="w-full py-3.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-[9px] font-black uppercase tracking-[0.2em] rounded-xl border border-zinc-200 dark:border-zinc-700 opacity-60 cursor-not-allowed"
+										>
+											Convert ke Order (Hold)
+										</button>
+										<div class="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800 text-center">
+											<p class="text-[8px] font-black text-zinc-400 uppercase tracking-tighter italic">
+												Demo: Aksi lanjut (convert order) tetap Hold sesuai aturan local-development.
+											</p>
+										</div>
+									</div>
 								</div>
 							</div>
 						</div>

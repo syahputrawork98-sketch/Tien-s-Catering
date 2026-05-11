@@ -123,12 +123,12 @@
 
 	function statusLabel(status: PackageRequestStatus): string {
 		const labels: Record<PackageRequestStatus, string> = {
-			new: 'Baru',
+			new: 'Menunggu Review',
 			reviewing: 'Sedang Ditinjau',
-			quoted: 'Sudah Diquote',
-			rejected: 'Ditolak',
+			quoted: 'Penawaran Diberikan',
+			rejected: 'Dibatalkan/Ditolak',
 			cancelled: 'Dibatalkan',
-			converted_to_order: 'Dikonversi ke Order'
+			converted_to_order: 'Sudah Menjadi Order'
 		};
 
 		return labels[status];
@@ -136,12 +136,12 @@
 
 	function statusColor(status: PackageRequestStatus): string {
 		const colors: Record<PackageRequestStatus, string> = {
-			new: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-			reviewing: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
-			quoted: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
-			rejected: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
-			cancelled: 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300',
-			converted_to_order: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+			new: 'bg-blue-50 text-blue-600 border border-blue-100',
+			reviewing: 'bg-amber-50 text-amber-600 border border-amber-100',
+			quoted: 'bg-indigo-50 text-indigo-600 border border-indigo-100',
+			rejected: 'bg-red-50 text-red-600 border border-red-100',
+			cancelled: 'bg-zinc-50 text-zinc-400 border border-zinc-100',
+			converted_to_order: 'bg-emerald-50 text-emerald-600 border border-emerald-100'
 		};
 
 		return colors[status];
@@ -172,7 +172,8 @@
 
 			requests = body.items
 				.map((item) => normalizeRequest(item))
-				.filter((item): item is CustomerPackageRequest => item !== null);
+				.filter((item): item is CustomerPackageRequest => item !== null)
+                .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 		} catch {
 			error = 'Gagal terhubung ke server. Silakan coba lagi.';
 			requests = [];
@@ -188,150 +189,159 @@
 
 <div class="space-y-10 pb-24">
 	<header in:fly={{ y: -20, duration: 500 }}>
-		<div class="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-full mb-4">
-			<span class="w-2 h-2 rounded-full bg-blue-500"></span>
-			<span class="text-[10px] font-black text-blue-600 dark:text-blue-300 uppercase tracking-widest">Visibility Request Paket</span>
+		<div class="inline-flex items-center gap-2 px-4 py-1.5 bg-brand-primary/5 rounded-full mb-4">
+			<span class="w-2 h-2 rounded-full bg-brand-primary animate-pulse"></span>
+			<span class="text-[10px] font-black text-brand-primary uppercase tracking-widest">Alur Request Paket (Demo)</span>
 		</div>
-		<h1 class="text-4xl lg:text-5xl font-black text-brand-charcoal dark:text-white tracking-tighter italic">
+		<h1 class="text-4xl lg:text-5xl font-black text-brand-charcoal dark:text-white tracking-tighter italic uppercase">
 			Request Paket Saya
 		</h1>
-		<p class="text-zinc-500 font-medium mt-2">
-			Pantau status permintaan paket catering Anda. Perubahan menjadi order tetap Hold.
+		<p class="text-zinc-500 font-medium mt-2 max-w-2xl">
+			Pantau status permintaan paket catering Anda. Harap diperhatikan bahwa request ini bersifat penawaran awal dan baru akan diproses setelah dikonfirmasi menjadi order resmi.
 		</p>
 	</header>
 
 	{#if loading}
-		<div class="bg-white dark:bg-zinc-900 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 p-10 shadow-sm" in:fade>
-			<div class="flex items-center gap-4">
-				<div class="w-8 h-8 border-4 border-brand-primary border-t-transparent rounded-full animate-spin"></div>
-				<p class="text-sm font-bold text-zinc-500">Memuat riwayat request paket...</p>
-			</div>
+		<div class="bg-white dark:bg-zinc-900 rounded-[3rem] border border-zinc-100 dark:border-zinc-800 p-20 text-center shadow-sm" in:fade>
+			<div class="w-12 h-12 border-4 border-brand-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+			<p class="text-sm font-bold text-zinc-500 uppercase tracking-widest">Menyinkronkan data request...</p>
 		</div>
 	{:else if error}
-		<div class="bg-white dark:bg-zinc-900 rounded-[2.5rem] border border-red-100 dark:border-red-900/30 p-10 shadow-sm" in:fade>
-			<p class="text-sm font-bold text-red-600 dark:text-red-400">{error}</p>
+		<div class="bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 rounded-[3rem] p-16 text-center shadow-sm" in:fade>
+			<p class="text-sm font-bold text-red-600 dark:text-red-400 mb-6">{error}</p>
 			<button
 				type="button"
 				onclick={loadPackageRequests}
-				class="mt-6 px-6 py-3 rounded-xl bg-brand-charcoal text-white text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-colors"
+				class="px-8 py-4 rounded-2xl bg-brand-charcoal text-white text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-all shadow-xl"
 			>
-				Coba Muat Ulang
+				Muat Ulang Data
 			</button>
 		</div>
 	{:else if requests.length === 0}
-		<div class="bg-white dark:bg-zinc-900 rounded-[2.5rem] border border-dashed border-zinc-200 dark:border-zinc-800 p-16 text-center" in:fade>
-			<p class="text-2xl font-black text-zinc-300 dark:text-zinc-700 italic tracking-tighter">Belum ada request paket</p>
-			<p class="text-zinc-500 mt-2 font-medium">Request paket yang Anda buat melalui halaman Katalog akan muncul di sini.</p>
+		<div class="bg-white dark:bg-zinc-900 rounded-[3rem] border border-dashed border-zinc-200 dark:border-zinc-800 p-24 text-center" in:fade>
+			<div class="text-5xl mb-6 opacity-20 grayscale">🍱</div>
+			<p class="text-2xl font-black text-brand-charcoal dark:text-white italic tracking-tighter uppercase">Belum ada request aktif</p>
+			<p class="text-zinc-500 mt-2 font-medium">Request paket yang Anda buat melalui katalog menu akan muncul di sini untuk proses review admin.</p>
 			<a 
 				href="/katalog" 
-				class="inline-block mt-8 px-10 py-4 bg-brand-primary text-white text-[11px] font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-brand-primary/20 hover:scale-105 transition-all"
+				class="inline-block mt-8 px-10 py-5 bg-brand-charcoal text-white text-[11px] font-black uppercase tracking-widest rounded-2xl shadow-2xl hover:bg-brand-primary transition-all"
 			>
-				Lihat Katalog Paket
+				Pilih Paket Sekarang
 			</a>
 		</div>
 	{:else}
-		<div class="space-y-6" in:fade={{ delay: 120 }}>
-			<div class="grid grid-cols-1 gap-6">
+		<div class="space-y-8" in:fade={{ delay: 120 }}>
+			<div class="grid grid-cols-1 gap-8">
 				{#each requests as request (request.id)}
-					<div class="bg-white dark:bg-zinc-900 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm p-8 group hover:border-brand-primary/30 transition-all">
-						<div class="flex flex-col lg:flex-row lg:items-start justify-between gap-8">
-							<div class="space-y-6 flex-1">
+					<div class="bg-white dark:bg-zinc-900 rounded-[3rem] border border-zinc-100 dark:border-zinc-800 shadow-sm overflow-hidden group hover:border-brand-primary/20 transition-all">
+						<div class="flex flex-col lg:flex-row lg:items-stretch">
+							<div class="flex-1 p-10 space-y-8">
 								<div class="flex flex-wrap items-center gap-3">
-									<span class="text-lg font-black text-brand-charcoal dark:text-white tracking-tighter">#{request.requestNumber}</span>
-									<span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider {statusColor(request.status)}">
+									<span class="px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.1em] {statusColor(request.status)}">
 										{statusLabel(request.status)}
 									</span>
-									<span class="px-3 py-1 rounded-full text-[9px] font-black bg-zinc-50 dark:bg-zinc-800 text-zinc-400 uppercase tracking-widest border border-zinc-100 dark:border-zinc-700">Simulasi Lokal</span>
+									<span class="px-5 py-2 rounded-full text-[9px] font-black bg-zinc-50 dark:bg-zinc-800 text-zinc-400 uppercase tracking-widest border border-zinc-100 dark:border-zinc-700 italic">#{request.requestNumber}</span>
 								</div>
 
-								<div class="space-y-1">
-									<h2 class="text-2xl font-black text-brand-charcoal dark:text-white italic leading-none">{request.packageName}</h2>
-									<p class="text-sm font-bold text-zinc-500">ID Paket: {request.packageId}</p>
+								<div class="space-y-2">
+									<h2 class="text-3xl font-black text-brand-charcoal dark:text-white tracking-tighter italic uppercase group-hover:text-brand-primary transition-colors">{request.packageName}</h2>
+									<p class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">ID Referensi: {request.packageId}</p>
 								</div>
 
-								<div class="grid grid-cols-2 md:grid-cols-4 gap-6 pt-4 border-t border-zinc-50 dark:border-zinc-800">
-									<div>
-										<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Tanggal Acara</p>
-										<p class="text-sm font-bold text-brand-primary">{formatDate(request.eventDate)}</p>
+								<div class="grid grid-cols-2 md:grid-cols-4 gap-8 py-8 border-y border-zinc-50 dark:border-zinc-800/50">
+									<div class="space-y-1">
+										<p class="text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-1">📅 Tanggal Acara</p>
+										<p class="text-sm font-black text-brand-charcoal dark:text-white uppercase tracking-tighter">{formatDate(request.eventDate)}</p>
 									</div>
-									<div>
-										<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Jumlah Peserta</p>
-										<p class="text-sm font-bold text-zinc-600 dark:text-zinc-300">{request.pax} Pax</p>
+									<div class="space-y-1">
+										<p class="text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-1">👥 Peserta</p>
+										<p class="text-sm font-black text-brand-charcoal dark:text-white uppercase tracking-tighter">{request.pax} Pax</p>
 									</div>
-									<div>
-										<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Dibuat Pada</p>
-										<p class="text-sm font-bold text-zinc-600 dark:text-zinc-300">{formatDate(request.createdAt)}</p>
+									<div class="space-y-1">
+										<p class="text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-1">📍 Lokasi</p>
+										<p class="text-sm font-bold text-zinc-500 truncate max-w-[120px]" title={request.location}>{request.location}</p>
 									</div>
-									<div>
-										<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Estimasi Harga</p>
-										<p class="text-sm font-black text-brand-charcoal dark:text-white italic">
-											{request.estimatedPrice === null ? 'Menunggu Review' : formatPrice(request.estimatedPrice)}
+									<div class="space-y-1">
+										<p class="text-[9px] font-black text-brand-primary uppercase tracking-[0.2em] mb-1">💰 Estimasi Harga</p>
+										<p class="text-sm font-black text-brand-primary italic">
+											{request.estimatedPrice === null ? 'Tinjauan Admin' : formatPrice(request.estimatedPrice)}
 										</p>
 									</div>
 								</div>
 
-								<div class="space-y-4">
-									<div>
-										<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-2">Lokasi Acara</p>
-										<div class="p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-zinc-100 dark:border-zinc-700">
-											<p class="text-xs font-medium text-zinc-600 dark:text-zinc-300 leading-relaxed">{request.location}</p>
-										</div>
-									</div>
-									
+								<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
 									{#if request.notes}
-										<div>
-											<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-2">Catatan Anda</p>
-											<div class="p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-zinc-100 dark:border-zinc-700">
-												<p class="text-xs font-medium text-zinc-600 dark:text-zinc-300 italic">"{request.notes}"</p>
+										<div class="space-y-3">
+											<p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">📝 Catatan Permintaan</p>
+											<div class="p-6 bg-zinc-50 dark:bg-zinc-800/50 rounded-[2rem] border border-zinc-100 dark:border-zinc-700/50">
+												<p class="text-xs font-medium text-zinc-600 dark:text-zinc-400 leading-relaxed italic">"{request.notes}"</p>
 											</div>
 										</div>
 									{/if}
 
 									{#if request.adminNote}
-										<div in:fade>
-											<p class="text-[9px] font-black text-brand-primary uppercase tracking-widest mb-2">Catatan Admin</p>
-											<div class="p-4 bg-brand-primary/5 rounded-2xl border border-brand-primary/20">
+										<div class="space-y-3" in:fade>
+											<p class="text-[10px] font-black text-brand-primary uppercase tracking-widest">👨‍💼 Balasan Admin</p>
+											<div class="p-6 bg-brand-primary/5 rounded-[2rem] border border-brand-primary/10">
 												<p class="text-xs font-bold text-brand-charcoal dark:text-zinc-200 leading-relaxed">"{request.adminNote}"</p>
 												{#if request.reviewedAt}
-													<p class="text-[9px] text-brand-primary/60 font-black mt-2 uppercase">Direview pada {formatDate(request.reviewedAt)}</p>
+													<p class="text-[9px] text-brand-primary/60 font-black mt-4 uppercase tracking-widest">Update pada {formatDate(request.reviewedAt)}</p>
 												{/if}
 											</div>
+										</div>
+									{:else}
+										<div class="flex items-center justify-center p-10 border-2 border-dashed border-zinc-50 dark:border-zinc-800 rounded-[2.5rem]">
+											<p class="text-[10px] font-black text-zinc-300 uppercase tracking-widest text-center italic">Menunggu respon admin...</p>
 										</div>
 									{/if}
 								</div>
 							</div>
 
-							<div class="lg:w-64 space-y-4">
-								<div class="p-6 bg-zinc-50 dark:bg-zinc-800/80 rounded-[2rem] border border-zinc-100 dark:border-zinc-700 space-y-4">
-									<div class="text-center space-y-1">
-										<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Alur Selanjutnya</p>
-										<p class="text-[11px] font-bold text-zinc-600 dark:text-zinc-300 italic">Review & Penawaran</p>
+							<div class="lg:w-80 bg-zinc-50/50 dark:bg-zinc-800/30 border-l border-zinc-50 dark:border-zinc-800/50 p-10 flex flex-col justify-between space-y-10">
+								<div class="space-y-6">
+									<div class="space-y-1">
+										<p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Timeline Progress</p>
+										<p class="text-xs font-bold text-zinc-500 italic">Update Status Real-time</p>
 									</div>
-									<div class="space-y-3">
-										<div class="flex items-center gap-3 opacity-40 grayscale">
-											<div class="w-6 h-6 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center text-[10px] font-black">1</div>
-											<p class="text-[10px] font-bold">Penawaran Final</p>
+									
+									<div class="space-y-6 relative before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-0.5 before:bg-zinc-100 dark:before:bg-zinc-800">
+										<div class="flex gap-4 relative">
+											<div class="w-6 h-6 rounded-full {request.status !== 'new' ? 'bg-emerald-500' : 'bg-brand-primary animate-pulse'} z-10 flex items-center justify-center text-[8px] text-white">✓</div>
+											<div>
+												<p class="text-[10px] font-black uppercase tracking-widest {request.status === 'new' ? 'text-brand-primary' : 'text-zinc-400'}">Permintaan Dikirim</p>
+												<p class="text-[9px] font-medium text-zinc-400">{formatDate(request.createdAt)}</p>
+											</div>
 										</div>
-										<div class="flex items-center gap-3 opacity-40 grayscale">
-											<div class="w-6 h-6 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center text-[10px] font-black">2</div>
-											<p class="text-[10px] font-bold">Bayar DP / Lunas</p>
+										<div class="flex gap-4 relative">
+											<div class="w-6 h-6 rounded-full {(request.status === 'quoted' || request.status === 'converted_to_order') ? 'bg-emerald-500' : (request.status === 'reviewing' ? 'bg-amber-500 animate-pulse' : 'bg-zinc-100 dark:bg-zinc-800')} z-10 flex items-center justify-center text-[8px] text-white">✓</div>
+											<div>
+												<p class="text-[10px] font-black uppercase tracking-widest {request.status === 'reviewing' ? 'text-amber-600' : 'text-zinc-400'}">Proses Peninjauan</p>
+												<p class="text-[9px] font-medium text-zinc-400">Tahap Review Harga</p>
+											</div>
 										</div>
-										<div class="flex items-center gap-3 opacity-40 grayscale">
-											<div class="w-6 h-6 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center text-[10px] font-black">3</div>
-											<p class="text-[10px] font-bold">Proses Order</p>
+										<div class="flex gap-4 relative">
+											<div class="w-6 h-6 rounded-full {request.status === 'converted_to_order' ? 'bg-emerald-500' : (request.status === 'quoted' ? 'bg-indigo-500 animate-pulse' : 'bg-zinc-100 dark:bg-zinc-800')} z-10 flex items-center justify-center text-[8px] text-white">✓</div>
+											<div>
+												<p class="text-[10px] font-black uppercase tracking-widest {request.status === 'quoted' ? 'text-indigo-600' : 'text-zinc-400'}">Penawaran Final</p>
+												<p class="text-[9px] font-medium text-zinc-400">Siap Jadi Order</p>
+											</div>
 										</div>
 									</div>
 								</div>
 								
-								<button 
-									disabled
-									class="w-full py-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-[10px] font-black uppercase tracking-widest rounded-2xl border border-zinc-200 dark:border-zinc-700 cursor-not-allowed opacity-70"
-								>
-									Convert ke Order (Hold)
-								</button>
-								<p class="text-[9px] font-bold text-zinc-400 text-center uppercase tracking-tighter italic">
-									Hubungi CS untuk percepatan review paket.
-								</p>
+								<div class="space-y-4">
+									<button 
+										disabled
+										class="w-full py-5 bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl border border-zinc-200 dark:border-zinc-700 cursor-not-allowed opacity-70 shadow-inner"
+									>
+										Convert ke Order (Hold)
+									</button>
+									<div class="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-zinc-800 text-center">
+										<p class="text-[9px] font-black text-zinc-400 uppercase tracking-tighter italic">
+											Demo: Perubahan menjadi order tetap Hold sesuai kebijakan local-development.
+										</p>
+									</div>
+								</div>
 							</div>
 						</div>
 					</div>
