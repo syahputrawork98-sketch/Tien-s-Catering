@@ -1,5 +1,6 @@
 <script lang="ts">
     import { mockCsOrders, type MockCsOrder } from '$lib/mock/cs';
+    import type { MockPaymentBreakdown, MockPaymentProof } from '$lib/mock/orders';
     import { fade, fly, scale } from 'svelte/transition';
 
     function formatPrice(val: number) {
@@ -27,7 +28,7 @@
     let verificationNote = $state(''); // New
     let completionNoteInput = $state('');
 
-    const tabs = [
+    const tabs: Array<{ id: TabType; label: string; color: string }> = [
         { id: 'NEW', label: 'Baru', color: 'orange' },
         { id: 'VERIFIKASI', label: 'Verifikasi Bayar', color: 'amber' },
         { id: 'PROSES', label: 'Proses', color: 'blue' },
@@ -36,6 +37,17 @@
         { id: 'BATAL', label: 'Batal', color: 'red' },
         { id: 'HISTORY', label: 'History', color: 'zinc' }
     ];
+
+    function getPaymentBreakdown(order: MockCsOrder): MockPaymentBreakdown {
+        return {
+            totalAmount: order.paymentBreakdown?.totalAmount ?? order.total,
+            paidAmount: order.paymentBreakdown?.paidAmount ?? 0,
+            remainingAmount: order.paymentBreakdown?.remainingAmount ?? order.total,
+            dpRequired: order.paymentBreakdown?.dpRequired ?? false,
+            dpPercent: order.paymentBreakdown?.dpPercent,
+            dpAmount: order.paymentBreakdown?.dpAmount
+        };
+    }
 
     const stats = $derived({
         total: orders.length,
@@ -104,7 +116,7 @@
         })
     );
 
-    function getCount(tabId: string) {
+    function getCount(tabId: TabType) {
         switch (tabId) {
             case 'NEW': return stats.new;
             case 'VERIFIKASI': return stats.verifikasi;
@@ -136,37 +148,41 @@
 
     function handleConfirm() {
         if (!selectedOrder) return;
+        const selectedOrderId = selectedOrder.id;
         
         orders = orders.map(o => 
-            o.id === selectedOrder!.id 
+            o.id === selectedOrderId
                 ? { ...o, status: 'confirmed' as const } 
                 : o
         );
         
-        alert(`Pesanan #${selectedOrder.id} telah dikonfirmasi dan masuk ke tab Proses.`);
+        alert(`Pesanan #${selectedOrderId} telah dikonfirmasi dan masuk ke tab Proses.`);
         closeModal();
         activeTab = 'PROSES';
     }
 
     function handleVerifyPayment(proofId?: string) {
         if (!selectedOrder) return;
+        const selectedOrderId = selectedOrder.id;
 
         orders = orders.map(o => {
-            if (o.id === selectedOrder!.id) {
-                let updatedProofs = o.paymentProofs || [];
-                let newPaidAmount = o.paymentBreakdown?.paidAmount || 0;
+            if (o.id === selectedOrderId) {
+                let updatedProofs: MockPaymentProof[] = o.paymentProofs || [];
+                let newPaidAmount = getPaymentBreakdown(o).paidAmount;
                 
                 if (proofId) {
-                    updatedProofs = updatedProofs.map(p => {
+                    updatedProofs = updatedProofs.map((p): MockPaymentProof => {
                         if (p.id === proofId) {
                             newPaidAmount += p.amount;
                             return {
                                 ...p,
                                 status: 'verified',
-                                verifiedBy: 'CS Demo',
-                                verifiedByRole: 'cs',
-                                verifiedAt: new Date().toISOString(),
-                                verificationNote: verificationNote
+                                verification: {
+                                    verifiedBy: 'CS Demo',
+                                    verifiedByRole: 'cs',
+                                    verifiedAt: new Date().toISOString(),
+                                    note: verificationNote || undefined
+                                }
                             };
                         }
                         return p;
@@ -176,21 +192,25 @@
                     updatedProofs = [{
                         ...o.paymentProof,
                         status: 'verified',
-                        verifiedBy: 'CS Demo',
-                        verifiedByRole: 'cs',
-                        verifiedAt: new Date().toISOString(),
-                        verificationNote: verificationNote
-                    } as any];
+                        verification: {
+                            verifiedBy: 'CS Demo',
+                            verifiedByRole: 'cs',
+                            verifiedAt: new Date().toISOString(),
+                            note: verificationNote || undefined
+                        }
+                    }];
                     newPaidAmount = o.total;
                 }
 
                 const totalAmount = o.total;
                 const isFullyPaid = newPaidAmount >= totalAmount;
                 
-                const breakdown = {
-                    ...(o.paymentBreakdown || { totalAmount: o.total, paidAmount: 0, remainingAmount: o.total }),
+                const currentBreakdown = getPaymentBreakdown(o);
+                const breakdown: MockPaymentBreakdown = {
+                    ...currentBreakdown,
+                    totalAmount,
                     paidAmount: newPaidAmount,
-                    remainingAmount: totalAmount - newPaidAmount
+                    remainingAmount: Math.max(0, totalAmount - newPaidAmount)
                 };
 
                 return {
@@ -198,26 +218,28 @@
                     paymentStatus: isFullyPaid ? 'paid' : 'partially_paid',
                     paymentProofs: updatedProofs,
                     paymentBreakdown: breakdown,
-                    paymentProof: updatedProofs.find(p => p.id === proofId) || o.paymentProof // legacy
+                    paymentProof: updatedProofs.find((p) => p.id === proofId) || o.paymentProof // legacy
                 };
             }
             return o;
         });
 
-        alert(`Pembayaran untuk Pesanan #${selectedOrder.id} telah diverifikasi.`);
+        alert(`Pembayaran untuk Pesanan #${selectedOrderId} telah diverifikasi.`);
         verificationNote = '';
-        selectedOrder = orders.find(x => x.id === selectedOrder!.id) || null;
+        selectedOrder = orders.find((x) => x.id === selectedOrderId) || null;
     }
 
     function handleRejectPayment(proofId?: string) {
+        if (!selectedOrder) return;
         if (!rejectionReason) {
             alert('Alasan penolakan wajib diisi.');
             return;
         }
+        const selectedOrderId = selectedOrder.id;
 
         orders = orders.map(o => {
-            if (o.id === selectedOrder!.id) {
-                const updatedProofs = (o.paymentProofs || []).map(p => {
+            if (o.id === selectedOrderId) {
+                const updatedProofs: MockPaymentProof[] = (o.paymentProofs || []).map((p): MockPaymentProof => {
                     if (p.id === proofId) {
                         return {
                             ...p,
@@ -243,22 +265,25 @@
             return o;
         });
 
-        alert(`Bukti pembayaran untuk Pesanan #${selectedOrder!.id} telah ditolak.`);
+        alert(`Bukti pembayaran untuk Pesanan #${selectedOrderId} telah ditolak.`);
         rejectionReason = '';
         showRejectionReason = false;
-        selectedOrder = orders.find(x => x.id === selectedOrder!.id) || null;
+        selectedOrder = orders.find((x) => x.id === selectedOrderId) || null;
     }
 
     function handleConfirmCod() {
         if (!selectedOrder) return;
+        const selectedOrderId = selectedOrder.id;
 
         orders = orders.map(o => {
-            if (o.id === selectedOrder!.id) {
+            if (o.id === selectedOrderId) {
+                const currentBreakdown = getPaymentBreakdown(o);
                 return {
                     ...o,
                     paymentStatus: 'paid',
                     paymentBreakdown: {
-                        ...(o.paymentBreakdown || { totalAmount: o.total, paidAmount: 0, remainingAmount: o.total }),
+                        ...currentBreakdown,
+                        totalAmount: o.total,
                         paidAmount: o.total,
                         remainingAmount: 0
                     },
@@ -267,26 +292,28 @@
                         collectedAt: new Date().toISOString(),
                         collectedBy: 'CS Demo',
                         collectedByRole: 'cs',
-                        status: 'collected',
-                        amount: o.total
+                        collectedAmount: o.total,
+                        method: o.paymentMethod === 'cod_transfer' ? 'transfer' : 'cash'
                     }
                 };
             }
             return o;
         });
 
-        alert(`Pembayaran COD untuk Pesanan #${selectedOrder.id} telah dikonfirmasi.`);
-        selectedOrder = orders.find(x => x.id === selectedOrder!.id) || null;
+        alert(`Pembayaran COD untuk Pesanan #${selectedOrderId} telah dikonfirmasi.`);
+        selectedOrder = orders.find((x) => x.id === selectedOrderId) || null;
     }
 
     function handleCancel() {
+        if (!selectedOrder) return;
         if (!cancellationReason) {
             alert('Silakan pilih atau isi alasan pembatalan.');
             return;
         }
+        const selectedOrderId = selectedOrder.id;
 
         orders = orders.map(o => 
-            o.id === selectedOrder!.id 
+            o.id === selectedOrderId
                 ? { 
                     ...o, 
                     status: 'cancelled' as const, 
@@ -296,16 +323,17 @@
                 : o
         );
 
-        alert(`Pesanan #${selectedOrder!.id} telah dibatalkan.`);
+        alert(`Pesanan #${selectedOrderId} telah dibatalkan.`);
         closeModal();
         activeTab = 'BATAL';
     }
 
     function confirmCompletionByCs() {
         if (!selectedOrder) return;
+        const selectedOrderId = selectedOrder.id;
         
         orders = orders.map(o => 
-            o.id === selectedOrder!.id 
+            o.id === selectedOrderId
                 ? { 
                     ...o, 
                     completedConfirmedByCs: true,
@@ -314,7 +342,7 @@
                 : o
         );
         
-        alert(`Konfirmasi penyelesaian oleh CS untuk Pesanan #${selectedOrder.id} berhasil.`);
+        alert(`Konfirmasi penyelesaian oleh CS untuk Pesanan #${selectedOrderId} berhasil.`);
         selectedOrder.completedConfirmedByCs = true;
         selectedOrder.completionNote = completionNoteInput;
         
@@ -326,14 +354,15 @@
 
     function simulateUserConfirmation() {
         if (!selectedOrder) return;
+        const selectedOrderId = selectedOrder.id;
         
         orders = orders.map(o => 
-            o.id === selectedOrder!.id 
+            o.id === selectedOrderId
                 ? { ...o, completedConfirmedByUser: true } 
                 : o
         );
         
-        alert(`Simulasi: User telah mengonfirmasi penyelesaian untuk Pesanan #${selectedOrder.id}.`);
+        alert(`Simulasi: User telah mengonfirmasi penyelesaian untuk Pesanan #${selectedOrderId}.`);
         selectedOrder.completedConfirmedByUser = true;
 
         if (activeTab === 'PROSES') {
@@ -344,14 +373,15 @@
 
     function simulateAdminConfirmation() {
         if (!selectedOrder) return;
+        const selectedOrderId = selectedOrder.id;
         
         orders = orders.map(o => 
-            o.id === selectedOrder!.id 
+            o.id === selectedOrderId
                 ? { ...o, completedConfirmedByAdmin: true } 
                 : o
         );
         
-        alert(`Simulasi: Admin telah mengonfirmasi penyelesaian untuk Pesanan #${selectedOrder.id}.`);
+        alert(`Simulasi: Admin telah mengonfirmasi penyelesaian untuk Pesanan #${selectedOrderId}.`);
         selectedOrder.completedConfirmedByAdmin = true;
 
         if (activeTab === 'PROSES') {
@@ -401,7 +431,7 @@
                 {#each tabs as tab}
                     <button 
                         onclick={() => {
-                            activeTab = tab.id as TabType;
+                            activeTab = tab.id;
                             if (tab.id !== 'HISTORY') resetHistoryFilter();
                         }}
                         class="px-8 py-4 rounded-full text-xs font-black uppercase tracking-widest transition-all flex items-center gap-4
@@ -746,12 +776,12 @@
                                 </div>
                             </div>
                             
-                            {#if selectedOrder.codCollection?.status === 'collected'}
+                            {#if selectedOrder.codCollection?.collectedAt}
                                 <div class="bg-emerald-50 dark:bg-emerald-900/20 p-6 rounded-3xl flex items-center gap-4 border border-emerald-100">
                                     <div class="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center text-white text-xl">✓</div>
                                     <div class="flex-1">
                                         <p class="text-sm font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-tighter">Uang Diterima & Lunas</p>
-                                        <p class="text-[10px] text-zinc-500 font-medium">Dikonfirmasi oleh {selectedOrder.codCollection.collectedBy} • {selectedOrder.codCollection.collectedAt}</p>
+                                        <p class="text-[10px] text-zinc-500 font-medium">Dikonfirmasi oleh {selectedOrder.codCollection.collectedBy || '-'} • {selectedOrder.codCollection.collectedAt}</p>
                                     </div>
                                 </div>
                             {:else}
@@ -826,9 +856,9 @@
                                                                 <div class="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center text-white text-[10px]">✓</div>
                                                                 <p class="text-[10px] font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-widest">Diverifikasi CS</p>
                                                             </div>
-                                                            <p class="text-xs font-bold text-zinc-700 dark:text-zinc-300">Penanggung Jawab: {proof.verifiedBy}</p>
-                                                            {#if proof.verificationNote}
-                                                                <p class="text-xs text-zinc-500 italic mt-2 border-t border-emerald-100 pt-2">"{proof.verificationNote}"</p>
+                                                            <p class="text-xs font-bold text-zinc-700 dark:text-zinc-300">Penanggung Jawab: {proof.verification?.verifiedBy || '-'}</p>
+                                                            {#if proof.verification?.note}
+                                                                <p class="text-xs text-zinc-500 italic mt-2 border-t border-emerald-100 pt-2">"{proof.verification.note}"</p>
                                                             {/if}
                                                         </div>
                                                     {:else if proof.status === 'rejected'}
