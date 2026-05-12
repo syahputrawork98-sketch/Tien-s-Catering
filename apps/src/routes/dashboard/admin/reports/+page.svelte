@@ -240,9 +240,9 @@
     }
 
     function sourceTypeBadgeClass(sourceType: string | null | undefined): string {
-        return sourceType === 'package_request'
-            ? 'bg-indigo-100 text-indigo-700'
-            : 'bg-zinc-100 text-zinc-600';
+        if (sourceType === 'package_request') return 'bg-indigo-100 text-indigo-700';
+        if (sourceType === 'catalog') return 'bg-emerald-100 text-emerald-700';
+        return 'bg-amber-100 text-amber-700';
     }
 
     function resetFilters() {
@@ -288,7 +288,7 @@
                 Monitoring performa bisnis berdasarkan data transaksi lokal. Revenue difokuskan ke pesanan yang sudah layak dihitung sebagai pemasukan final.
             </p>
         </div>
-        <div class="flex gap-3">
+        <div class="flex flex-col items-start md:items-end gap-2">
             <a
                 href="/api/reports/export.csv"
                 aria-label={exportLabel}
@@ -300,6 +300,9 @@
                 </svg>
                 Export CSV
             </a>
+            <p class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
+                Export order summary + revenue status (paid/non-final)
+            </p>
         </div>
     </header>
 
@@ -374,12 +377,22 @@
         {:else if fetchError}
             <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/40 rounded-[3rem] p-20 text-center shadow-sm" in:fade>
                 <p class="text-sm font-bold text-red-600 dark:text-red-400 mb-6">{fetchError}</p>
-                <button onclick={fetchDbOrders} class="px-8 py-4 bg-brand-charcoal text-white rounded-2xl font-black text-xs uppercase tracking-widest">Coba Lagi</button>
+                <div class="flex flex-col items-center gap-3">
+                    <button onclick={fetchDbOrders} class="px-8 py-4 bg-brand-charcoal text-white rounded-2xl font-black text-xs uppercase tracking-widest">Coba Lagi</button>
+                    <a
+                        href="/api/reports/export.csv"
+                        aria-label={exportLabel}
+                        title={exportLabel}
+                        class="text-[10px] font-black text-brand-primary uppercase tracking-widest hover:underline"
+                    >
+                        Tetap coba Export CSV
+                    </a>
+                </div>
             </div>
         {:else}
             {#if activeTab === 'overview'}
             <!-- Tab: Ringkasan -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
                 <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm relative overflow-hidden group hover:border-brand-primary/30 transition-all">
                     <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">Valid Revenue (Paid)</p>
                     <p class="text-3xl font-black text-brand-charcoal dark:text-white italic mb-2 tracking-tighter">{formatRupiah(dbStats.validRevenue)}</p>
@@ -397,8 +410,8 @@
                     </div>
                 </div>
                 <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm relative overflow-hidden group hover:border-brand-primary/30 transition-all">
-                    <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">Avg. Paid Order</p>
-                    <p class="text-3xl font-black text-brand-charcoal dark:text-white italic mb-2 tracking-tighter">{formatRupiah(dbStats.averagePaidOrderValue)}</p>
+                    <p class="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-2">Paid Orders</p>
+                    <p class="text-3xl font-black text-blue-600 italic mb-2 tracking-tighter">{dbStats.paidOrders}</p>
                     <div class="flex items-center gap-1.5 mt-2">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                         <p class="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest italic">Database Lokal Aktif</p>
@@ -412,12 +425,20 @@
                         <p class="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest italic">Database Lokal Aktif</p>
                     </div>
                 </div>
+                <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm relative overflow-hidden group hover:border-brand-primary/30 transition-all">
+                    <p class="text-[10px] font-black text-red-400 uppercase tracking-widest mb-2">Rejected + Cancelled</p>
+                    <p class="text-3xl font-black text-red-600 italic mb-2 tracking-tighter">{dbStats.rejectedOrders + dbStats.cancelledOrders}</p>
+                    <div class="flex items-center gap-1.5 mt-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
+                        <p class="text-[9px] font-black text-red-500 uppercase tracking-widest italic">Non-Final Revenue</p>
+                    </div>
+                </div>
             </div>
 
             <section class="bg-white dark:bg-zinc-900 rounded-[3rem] border border-zinc-100 dark:border-zinc-800 shadow-sm p-8">
                 <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
                     <h3 class="text-sm font-black text-brand-charcoal dark:text-white uppercase tracking-widest italic">Revenue Eligibility Snapshot</h3>
-                    <p class="text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em]">Paid dihitung revenue, status lain non-final</p>
+                    <p class="text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em]">Revenue final hanya dari paid orders. Unpaid, waiting, rejected, cancelled = non-final.</p>
                 </div>
                 <div class="grid grid-cols-2 lg:grid-cols-6 gap-4">
                     {#each [
@@ -434,6 +455,16 @@
                         </div>
                     {/each}
                 </div>
+                <div class="mt-6 flex flex-wrap gap-2">
+                    <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-emerald-100 text-emerald-700">Source: Catalog</span>
+                    <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-indigo-100 text-indigo-700">Source: Package Request</span>
+                    <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-amber-100 text-amber-700">Source: Catalog Legacy</span>
+                </div>
+                {#if filteredOrders.length === 0}
+                    <p class="mt-6 text-xs font-bold text-zinc-500 italic">
+                        Belum ada data order pada filter periode ini. Export CSV tetap tersedia dan akan mengikuti data yang ada.
+                    </p>
+                {/if}
             </section>
 
             <section class="bg-white dark:bg-zinc-900 rounded-[3rem] border border-zinc-100 dark:border-zinc-800 shadow-sm overflow-hidden">
