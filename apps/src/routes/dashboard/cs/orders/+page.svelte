@@ -212,7 +212,8 @@
         if (s === 'unpaid') return 'unpaid';
         if (s === 'waiting_verification') return 'waiting_verification';
         if (s === 'paid') return 'paid';
-        if (s === 'cod') return 'cod_pending';
+        if (s === 'cod' || s === 'cod_pending') return 'cod_pending';
+        if (s === 'rejected') return 'rejected';
         return 'unpaid';
     }
 

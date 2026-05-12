@@ -5,7 +5,7 @@
 
 	type TabType = 'ALL' | 'NEW' | 'VERIFIKASI' | 'PROCESS' | 'DONE' | 'CANCELLED';
 	type OrderStatus = 'new' | 'confirmed' | 'processing' | 'ready' | 'delivered' | 'completed' | 'cancelled';
-	type PaymentStatus = 'unpaid' | 'waiting_verification' | 'paid' | 'cod' | 'rejected';
+	type PaymentStatus = 'unpaid' | 'waiting_verification' | 'paid' | 'cod_pending' | 'rejected';
 	type PaymentMethod = 'cash' | 'transfer' | 'qris' | 'cod' | 'unknown';
 	type PaymentFilter = 'ALL' | PaymentStatus;
 	type OrderStockStatus = 'not_deducted' | 'deducted' | 'released';
@@ -115,7 +115,7 @@
 	let paymentFilter = $state<PaymentFilter>('ALL');
 
 	const orderStatusFlow: OrderStatus[] = ['new', 'confirmed', 'processing', 'ready', 'delivered', 'completed'];
-	const manualPaymentStatuses: PaymentStatus[] = ['unpaid', 'waiting_verification', 'paid', 'cod', 'rejected'];
+	const manualPaymentStatuses: PaymentStatus[] = ['unpaid', 'waiting_verification', 'paid', 'cod_pending', 'rejected'];
 	const allowedOrderStatuses: OrderStatus[] = [
 		'new',
 		'confirmed',
@@ -421,7 +421,7 @@
 			unpaid: 'Belum Bayar',
 			waiting_verification: 'Menunggu Verifikasi',
 			paid: 'Lunas',
-			cod: 'COD / Bayar di Tempat',
+			cod_pending: 'COD / Bayar di Tempat',
 			rejected: 'Pembayaran Ditolak'
 		};
 
@@ -473,7 +473,7 @@
 			unpaid: 'text-zinc-500',
 			waiting_verification: 'text-amber-600',
 			paid: 'text-emerald-600',
-			cod: 'text-sky-600',
+			cod_pending: 'text-sky-600',
 			rejected: 'text-red-600'
 		};
 
@@ -832,7 +832,7 @@
 						<option value="unpaid">Belum Dibayar</option>
 						<option value="waiting_verification">Menunggu Verifikasi</option>
 						<option value="paid">Sudah Dibayar</option>
-						<option value="cod">COD</option>
+						<option value="cod_pending">COD</option>
 					</select>
 
 					{#if hasActiveListFilter}
@@ -946,7 +946,7 @@
 										<option value="unpaid">Belum Bayar</option>
 										<option value="waiting_verification">Menunggu Verifikasi</option>
 										<option value="paid">Lunas</option>
-										<option value="cod">COD / Bayar di Tempat</option>
+										<option value="cod_pending">COD / Bayar di Tempat</option>
 										</select>
 										<button
 											type="button"

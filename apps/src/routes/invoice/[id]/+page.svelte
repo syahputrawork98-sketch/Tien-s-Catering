@@ -1,6 +1,7 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import { page } from '$app/state';
+    import { getOrderSourceLabel } from '$lib/utils/reporting';
     import { fade, fly } from 'svelte/transition';
 
     let orderId = $derived(page.params.id);
@@ -73,6 +74,7 @@
         switch(status) {
             case 'paid': return 'text-emerald-600';
             case 'waiting_verification': return 'text-amber-600';
+            case 'cod_pending': return 'text-sky-600';
             case 'rejected': return 'text-red-600';
             default: return 'text-zinc-500';
         }
@@ -144,6 +146,12 @@
                             <h3 class="text-[9px] font-black uppercase tracking-widest text-zinc-400">Status</h3>
                             <p class="text-xs font-black uppercase {paymentColor(order.paymentStatus)}">
                                 {paymentLabel(order.paymentStatus)}
+                            </p>
+                        </div>
+                        <div>
+                            <h3 class="text-[9px] font-black uppercase tracking-widest text-zinc-400">Source</h3>
+                            <p class="text-xs font-black text-zinc-700 dark:text-zinc-300 print:text-black">
+                                {getOrderSourceLabel(order.sourceType)}
                             </p>
                         </div>
                     </div>
@@ -236,6 +244,9 @@
                 <div class="bg-zinc-50 dark:bg-zinc-950 p-6 rounded-2xl border border-zinc-100 dark:border-zinc-800 mx-auto max-w-lg">
                     <p class="text-[9px] font-medium text-zinc-400 leading-relaxed">
                         Ini adalah <span class="font-black text-zinc-500">Commercial Invoice</span> dasar. Dokumen ini sah sebagai bukti rincian pesanan komersial di Tien's Catering. Harap dicatat bahwa dokumen ini <span class="text-red-500/50 font-bold">bukan e-Faktur Pajak resmi</span>.
+                    </p>
+                    <p class="text-[9px] font-medium text-zinc-400 leading-relaxed mt-3">
+                        Status pembayaran pada invoice mengikuti hasil verifikasi bukti bayar di dashboard admin.
                     </p>
                 </div>
             </div>

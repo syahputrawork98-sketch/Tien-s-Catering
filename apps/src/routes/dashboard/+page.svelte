@@ -5,7 +5,7 @@
 
 	// Types minimal for dashboard summary
 	type OrderStatus = 'PENDING' | 'PROCESSING' | 'SHIPPED' | 'COMPLETED' | 'CANCELLED';
-	type PaymentStatus = 'unpaid' | 'waiting_verification' | 'paid' | 'cod_pending';
+	type PaymentStatus = 'unpaid' | 'waiting_verification' | 'paid' | 'cod_pending' | 'rejected';
 	
 	interface DashboardOrder {
 		id: string;
@@ -46,7 +46,8 @@
 		if (s === 'unpaid') return 'unpaid';
 		if (s === 'waiting_verification') return 'waiting_verification';
 		if (s === 'paid') return 'paid';
-		if (s === 'cod') return 'cod_pending';
+		if (s === 'cod' || s === 'cod_pending') return 'cod_pending';
+		if (s === 'rejected') return 'rejected';
 		return 'unpaid';
 	}
 
@@ -104,12 +105,26 @@
 		fetchData();
 	});
 
+	function paymentStatusLabel(status: PaymentStatus): string {
+		if (status === 'paid') return 'Lunas';
+		if (status === 'waiting_verification') return 'Menunggu Verifikasi';
+		if (status === 'cod_pending') return 'COD / Bayar di Tempat';
+		if (status === 'rejected') return 'Pembayaran Ditolak';
+		return 'Belum Bayar';
+	}
+
+	function orderSourceLabel(sourceType: string | null | undefined): string {
+		if (sourceType === 'package_request') return 'Paket Catering';
+		if (sourceType === 'catalog') return 'Catalog';
+		return 'Catalog Legacy';
+	}
+
 	// Derived summaries
 	const orderStats = $derived({
 		total: orders.length,
 		active: orders.filter(o => ['PENDING', 'PROCESSING', 'SHIPPED'].includes(o.status)).length,
 		completed: orders.filter(o => o.status === 'COMPLETED').length,
-		unpaid: orders.filter(o => o.paymentStatus === 'unpaid').length
+		unpaid: orders.filter(o => o.paymentStatus === 'unpaid' || o.paymentStatus === 'cod_pending').length
 	});
 
 	const requestStats = $derived({
@@ -257,10 +272,10 @@
 									<div class="flex items-center gap-3">
 										<span class="text-[10px] font-bold text-zinc-500 uppercase">{latestOrder.status}</span>
 										<span class="w-1 h-1 rounded-full bg-zinc-300"></span>
-										<span class="text-[10px] font-bold text-zinc-400">{latestOrder.paymentStatus.replace('_', ' ')}</span>
-										{#if latestOrder.sourceType === 'package_request'}
+										<span class="text-[10px] font-bold text-zinc-400">{paymentStatusLabel(latestOrder.paymentStatus)}</span>
+										{#if latestOrder.sourceType}
 											<span class="w-1 h-1 rounded-full bg-zinc-300"></span>
-											<span class="text-[9px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest italic">🍱 Paket Catering</span>
+											<span class="text-[9px] font-black {latestOrder.sourceType === 'package_request' ? 'text-indigo-600 dark:text-indigo-400' : latestOrder.sourceType === 'catalog' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'} uppercase tracking-widest italic">{orderSourceLabel(latestOrder.sourceType)}</span>
 										{/if}
 									</div>
 								</div>
@@ -304,3 +319,4 @@
 		</div>
 	{/if}
 </div>
+

@@ -438,7 +438,7 @@
             <section class="bg-white dark:bg-zinc-900 rounded-[3rem] border border-zinc-100 dark:border-zinc-800 shadow-sm p-8">
                 <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
                     <h3 class="text-sm font-black text-brand-charcoal dark:text-white uppercase tracking-widest italic">Revenue Eligibility Snapshot</h3>
-                    <p class="text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em]">Revenue final hanya dari paid orders. Unpaid, waiting, rejected, cancelled = non-final.</p>
+                    <p class="text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em]">Revenue final hanya dari paid orders. Unpaid, waiting, cod pending, rejected, cancelled = non-final.</p>
                 </div>
                 <div class="grid grid-cols-2 lg:grid-cols-6 gap-4">
                     {#each [
