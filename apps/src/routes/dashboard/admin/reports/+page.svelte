@@ -1,26 +1,31 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import { mockAdminMetrics, mockAdminSalesReports } from '$lib/mock/reports';
-    import { mockOrders, type MockOrderStatus, type MockPaymentStatus } from '$lib/mock/orders';
+    import { mockOrders } from '$lib/mock/orders';
     import { mockAccounts } from '$lib/mock/accounts';
     import { mockCatalogItems } from '$lib/mock/catalog';
+    import {
+        computeReportingSummary,
+        getOrderSourceLabel,
+        isRevenueEligibleOrder,
+        type ReportingOrderItem
+    } from '$lib/utils/reporting';
     import { fade } from 'svelte/transition';
 
     type ReportTabId = 'overview' | 'sales' | 'orders' | 'customers' | 'products' | 'finance';
     type PeriodFilter = 'today' | 'week' | 'month' | '3months' | 'year' | 'all';
     type SummaryCard = { label: string; count: number; color: string };
-    type ReportPaymentStatus = MockPaymentStatus;
 
     // State
     let activeTab = $state<ReportTabId>('overview');
     let searchQuery = $state('');
     let periodFilter = $state<PeriodFilter>('month');
-    let dbOrders = $state<any[]>([]);
+    let dbOrders = $state<ReportingOrderItem[]>([]);
     let isLoading = $state(true);
     let fetchError = $state('');
+    let reportNote = $state('Report masih pre-auth production readiness dan belum menjadi accounting final.');
 
-    const reportsSourceLabel = 'Beberapa data laporan kini bersumber dari database lokal (SQLite).';
-    const exportHoldLabel = 'Export PDF/CSV production masih Hold.';
+    const exportLabel = 'Export CSV basic untuk order/report foundation.';
 
     // Helper: format rupiah
     function formatRupiah(value: number): string {
@@ -35,10 +40,11 @@
         isLoading = true;
         fetchError = '';
         try {
-            const response = await fetch('/api/orders');
+            const response = await fetch('/api/reports');
             if (!response.ok) throw new Error('Gagal memuat data dari database.');
             const data = await response.json();
             dbOrders = Array.isArray(data.items) ? data.items : [];
+            reportNote = data.note || reportNote;
         } catch (err: any) {
             console.error('Fetch error:', err);
             fetchError = err.message || 'Terjadi kesalahan saat memuat data.';
@@ -49,27 +55,6 @@
 
     onMount(() => {
         fetchDbOrders();
-    });
-
-    // Derived stats from DB
-    const dbStats = $derived({
-        totalRevenue: dbOrders.reduce((sum, o) => sum + (o.total || 0), 0),
-        orderCount: dbOrders.length,
-        statusCounts: {
-            new: dbOrders.filter(o => o.status === 'new').length,
-            confirmed: dbOrders.filter(o => o.status === 'confirmed').length,
-            processing: dbOrders.filter(o => o.status === 'processing').length,
-            ready: dbOrders.filter(o => o.status === 'ready').length,
-            delivered: dbOrders.filter(o => o.status === 'delivered').length,
-            completed: dbOrders.filter(o => o.status === 'completed').length,
-            cancelled: dbOrders.filter(o => o.status === 'cancelled').length,
-        },
-        paymentCounts: {
-            unpaid: dbOrders.filter(o => o.paymentStatus === 'unpaid').length,
-            waiting: dbOrders.filter(o => o.paymentStatus === 'waiting_verification').length,
-            paid: dbOrders.filter(o => o.paymentStatus === 'paid').length,
-            cod: dbOrders.filter(o => o.paymentStatus === 'cod').length,
-        }
     });
 
     // Tab items configuration
@@ -131,17 +116,16 @@
         return true;
     }
 
-    function orderMatchesSearch(order: any, keyword: string): boolean {
+    function orderMatchesSearch(order: ReportingOrderItem, keyword: string): boolean {
         if (!keyword) return true;
 
         const searchableValues = [
             order.id,
             order.orderNumber || '',
             order.customerName || '',
-            order.whatsapp || '',
+            getOrderSourceLabel(order.sourceType),
             order.paymentStatus || '',
             order.status || '',
-            ...(Array.isArray(order.items) ? order.items.map((item: any) => item.name) : [])
         ];
 
         return searchableValues.some((value) => String(value).toLowerCase().includes(keyword));
@@ -152,10 +136,12 @@
     // Filtered data based on search and period (Prioritaskan DB if overview/orders/finance)
     let filteredOrders = $derived(
         dbOrders.filter((order) =>
-            isDateInSelectedPeriod(order.orderDate, periodFilter) &&
+            isDateInSelectedPeriod(order.orderDate || '', periodFilter) &&
             orderMatchesSearch(order, normalizedSearchQuery)
         )
     );
+
+    const dbStats = $derived(computeReportingSummary(filteredOrders));
 
     // Fallback filtered mock orders for other tabs
     let filteredMockOrders = $derived(
@@ -181,14 +167,14 @@
     );
 
     const orderSummaryCards = $derived<SummaryCard[]>([
-        { label: 'Menunggu', count: dbOrders.filter((o) => o.status === 'new').length, color: 'text-orange-500' },
-        { label: 'Diproses', count: dbOrders.filter((o) => o.status === 'processing' || o.status === 'confirmed').length, color: 'text-blue-500' },
+        { label: 'Menunggu', count: filteredOrders.filter((o) => o.status === 'new').length, color: 'text-orange-500' },
+        { label: 'Diproses', count: filteredOrders.filter((o) => o.status === 'processing' || o.status === 'confirmed').length, color: 'text-blue-500' },
         {
             label: 'Selesai',
-            count: dbOrders.filter((o) => o.status === 'completed' || o.status === 'delivered' || o.status === 'ready').length,
+            count: filteredOrders.filter((o) => o.status === 'completed' || o.status === 'delivered' || o.status === 'ready').length,
             color: 'text-emerald-500'
         },
-        { label: 'Dibatalkan', count: dbOrders.filter((o) => o.status === 'cancelled').length, color: 'text-red-500' }
+        { label: 'Dibatalkan', count: filteredOrders.filter((o) => o.status === 'cancelled').length, color: 'text-red-500' }
     ]);
 
     function orderStatusBadgeClass(status: string): string {
@@ -262,6 +248,12 @@
         return map[normalized] ?? normalized.toUpperCase();
     }
 
+    function sourceTypeBadgeClass(sourceType: string | null | undefined): string {
+        return sourceType === 'package_request'
+            ? 'bg-indigo-100 text-indigo-700'
+            : 'bg-zinc-100 text-zinc-600';
+    }
+
     function resetFilters() {
         searchQuery = '';
         periodFilter = 'month';
@@ -297,26 +289,26 @@
             <div class="flex flex-wrap gap-2 mb-4">
                 <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-full border border-blue-100 dark:border-blue-900/30">
                     <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-                    <span class="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest">Local SQLite Database Simulation</span>
+                    <span class="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest">Local SQLite Reporting Foundation</span>
                 </div>
             </div>
             <h1 class="text-4xl font-black text-brand-charcoal dark:text-white tracking-tighter italic uppercase">Laporan Bisnis 📈</h1>
             <p class="text-zinc-500 font-medium mt-1">
-                Monitoring performa bisnis berdasarkan data transaksi lokal. Analisa tren menggunakan data simulasi untuk melengkapi visibilitas operasional.
+                Monitoring performa bisnis berdasarkan data transaksi lokal. Revenue difokuskan ke pesanan yang sudah layak dihitung sebagai pemasukan final.
             </p>
         </div>
         <div class="flex gap-3">
-            <button
-                disabled
-                aria-label={exportHoldLabel}
-                title={exportHoldLabel}
-                class="bg-zinc-200 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-300 px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest border border-zinc-300 dark:border-zinc-700 opacity-80 cursor-not-allowed flex items-center gap-2"
+            <a
+                href="/api/reports/export.csv"
+                aria-label={exportLabel}
+                title={exportLabel}
+                class="bg-brand-charcoal dark:bg-brand-primary text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest border border-brand-charcoal dark:border-brand-primary flex items-center gap-2 hover:scale-[1.02] active:scale-[0.99] transition-transform"
             >
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>
-                Export (Hold)
-            </button>
+                Export CSV
+            </a>
         </div>
     </header>
 
@@ -359,9 +351,9 @@
     </div>
 
     <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900/30 rounded-2xl px-6 py-4">
-        <p class="text-[10px] font-black text-amber-700 dark:text-amber-300 uppercase tracking-widest">Mode Laporan: Simulasi Lokal</p>
+        <p class="text-[10px] font-black text-amber-700 dark:text-amber-300 uppercase tracking-widest">Mode Laporan: Pre-Auth Production Readiness</p>
         <p class="text-xs font-semibold text-amber-700/90 dark:text-amber-200/90 mt-1 italic">
-            Beberapa analisa tren dan demografi masih dalam tahap visual simulasi. Data pesanan & keuangan bersumber dari live SQLite.
+            {reportNote}
         </p>
     </div>
 
@@ -398,8 +390,8 @@
             <!-- Tab: Ringkasan -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm relative overflow-hidden group hover:border-brand-primary/30 transition-all">
-                    <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">Total Revenue (DB)</p>
-                    <p class="text-3xl font-black text-brand-charcoal dark:text-white italic mb-2 tracking-tighter">{formatRupiah(dbStats.totalRevenue)}</p>
+                    <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">Valid Revenue (Paid)</p>
+                    <p class="text-3xl font-black text-brand-charcoal dark:text-white italic mb-2 tracking-tighter">{formatRupiah(dbStats.validRevenue)}</p>
                     <div class="flex items-center gap-1.5 mt-2">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                         <p class="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest italic">Database Lokal Aktif</p>
@@ -407,29 +399,51 @@
                 </div>
                 <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm relative overflow-hidden group hover:border-brand-primary/30 transition-all">
                     <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">Total Orders (DB)</p>
-                    <p class="text-3xl font-black text-brand-charcoal dark:text-white italic mb-2 tracking-tighter">{dbStats.orderCount}</p>
+                    <p class="text-3xl font-black text-brand-charcoal dark:text-white italic mb-2 tracking-tighter">{dbStats.totalOrders}</p>
                     <div class="flex items-center gap-1.5 mt-2">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                         <p class="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest italic">Database Lokal Aktif</p>
                     </div>
                 </div>
                 <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm relative overflow-hidden group hover:border-brand-primary/30 transition-all">
-                    <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">Avg. Order (DB)</p>
-                    <p class="text-3xl font-black text-brand-charcoal dark:text-white italic mb-2 tracking-tighter">{formatRupiah(dbStats.orderCount > 0 ? Math.round(dbStats.totalRevenue / dbStats.orderCount) : 0)}</p>
+                    <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">Avg. Paid Order</p>
+                    <p class="text-3xl font-black text-brand-charcoal dark:text-white italic mb-2 tracking-tighter">{formatRupiah(dbStats.averagePaidOrderValue)}</p>
                     <div class="flex items-center gap-1.5 mt-2">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                         <p class="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest italic">Database Lokal Aktif</p>
                     </div>
                 </div>
                 <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm relative overflow-hidden group hover:border-brand-primary/30 transition-all">
-                    <p class="text-[10px] font-black text-orange-400 uppercase tracking-widest mb-2">Pending Verify (DB)</p>
-                    <p class="text-3xl font-black text-orange-600 italic mb-2 tracking-tighter">{dbStats.paymentCounts.waiting}</p>
+                    <p class="text-[10px] font-black text-orange-400 uppercase tracking-widest mb-2">Waiting Verification</p>
+                    <p class="text-3xl font-black text-orange-600 italic mb-2 tracking-tighter">{dbStats.waitingVerificationOrders}</p>
                     <div class="flex items-center gap-1.5 mt-2">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                         <p class="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest italic">Database Lokal Aktif</p>
                     </div>
                 </div>
             </div>
+
+            <section class="bg-white dark:bg-zinc-900 rounded-[3rem] border border-zinc-100 dark:border-zinc-800 shadow-sm p-8">
+                <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                    <h3 class="text-sm font-black text-brand-charcoal dark:text-white uppercase tracking-widest italic">Revenue Eligibility Snapshot</h3>
+                    <p class="text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em]">Paid dihitung revenue, status lain non-final</p>
+                </div>
+                <div class="grid grid-cols-2 lg:grid-cols-6 gap-4">
+                    {#each [
+                        { label: 'Paid', value: dbStats.paidOrders, tone: 'text-emerald-600 bg-emerald-50 border-emerald-100' },
+                        { label: 'Unpaid', value: dbStats.unpaidOrders, tone: 'text-zinc-700 bg-zinc-50 border-zinc-200' },
+                        { label: 'Waiting', value: dbStats.waitingVerificationOrders, tone: 'text-amber-700 bg-amber-50 border-amber-100' },
+                        { label: 'Rejected', value: dbStats.rejectedOrders, tone: 'text-red-600 bg-red-50 border-red-100' },
+                        { label: 'Cancelled', value: dbStats.cancelledOrders, tone: 'text-rose-700 bg-rose-50 border-rose-100' },
+                        { label: 'Package', value: dbStats.sourceBreakdown.packageRequest, tone: 'text-indigo-700 bg-indigo-50 border-indigo-100' }
+                    ] as item}
+                        <div class={`rounded-[1.75rem] border p-5 ${item.tone}`}>
+                            <p class="text-[9px] font-black uppercase tracking-widest mb-1">{item.label}</p>
+                            <p class="text-2xl font-black italic tracking-tighter">{item.value}</p>
+                        </div>
+                    {/each}
+                </div>
+            </section>
 
             <section class="bg-white dark:bg-zinc-900 rounded-[3rem] border border-zinc-100 dark:border-zinc-800 shadow-sm overflow-hidden">
                 <div class="p-8 border-b border-zinc-50 dark:border-zinc-800 flex justify-between items-center bg-zinc-50/30 dark:bg-zinc-800/20">
@@ -485,18 +499,18 @@
             <!-- Tab: Penjualan -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="bg-emerald-50 dark:bg-emerald-900/20 p-8 rounded-[2.5rem] border border-emerald-100 dark:border-emerald-800/30 shadow-sm relative group overflow-hidden">
-                    <p class="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-2">Total Revenue (DB)</p>
-                    <p class="text-3xl font-black text-emerald-700 dark:text-emerald-300 italic tracking-tighter">{formatRupiah(dbStats.totalRevenue)}</p>
+                    <p class="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-2">Valid Revenue (Paid)</p>
+                    <p class="text-3xl font-black text-emerald-700 dark:text-emerald-300 italic tracking-tighter">{formatRupiah(dbStats.validRevenue)}</p>
                     <span class="absolute top-4 right-6 text-[8px] font-black text-emerald-400 uppercase tracking-widest italic opacity-60">Database Lokal</span>
                 </div>
                 <div class="bg-blue-50 dark:bg-blue-900/20 p-8 rounded-[2.5rem] border border-blue-100 dark:border-blue-800/30 shadow-sm relative group overflow-hidden">
-                    <p class="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2">Total Transactions (DB)</p>
-                    <p class="text-3xl font-black text-blue-700 dark:text-blue-300 italic tracking-tighter">{dbStats.orderCount}</p>
+                    <p class="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2">Paid Orders</p>
+                    <p class="text-3xl font-black text-blue-700 dark:text-blue-300 italic tracking-tighter">{dbStats.paidOrders}</p>
                     <span class="absolute top-4 right-6 text-[8px] font-black text-blue-400 uppercase tracking-widest italic opacity-60">Database Lokal</span>
                 </div>
                 <div class="bg-indigo-50 dark:bg-indigo-900/20 p-8 rounded-[2.5rem] border border-indigo-100 dark:border-indigo-800/30 shadow-sm relative group overflow-hidden">
-                    <p class="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mb-2">Avg. Value (DB)</p>
-                    <p class="text-3xl font-black text-indigo-700 dark:text-indigo-300 italic tracking-tighter">{formatRupiah(dbStats.orderCount > 0 ? Math.round(dbStats.totalRevenue / dbStats.orderCount) : 0)}</p>
+                    <p class="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mb-2">Pending Revenue</p>
+                    <p class="text-3xl font-black text-indigo-700 dark:text-indigo-300 italic tracking-tighter">{formatRupiah(dbStats.pendingRevenue)}</p>
                     <span class="absolute top-4 right-6 text-[8px] font-black text-indigo-400 uppercase tracking-widest italic opacity-60">Database Lokal</span>
                 </div>
             </div>
@@ -512,8 +526,10 @@
                             <tr class="bg-zinc-50/50 dark:bg-zinc-800/50">
                                 <th class="px-8 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Order ID</th>
                                 <th class="px-8 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Customer</th>
+                                <th class="px-8 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Source</th>
                                 <th class="px-8 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Tanggal</th>
                                 <th class="px-8 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest text-right">Total</th>
+                                <th class="px-8 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest text-center">Revenue Rule</th>
                                 <th class="px-8 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest text-center">Status Bayar</th>
                             </tr>
                         </thead>
@@ -522,8 +538,18 @@
                                 <tr class="hover:bg-zinc-50/30 dark:hover:bg-zinc-800/20 transition-all">
                                     <td class="px-8 py-6 font-black text-zinc-400 text-xs">#{order.id}</td>
                                     <td class="px-8 py-6 text-sm font-black text-brand-charcoal dark:text-white">{order.customerName}</td>
+                                    <td class="px-8 py-6">
+                                        <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest {sourceTypeBadgeClass(order.sourceType)}">
+                                            {getOrderSourceLabel(order.sourceType)}
+                                        </span>
+                                    </td>
                                     <td class="px-8 py-6 text-xs text-zinc-500 font-bold italic">{order.orderDate}</td>
                                     <td class="px-8 py-6 text-right font-black text-emerald-600">{formatRupiah(order.total)}</td>
+                                    <td class="px-8 py-6 text-center">
+                                        <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest {isRevenueEligibleOrder(order) ? 'bg-emerald-100 text-emerald-700' : 'bg-zinc-100 text-zinc-600'}">
+                                            {isRevenueEligibleOrder(order) ? 'Masuk Revenue' : 'Belum Masuk'}
+                                        </span>
+                                    </td>
                                     <td class="px-8 py-6 text-center">
                                         <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest
                                             {paymentStatusBadgeClass(order.paymentStatus)}">
@@ -533,7 +559,7 @@
                                 </tr>
                             {:else}
                                 <tr>
-                                    <td colspan="5" class="px-8 py-10 text-center text-sm font-semibold text-zinc-400">
+                                    <td colspan="7" class="px-8 py-10 text-center text-sm font-semibold text-zinc-400">
                                         Tidak ada data penjualan yang cocok dengan pencarian/filter periode.
                                     </td>
                                 </tr>
@@ -566,8 +592,10 @@
                             <tr class="bg-zinc-50/50 dark:bg-zinc-800/50">
                                 <th class="px-8 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Order ID</th>
                                 <th class="px-8 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Customer</th>
+                                <th class="px-8 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Source</th>
                                 <th class="px-8 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Delivery</th>
                                 <th class="px-8 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Order Status</th>
+                                <th class="px-8 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Payment</th>
                                 <th class="px-8 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest text-right">Total</th>
                             </tr>
                         </thead>
@@ -576,6 +604,11 @@
                                 <tr class="hover:bg-zinc-50/30 dark:hover:bg-zinc-800/20 transition-all">
                                     <td class="px-8 py-6 font-black text-zinc-400 text-xs">#{order.id}</td>
                                     <td class="px-8 py-6 text-sm font-black text-brand-charcoal dark:text-white">{order.customerName}</td>
+                                    <td class="px-8 py-6">
+                                        <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest {sourceTypeBadgeClass(order.sourceType)}">
+                                            {getOrderSourceLabel(order.sourceType)}
+                                        </span>
+                                    </td>
                                     <td class="px-8 py-6 text-xs text-zinc-500 font-bold italic">{order.deliveryDate}</td>
                                     <td class="px-8 py-6">
                                         <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest
@@ -583,11 +616,16 @@
                                             {orderStatusLabel(order.status)}
                                         </span>
                                     </td>
+                                    <td class="px-8 py-6">
+                                        <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest {paymentStatusBadgeClass(order.paymentStatus)}">
+                                            {paymentStatusLabel(order.paymentStatus)}
+                                        </span>
+                                    </td>
                                     <td class="px-8 py-6 text-right font-black text-brand-charcoal dark:text-white">{formatRupiah(order.total)}</td>
                                 </tr>
                             {:else}
                                 <tr>
-                                    <td colspan="5" class="px-8 py-10 text-center text-sm font-semibold text-zinc-400">
+                                    <td colspan="7" class="px-8 py-10 text-center text-sm font-semibold text-zinc-400">
                                         Tidak ada data pesanan yang cocok dengan pencarian/filter periode.
                                     </td>
                                 </tr>
@@ -730,21 +768,21 @@
             <!-- Tab: Keuangan -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div class="bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-800 shadow-sm text-white relative group">
-                    <p class="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">Gross Revenue (DB)</p>
-                    <p class="text-2xl font-black text-brand-primary italic tracking-tighter">{formatRupiah(dbStats.totalRevenue)}</p>
+                    <p class="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">Valid Revenue (Paid)</p>
+                    <p class="text-2xl font-black text-brand-primary italic tracking-tighter">{formatRupiah(dbStats.validRevenue)}</p>
                     <span class="absolute top-4 right-6 text-[7px] font-black text-emerald-400 uppercase tracking-widest italic animate-pulse">DB Sync</span>
                 </div>
                 <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm relative">
                     <p class="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-2">Lunas / Paid (DB)</p>
-                    <p class="text-2xl font-black text-emerald-600 italic tracking-tighter">{formatRupiah(dbOrders.filter(o => o.paymentStatus === 'paid').reduce((sum, o) => sum + (o.total || 0), 0))}</p>
+                    <p class="text-2xl font-black text-emerald-600 italic tracking-tighter">{formatRupiah(dbStats.validRevenue)}</p>
                 </div>
                 <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm relative">
-                    <p class="text-[10px] font-black text-orange-400 uppercase tracking-widest mb-2">Belum Bayar / Pending (DB)</p>
-                    <p class="text-2xl font-black text-orange-600 italic tracking-tighter">{formatRupiah(dbOrders.filter(o => o.paymentStatus === 'unpaid' || o.paymentStatus === 'waiting_verification').reduce((sum, o) => sum + (o.total || 0), 0))}</p>
+                    <p class="text-[10px] font-black text-orange-400 uppercase tracking-widest mb-2">Belum Final / Pending (DB)</p>
+                    <p class="text-2xl font-black text-orange-600 italic tracking-tighter">{formatRupiah(dbStats.pendingRevenue)}</p>
                 </div>
                 <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm relative">
-                    <p class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2">Metode COD (DB)</p>
-                    <p class="text-2xl font-black text-indigo-600 italic tracking-tighter">{dbStats.paymentCounts.cod} Order</p>
+                    <p class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2">Package Orders (DB)</p>
+                    <p class="text-2xl font-black text-indigo-600 italic tracking-tighter">{dbStats.sourceBreakdown.packageRequest} Order</p>
                 </div>
             </div>
 
@@ -759,9 +797,11 @@
                             <tr class="bg-zinc-50/50 dark:bg-zinc-800/50">
                                 <th class="px-8 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Order ID</th>
                                 <th class="px-8 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Customer</th>
+                                <th class="px-8 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Source</th>
                                 <th class="px-8 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest text-right">Total</th>
                                 <th class="px-8 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Payment Status</th>
                                 <th class="px-8 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Payment Method</th>
+                                <th class="px-8 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Revenue Rule</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-zinc-50 dark:divide-zinc-800">
@@ -769,6 +809,11 @@
                                 <tr class="hover:bg-zinc-50/30 dark:hover:bg-zinc-800/20 transition-all">
                                     <td class="px-8 py-6 font-black text-zinc-400 text-xs">#{order.id}</td>
                                     <td class="px-8 py-6 text-sm font-black text-brand-charcoal dark:text-white">{order.customerName}</td>
+                                    <td class="px-8 py-6">
+                                        <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest {sourceTypeBadgeClass(order.sourceType)}">
+                                            {getOrderSourceLabel(order.sourceType)}
+                                        </span>
+                                    </td>
                                     <td class="px-8 py-6 text-right font-black text-brand-charcoal dark:text-white">{formatRupiah(order.total)}</td>
                                     <td class="px-8 py-6">
                                         <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest
@@ -777,10 +822,15 @@
                                         </span>
                                     </td>
                                     <td class="px-8 py-6 text-xs text-zinc-500 font-bold italic uppercase tracking-tighter">{paymentMethodLabel(order.paymentMethod || 'transfer')}</td>
+                                    <td class="px-8 py-6">
+                                        <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest {isRevenueEligibleOrder(order) ? 'bg-emerald-100 text-emerald-700' : 'bg-zinc-100 text-zinc-600'}">
+                                            {isRevenueEligibleOrder(order) ? 'Paid Final' : 'Non Final'}
+                                        </span>
+                                    </td>
                                 </tr>
                             {:else}
                                 <tr>
-                                    <td colspan="5" class="px-8 py-10 text-center text-sm font-semibold text-zinc-400">
+                                    <td colspan="7" class="px-8 py-10 text-center text-sm font-semibold text-zinc-400">
                                         Tidak ada data keuangan yang cocok dengan pencarian/filter periode.
                                     </td>
                                 </tr>
