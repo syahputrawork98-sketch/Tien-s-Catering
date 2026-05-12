@@ -1,7 +1,6 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import { mockAdminMetrics, mockAdminSalesReports } from '$lib/mock/reports';
-    import { mockOrders } from '$lib/mock/orders';
     import { mockAccounts } from '$lib/mock/accounts';
     import { mockCatalogItems } from '$lib/mock/catalog';
     import {
@@ -142,14 +141,6 @@
     );
 
     const dbStats = $derived(computeReportingSummary(filteredOrders));
-
-    // Fallback filtered mock orders for other tabs
-    let filteredMockOrders = $derived(
-        mockOrders.filter((order) =>
-            isDateInSelectedPeriod(order.orderDate, periodFilter) &&
-            orderMatchesSearch(order, normalizedSearchQuery)
-        )
-    );
 
     let filteredAccounts = $derived(
         mockAccounts.filter(a => 

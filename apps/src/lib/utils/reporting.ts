@@ -4,12 +4,12 @@ export type ReportingOrderItem = {
 	customerName: string;
 	orderDate: string;
 	deliveryDate: string;
-	status: string | null;
-	paymentMethod: string | null;
-	paymentStatus: string | null;
-	total: number | null;
-	sourceType: string | null;
-	sourceId: string | null;
+	status: string;
+	paymentMethod: string;
+	paymentStatus: string;
+	total: number;
+	sourceType?: string | null;
+	sourceId?: string | null;
 };
 
 export type ReportingSummary = {
