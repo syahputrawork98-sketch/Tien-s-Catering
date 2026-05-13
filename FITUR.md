@@ -19,6 +19,7 @@
 
 - **Public**: Katalog menu (API), Cart stock-aware, Checkout order, Order-success response, Public `/paket-catering` (API).
 - [x] **Batch 39**: Reporting + Export Foundation Polish.
+- [x] **Batch 40**: Invoice Print/PDF Polish (Commercial Invoice styling).
 - [x] **Batch 37**: Commercial Invoice Basic (Print-friendly).
 - [x] **Batch 35**: Admin Payment Verification (Manual).
 - [x] **Batch 34**: Payment Proof Upload (Local Storage).
@@ -28,7 +29,6 @@
 - **Integration**: Convert Package Request to Order (Admin-driven), Source metadata tracking.
 
 ### 2. Ready for Batch (Antrian Eksekusi)
-- [ ] **Batch 40**: Invoice Print/PDF Polish (Commercial Invoice styling).
 - [ ] **Batch 41**: Reporting Revenue Logic Advanced (Deep Analytics).
 - [ ] **Batch 43-45**: Deployment Readiness Foundation.
 

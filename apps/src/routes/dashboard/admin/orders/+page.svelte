@@ -721,7 +721,7 @@
 
 <div class="space-y-10 pb-24 relative">
 	<header class="flex flex-col md:flex-row md:items-start justify-between gap-6" in:fly={{ y: -20, duration: 500 }}>
-		<div>
+		<div class="flex-1">
 			<div class="flex flex-wrap gap-2 mb-4">
 				<div class="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-full border border-blue-100 dark:border-blue-900/30">
 					<span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
@@ -736,6 +736,15 @@
 			<p class="text-zinc-500 font-medium mt-2 max-w-3xl">
 				Data pesanan dikelola secara riil melalui database lokal. Status alur kerja dan mutasi stok telah aktif, sementara modul pembayaran otomatis tetap berada dalam fase simulasi operasional.
 			</p>
+		</div>
+
+		<div class="flex shrink-0">
+			<a 
+				href="/api/reports/export.csv" 
+				class="inline-flex items-center gap-3 px-8 py-4 bg-brand-charcoal dark:bg-brand-primary text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl hover:scale-105 active:scale-95 transition-all"
+			>
+				<span>📥</span> Export Orders (CSV)
+			</a>
 		</div>
 	</header>
 
