@@ -10,21 +10,24 @@
 ## Status Teknis Saat Ini
 
 - Local backend foundation sudah aktif.
-- SQLite lokal dipakai untuk data awal:
+- SQLite lokal dipakai untuk data operasional:
   - persona dev,
   - menu + daily stock,
-  - orders + order_items + delivery_info + payment_info.
+  - orders + order_items + delivery_info + payment_info,
+  - customer registration status.
 - Public katalog membaca data menu dari API (`GET /api/menus`).
 - Checkout menulis order ke API (`POST /api/orders`).
-- Admin order list dan order detail membaca database secara read-only (`GET /api/orders`).
+- Admin area (Orders, Reports, Customers) membaca dan menulis ke database via API lokal.
 - Auth masih simulasi/dev persona switcher (belum auth production).
-- Payment gateway belum ada (termasuk QRIS production/upload bukti).
-- Stock decrement/restore transaction belum aktif.
+- Payment gateway masih dalam mode simulasi bukti transfer (Hold Production).
+- Stock management (decrement/restore) sudah aktif dalam alur konfirmasi/pembatalan order.
 
-## Technical Debt Baseline
+## Deployment Readiness Status (Batch 44)
 
-- `npm run check` baseline masih memiliki issue lama project-wide di area di luar batch backend order admin.
-- Issue tersebut perlu ditangani bertahap terpisah dari scope feature batch.
+- **Build Hygiene**: `npm run check` sudah bersih (0 errors, 0 warnings) untuk area aktif.
+- **Build Success**: `npm run build` berhasil dijalankan secara lokal menggunakan adapter-auto.
+- **Routing Safety**: Jalur navigasi dashboard admin dan customer telah diverifikasi, termasuk perbaikan fallback UI untuk data kosong.
+- **Hold for Production**: Deployment production riil masih ditahan (Hold) menunggu Fase E (Auth & Security).
 
 ## Catatan Arah Dokumen
 

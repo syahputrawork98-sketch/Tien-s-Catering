@@ -42,7 +42,7 @@ Batch 31–45 **TIDAK** mencakup fitur-fitur berikut (HOLD hingga Fase E):
 
 ### Fase D — Deployment Readiness
 - **Batch 43**: Admin Customer Management Polish (Selesai).
-- **Batch 44**: Upload Storage & Database Deployment Notes (Ditunda).
+- **Batch 44**: Local Deployment Readiness & Build Hygiene (Selesai).
 - **Batch 45**: Pre-Auth Production Readiness Checklist (Ditunda).
 - **Batch 46**: **Final Fase A–D Handover + Health Check** (Ditunda).
 

@@ -31,7 +31,8 @@
 - **Integration**: Convert Package Request to Order (Admin-driven), Source metadata tracking.
 
 - [x] **Batch 43**: Admin Customer Management Overview Polish. (Selesai)
-- [ ] **Batch 44-45**: Deployment Readiness Foundation.
+- [x] **Batch 44**: Local Deployment Readiness & Build Hygiene. (Selesai)
+- [ ] **Batch 45**: Pre-Auth Production Readiness Checklist.
 
 ## 3. Local-Compatible / Bisa Dikerjakan
 *Fitur bisnis yang bisa dikembangkan secara lokal (Pre-Auth).*
