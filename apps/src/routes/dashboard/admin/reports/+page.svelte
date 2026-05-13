@@ -22,7 +22,7 @@
     let dbOrders = $state<ReportingOrderItem[]>([]);
     let isLoading = $state(true);
     let fetchError = $state('');
-    let reportNote = $state('Report masih pre-auth production readiness dan belum menjadi accounting final.');
+    let reportNote = $state('Report berbasis data SQLite lokal. Revenue final mencakup pesanan PAID atau COMPLETED/DELIVERED.');
 
     const exportLabel = 'Export CSV basic untuk order/report foundation.';
 
@@ -285,23 +285,35 @@
             </div>
             <h1 class="text-4xl font-black text-brand-charcoal dark:text-white tracking-tighter italic uppercase">Laporan Bisnis 📈</h1>
             <p class="text-zinc-500 font-medium mt-1">
-                Monitoring performa bisnis berdasarkan data transaksi lokal. Revenue difokuskan ke pesanan yang sudah layak dihitung sebagai pemasukan final.
+                Monitoring performa bisnis dari database lokal. <span class="text-brand-primary">Revenue Final</span> dihitung dari pesanan Lunas atau Selesai.
             </p>
         </div>
         <div class="flex flex-col items-start md:items-end gap-2">
-            <a
-                href="/api/reports/export.csv"
-                aria-label={exportLabel}
-                title={exportLabel}
-                class="bg-brand-charcoal dark:bg-brand-primary text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest border border-brand-charcoal dark:border-brand-primary flex items-center gap-2 hover:scale-[1.02] active:scale-[0.99] transition-transform"
-            >
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-                Export CSV
-            </a>
+            <div class="flex items-center gap-2">
+                <button
+                    onclick={fetchDbOrders}
+                    disabled={isLoading}
+                    class="bg-white dark:bg-zinc-900 text-brand-charcoal dark:text-white p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800 hover:scale-105 active:scale-95 transition-all shadow-sm disabled:opacity-50"
+                    title="Refresh Data"
+                >
+                    <svg class="w-5 h-5 {isLoading ? 'animate-spin' : ''}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                </button>
+                <a
+                    href="/api/reports/export.csv"
+                    aria-label={exportLabel}
+                    title={exportLabel}
+                    class="bg-brand-charcoal dark:bg-brand-primary text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest border border-brand-charcoal dark:border-brand-primary flex items-center gap-2 hover:scale-[1.02] active:scale-[0.99] transition-transform shadow-lg shadow-brand-charcoal/10"
+                >
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Export CSV
+                </a>
+            </div>
             <p class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
-                Export order summary + revenue status (paid/non-final)
+                Format: tc-report-orders-YYYYMMDD.csv
             </p>
         </div>
     </header>
@@ -344,11 +356,14 @@
         </div>
     </div>
 
-    <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900/30 rounded-2xl px-6 py-4">
-        <p class="text-[10px] font-black text-amber-700 dark:text-amber-300 uppercase tracking-widest">Mode Laporan: Pre-Auth Production Readiness</p>
-        <p class="text-xs font-semibold text-amber-700/90 dark:text-amber-200/90 mt-1 italic">
-            {reportNote}
-        </p>
+    <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900/30 rounded-2xl px-6 py-4 flex items-start gap-4">
+        <span class="text-xl">ℹ️</span>
+        <div>
+            <p class="text-[10px] font-black text-amber-700 dark:text-amber-300 uppercase tracking-widest">Metodologi Laporan</p>
+            <p class="text-xs font-semibold text-amber-700/90 dark:text-amber-200/90 mt-0.5 italic">
+                {reportNote}
+            </p>
+        </div>
     </div>
 
     <!-- Tabs -->
@@ -394,43 +409,43 @@
             <!-- Tab: Ringkasan -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
                 <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm relative overflow-hidden group hover:border-brand-primary/30 transition-all">
-                    <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">Valid Revenue (Paid)</p>
-                    <p class="text-3xl font-black text-brand-charcoal dark:text-white italic mb-2 tracking-tighter">{formatRupiah(dbStats.validRevenue)}</p>
+                    <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">Revenue Final</p>
+                    <p class="text-3xl font-black text-emerald-600 italic mb-2 tracking-tighter">{formatRupiah(dbStats.validRevenue)}</p>
                     <div class="flex items-center gap-1.5 mt-2">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <p class="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest italic">Database Lokal Aktif</p>
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                        <p class="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest italic">Paid/Completed</p>
                     </div>
                 </div>
                 <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm relative overflow-hidden group hover:border-brand-primary/30 transition-all">
-                    <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">Total Orders (DB)</p>
+                    <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">Non-Final / Pending</p>
+                    <p class="text-3xl font-black text-amber-600 italic mb-2 tracking-tighter">{formatRupiah(dbStats.pendingRevenue)}</p>
+                    <div class="flex items-center gap-1.5 mt-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                        <p class="text-[9px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-widest italic">Belum Lunas/Baru</p>
+                    </div>
+                </div>
+                <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm relative overflow-hidden group hover:border-brand-primary/30 transition-all">
+                    <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">Total Pesanan</p>
                     <p class="text-3xl font-black text-brand-charcoal dark:text-white italic mb-2 tracking-tighter">{dbStats.totalOrders}</p>
                     <div class="flex items-center gap-1.5 mt-2">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <p class="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest italic">Database Lokal Aktif</p>
+                        <span class="w-1.5 h-1.5 rounded-full bg-zinc-400"></span>
+                        <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest italic">Database Lokal</p>
                     </div>
                 </div>
                 <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm relative overflow-hidden group hover:border-brand-primary/30 transition-all">
-                    <p class="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-2">Paid Orders</p>
-                    <p class="text-3xl font-black text-blue-600 italic mb-2 tracking-tighter">{dbStats.paidOrders}</p>
-                    <div class="flex items-center gap-1.5 mt-2">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <p class="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest italic">Database Lokal Aktif</p>
-                    </div>
-                </div>
-                <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm relative overflow-hidden group hover:border-brand-primary/30 transition-all">
-                    <p class="text-[10px] font-black text-orange-400 uppercase tracking-widest mb-2">Waiting Verification</p>
+                    <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">Wait Verification</p>
                     <p class="text-3xl font-black text-orange-600 italic mb-2 tracking-tighter">{dbStats.waitingVerificationOrders}</p>
                     <div class="flex items-center gap-1.5 mt-2">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <p class="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest italic">Database Lokal Aktif</p>
+                        <span class="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
+                        <p class="text-[9px] font-black text-orange-500 uppercase tracking-widest italic italic">Butuh Review</p>
                     </div>
                 </div>
                 <div class="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-sm relative overflow-hidden group hover:border-brand-primary/30 transition-all">
-                    <p class="text-[10px] font-black text-red-400 uppercase tracking-widest mb-2">Rejected + Cancelled</p>
+                    <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">Batal / Ditolak</p>
                     <p class="text-3xl font-black text-red-600 italic mb-2 tracking-tighter">{dbStats.rejectedOrders + dbStats.cancelledOrders}</p>
                     <div class="flex items-center gap-1.5 mt-2">
-                        <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
-                        <p class="text-[9px] font-black text-red-500 uppercase tracking-widest italic">Non-Final Revenue</p>
+                        <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                        <p class="text-[9px] font-black text-red-500 uppercase tracking-widest italic italic">Zero Revenue</p>
                     </div>
                 </div>
             </div>
@@ -438,7 +453,7 @@
             <section class="bg-white dark:bg-zinc-900 rounded-[3rem] border border-zinc-100 dark:border-zinc-800 shadow-sm p-8">
                 <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
                     <h3 class="text-sm font-black text-brand-charcoal dark:text-white uppercase tracking-widest italic">Revenue Eligibility Snapshot</h3>
-                    <p class="text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em]">Revenue final hanya dari paid orders. Unpaid, waiting, cod pending, rejected, cancelled = non-final.</p>
+                    <p class="text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em]">Revenue dianggap final jika pesanan sudah dibayar (PAID) atau barang sudah diterima (COMPLETED/DELIVERED).</p>
                 </div>
                 <div class="grid grid-cols-2 lg:grid-cols-6 gap-4">
                     {#each [

@@ -56,7 +56,14 @@ export function isRevenueEligibleOrder(order: ReportingOrderItem): boolean {
 	const paymentStatus = normalizePaymentStatus(order.paymentStatus);
 	const orderStatus = normalizeOrderStatus(order.status);
 
-	return paymentStatus === 'paid' && orderStatus !== 'cancelled';
+	// Revenue dianggap final jika sudah PAID, atau jika status pesanan sudah COMPLETED/DELIVERED
+	// (asumsi: barang sudah sampai/diterima maka nilai ekonomis sudah terwujud).
+	// Tetap exclude pesanan yang dibatalkan.
+	const isPaid = paymentStatus === 'paid';
+	const isCompleted = orderStatus === 'completed' || orderStatus === 'delivered';
+	const isCancelled = orderStatus === 'cancelled';
+
+	return (isPaid || isCompleted) && !isCancelled;
 }
 
 export function computeReportingSummary(orders: ReportingOrderItem[]): ReportingSummary {
@@ -139,27 +146,27 @@ function escapeCsvValue(value: string | number): string {
 
 export function buildOrdersCsv(orders: ReportingOrderItem[]): string {
 	const header = [
-		'order_id',
-		'order_number',
-		'customer',
-		'source_type',
-		'order_status',
-		'payment_status',
-		'total',
-		'created_date',
-		'revenue_status'
+		'Order ID',
+		'Order Number',
+		'Customer',
+		'Source Type',
+		'Order Status',
+		'Payment Status',
+		'Total Amount',
+		'Created Date',
+		'Revenue Category'
 	];
 
 	const rows = orders.map((order) => [
 		order.id,
-		order.orderNumber ?? '',
-		order.customerName ?? '',
+		order.orderNumber ?? '-',
+		order.customerName ?? 'Guest',
 		getOrderSourceLabel(order.sourceType),
-		normalizeOrderStatus(order.status),
-		normalizePaymentStatus(order.paymentStatus),
+		normalizeOrderStatus(order.status).toUpperCase(),
+		normalizePaymentStatus(order.paymentStatus).toUpperCase(),
 		Math.max(0, Number(order.total ?? 0)),
-		order.orderDate ?? '',
-		isRevenueEligibleOrder(order) ? 'counted_as_revenue' : 'not_counted'
+		order.orderDate ?? '-',
+		isRevenueEligibleOrder(order) ? 'FINAL_REVENUE' : 'PENDING/NON_FINAL'
 	]);
 
 	return [header, ...rows]

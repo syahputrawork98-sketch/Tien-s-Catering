@@ -18,18 +18,19 @@
 *Fitur yang sudah aktif di database SQLite lokal.*
 
 - **Public**: Katalog menu (API), Cart stock-aware, Checkout order, Order-success response, Public `/paket-catering` (API).
-- **Customer**: Dashboard home summary, Order list, Profile/Address local CRUD, Payment Proof Upload (local storage).
+- [x] **Batch 39**: Reporting + Export Foundation Polish.
+- [x] **Batch 37**: Commercial Invoice Basic (Print-friendly).
+- [x] **Batch 35**: Admin Payment Verification (Manual).
+- [x] **Batch 34**: Payment Proof Upload (Local Storage).
 - **Admin**: Order management (List, Detail, Status update, Payment status manual), Package management, Package Request review (Review, Status, Notes), Commercial Invoice Basic, Reports summary (Revenue, Orders, Finance), Users local simulation.
 - **CS**: Dashboard orders & customers handling clarity.
 - **Foundation**: Local backend active (`/api/health`, `/api/menus`, `/api/orders`, `/api/packages`, `/api/package-requests`).
 - **Integration**: Convert Package Request to Order (Admin-driven), Source metadata tracking.
 
-## 2. Ready for Batch
-*Fitur yang siap dikerjakan dalam waktu dekat.*
-
-- **Batch 39**: Invoice Print/PDF Polish + Order Export Basic.
-- **Batch 40**: Reporting Revenue Logic Phase 3.
-- **Batch 41**: Reports Export CSV/PDF Basic.
+### 2. Ready for Batch (Antrian Eksekusi)
+- [ ] **Batch 40**: Invoice Print/PDF Polish (Commercial Invoice styling).
+- [ ] **Batch 41**: Reporting Revenue Logic Advanced (Deep Analytics).
+- [ ] **Batch 43-45**: Deployment Readiness Foundation.
 
 ## 3. Local-Compatible / Bisa Dikerjakan
 *Fitur bisnis yang bisa dikembangkan secara lokal (Pre-Auth).*

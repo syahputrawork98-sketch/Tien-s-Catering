@@ -11,7 +11,7 @@ export const GET: RequestHandler = async () => {
 		return json({
 			items,
 			summary,
-			note: 'Report masih pre-auth production readiness dan belum menjadi accounting final.'
+			note: 'Report berbasis data SQLite lokal. Revenue final mencakup pesanan PAID atau COMPLETED/DELIVERED.'
 		});
 	} catch (error) {
 		console.error('Failed to build report summary.', error);

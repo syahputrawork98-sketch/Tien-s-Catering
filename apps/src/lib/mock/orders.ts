@@ -29,7 +29,7 @@ export type MockPaymentStatus =
   | 'partially_paid'
   | 'cod_pending'
   | 'paid'
-  | 'refunded';
+  | 'rejected';
 
 export type MockPaymentProofStage =
   | 'full'
