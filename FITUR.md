@@ -30,8 +30,8 @@
 - **Foundation**: Local backend active (`/api/health`, `/api/menus`, `/api/orders`, `/api/packages`, `/api/package-requests`).
 - **Integration**: Convert Package Request to Order (Admin-driven), Source metadata tracking.
 
-### 2. Ready for Batch (Antrian Eksekusi)
-- [ ] **Batch 43-45**: Deployment Readiness Foundation.
+- [x] **Batch 43**: Admin Customer Management Overview Polish. (Selesai)
+- [ ] **Batch 44-45**: Deployment Readiness Foundation.
 
 ## 3. Local-Compatible / Bisa Dikerjakan
 *Fitur bisnis yang bisa dikembangkan secara lokal (Pre-Auth).*

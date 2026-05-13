@@ -14,6 +14,8 @@
     let showChangeTypeModal = $state(false);
     let showAddModal = $state(false);
     let selectedAccount = $state<MockAccount | null>(null);
+    let searchQuery = $state('');
+    let registrationFilter = $state<string>('ALL');
 
     let approveType = $state<'personal' | 'company' | 'institution'>('personal');
     let rejectReason = $state('');
@@ -26,14 +28,34 @@
     let addError = $state('');
 
     const filteredAccounts = $derived(() => {
+        let items = accounts;
+
+        // Tab Filter
         switch (activeTab) {
-            case 'PENDING': return accounts.filter(a => a.registrationStatus === 'pending');
-            case 'REJECTED': return accounts.filter(a => a.registrationStatus === 'rejected');
-            case 'personal': return accounts.filter(a => a.accountType === 'personal' && a.registrationStatus === 'approved');
-            case 'company': return accounts.filter(a => a.accountType === 'company' && a.registrationStatus === 'approved');
-            case 'institution': return accounts.filter(a => a.accountType === 'institution' && a.registrationStatus === 'approved');
-            default: return accounts;
+            case 'PENDING': items = items.filter(a => a.registrationStatus === 'pending'); break;
+            case 'REJECTED': items = items.filter(a => a.registrationStatus === 'rejected'); break;
+            case 'personal': items = items.filter(a => a.accountType === 'personal' && a.registrationStatus === 'approved'); break;
+            case 'company': items = items.filter(a => a.accountType === 'company' && a.registrationStatus === 'approved'); break;
+            case 'institution': items = items.filter(a => a.accountType === 'institution' && a.registrationStatus === 'approved'); break;
         }
+
+        // Registration Filter
+        if (registrationFilter !== 'ALL') {
+            items = items.filter(a => a.registrationStatus === registrationFilter);
+        }
+
+        // Search Filter
+        const normalizedSearch = searchQuery.trim().toLowerCase();
+        if (normalizedSearch) {
+            items = items.filter(a => 
+                a.name.toLowerCase().includes(normalizedSearch) ||
+                (a.email || '').toLowerCase().includes(normalizedSearch) ||
+                (a.whatsapp || '').includes(normalizedSearch) ||
+                (a.address || '').toLowerCase().includes(normalizedSearch)
+            );
+        }
+
+        return items;
     });
 
     const stats = $derived(() => ({
@@ -155,15 +177,36 @@
 
     <!-- Tabs & List -->
     <div class="space-y-8" in:fade={{ delay: 250 }}>
-        <div class="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
-            {#each tabs as tab}
-                <button onclick={() => activeTab = tab.id}
-                    class="px-6 py-3 rounded-full text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap flex items-center gap-2
-                    {activeTab === tab.id ? 'bg-brand-charcoal dark:bg-white text-white dark:text-brand-charcoal shadow-xl scale-105' : 'bg-white dark:bg-zinc-900 text-zinc-400 border border-zinc-100 dark:border-zinc-800 hover:border-zinc-300'}">
-                    {tab.label}
-                    {#if tab.count() > 0}<span class="px-2 py-0.5 rounded-md text-[9px] {activeTab === tab.id ? 'bg-white/20 text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500'}">{tab.count()}</span>{/if}
+        <div class="flex flex-col lg:flex-row lg:items-center gap-3 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-2xl p-4">
+            <div class="relative flex-1">
+                <input
+                    type="text"
+                    bind:value={searchQuery}
+                    placeholder="Cari nama, email, WhatsApp, atau alamat..."
+                    class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 pl-11 text-xs font-semibold text-zinc-700 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-brand-primary/40"
+                />
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400">🔎</span>
+            </div>
+
+            <select
+                bind:value={registrationFilter}
+                class="w-full lg:w-[200px] rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-3 text-xs font-bold text-zinc-700 dark:text-zinc-200"
+            >
+                <option value="ALL">Semua Registrasi</option>
+                <option value="approved">Disetujui (Approved)</option>
+                <option value="pending">Menunggu (Pending)</option>
+                <option value="rejected">Ditolak (Rejected)</option>
+            </select>
+
+            {#if searchQuery || registrationFilter !== 'ALL' || activeTab !== 'ALL'}
+                <button
+                    type="button"
+                    onclick={() => { searchQuery = ''; registrationFilter = 'ALL'; activeTab = 'ALL'; }}
+                    class="w-full lg:w-auto px-5 py-3 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-500 text-[10px] font-black uppercase tracking-widest hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                >
+                    Reset
                 </button>
-            {/each}
+            {/if}
         </div>
 
         <div class="space-y-4">
@@ -179,12 +222,13 @@
                                 {:else if acc.requestedType}
                                     <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase bg-blue-50 dark:bg-blue-900/20 text-blue-500">Req: {acc.requestedType}</span>
                                 {/if}
+                                <span class="px-3 py-1 rounded-full text-[10px] font-black bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 uppercase tracking-wider">Local DB</span>
                             </div>
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
                                 <div><p class="text-[9px] font-black text-zinc-400 uppercase mb-1">WhatsApp</p><p class="font-bold">{acc.whatsapp ?? '-'}</p></div>
-                                <div><p class="text-[9px] font-black text-zinc-400 uppercase mb-1">Total Order</p><p class="font-bold">{acc.totalOrders ?? 0}</p></div>
-                                <div><p class="text-[9px] font-black text-zinc-400 uppercase mb-1">Didaftarkan</p><p class="font-bold">{acc.createdBy ?? '-'}</p></div>
-                                <div><p class="text-[9px] font-black text-zinc-400 uppercase mb-1">Disetujui oleh</p><p class="font-bold">{acc.approvedBy ?? '-'}</p></div>
+                                <div><p class="text-[9px] font-black text-zinc-400 uppercase mb-1">Total Order (Vol)</p><p class="font-bold">{acc.totalOrders ?? 0} Order</p></div>
+                                <div><p class="text-[9px] font-black text-zinc-400 uppercase mb-1">Last Order</p><p class="font-bold">{acc.lastOrderDate ?? '-'}</p></div>
+                                <div><p class="text-[9px] font-black text-zinc-400 uppercase mb-1">Didaftarkan</p><p class="font-bold uppercase tracking-tighter text-[10px]">{acc.createdBy ?? '-'}</p></div>
                             </div>
                         </div>
                         <div class="flex flex-wrap lg:flex-col gap-2 lg:min-w-[160px]">
@@ -200,8 +244,10 @@
                     </div>
                 </div>
             {:else}
-                <div class="text-center py-20 bg-white dark:bg-zinc-900 rounded-[3rem] border border-dashed border-zinc-200 dark:border-zinc-800">
-                    <p class="text-zinc-400 font-black">Tidak ada data customer</p>
+                <div class="text-center py-24 bg-white dark:bg-zinc-900 rounded-[3rem] border border-dashed border-zinc-200 dark:border-zinc-800" in:fade>
+                    <p class="text-3xl mb-4">🔍</p>
+                    <p class="text-zinc-400 font-black uppercase tracking-widest text-sm">Customer tidak ditemukan</p>
+                    <p class="text-zinc-500 text-xs mt-2">Coba sesuaikan kata kunci atau filter status registrasi.</p>
                 </div>
             {/each}
         </div>
