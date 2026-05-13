@@ -2,8 +2,10 @@
 
 ## Ringkasan Kondisi Repo Saat Ini
 
-- `apps/` tetap menjadi aplikasi utama (SvelteKit frontend + local API routes).
-- Project berjalan pada mode local development.
+- Repo fokus pada fungsionalitas bisnis (Pre-Auth mode).
+- `apps/` adalah aplikasi utama (SvelteKit + local API routes).
+- Project menggunakan **Developer Persona Switcher** untuk simulasi multi-role.
+- Penyimpanan data menggunakan **SQLite Lokal**.
 
 ## Status Teknis Saat Ini
 

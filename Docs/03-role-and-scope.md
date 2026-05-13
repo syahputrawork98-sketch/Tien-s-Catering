@@ -32,4 +32,4 @@
 
 ## Catatan Konsistensi
 
-Role `CS/USER/ADMIN` pada tracking UI awal/lama adalah referensi kondisi awal dan belum tentu menjadi role final produk.
+Role `CS/USER/ADMIN` pada tracking UI awal/lama adalah referensi kondisi awal. Saat ini, simulasi multi-role dilakukan menggunakan **Developer Persona Switcher** tanpa sistem login/auth produksi.

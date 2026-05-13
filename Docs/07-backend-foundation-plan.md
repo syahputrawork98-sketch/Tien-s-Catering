@@ -14,7 +14,7 @@ Backend foundation lokal sudah berjalan dan sekarang dipakai oleh:
 
 - Batch 5: admin package CRUD minimal aktif + package tetap by request.
 - Batch 6: feedback edit package benar + search/filter admin package aktif.
-- Batch 7: search/filter/status summary admin package request aktif, convert ke order tetap Hold.
+- Batch 7: search/filter/status summary admin package request aktif, convert ke order diimplementasikan pada Batch 32.
 
 ## Endpoint Aktif
 
@@ -89,27 +89,26 @@ Dev persona switcher tetap dipakai pada local development:
   - package tidak masuk cart,
   - package tidak masuk checkout,
   - package tidak langsung menjadi order,
-  - convert package request ke order tetap Hold/disabled.
+  - **Active**: Convert package request ke order (Admin-driven).
 
-## Batasan Penting (Masih Berlaku)
+## Batasan Penting (Hold Production)
 
-Backend ini belum production-ready:
+Backend ini berfokus pada alur bisnis (Pre-Auth):
 
-- Belum ada auth production (login/JWT/session/password/RBAC).
-- Belum ada payment gateway/QRIS production/upload bukti.
-- Belum ada deployment production.
-- Belum ada payment verification final workflow.
-- Belum ada stock reservation/timeout.
-- Belum ada admin stock adjustment UI.
-- Belum ada convert package request ke order.
-- Belum ada hard delete package/request.
-- Belum ada Super Admin flow final.
-- Belum ada role management.
-- Belum ada package payment/invoice.
+- **Hold Production**:
+  - Auth production (login/JWT/session/password/RBAC final).
+  - Payment gateway/QRIS production (Real API).
+  - Deployment production.
+  - Official e-Faktur / Pajak resmi.
+  - Hard delete package/request.
+- **Local-Compatible (Active)**:
+  - Payment verification manual (Fase B).
+  - Commercial Invoice basic (Fase B).
+  - Convert package request to order (Fase A).
 
 ## Known Issue (Project-wide)
 
-- `npm run check` masih gagal karena technical debt lama di luar package batch.
+- `npm run check` sudah mencapai `0 errors` (Mei 2026).
 - Area yang masih dilaporkan:
   - `dashboard/admin/reports`
   - `dashboard/cs/menu`

@@ -52,7 +52,7 @@
 - `quoted`
 - `rejected`
 - `cancelled`
-- `converted_to_order` disiapkan sebagai arah, tetapi aksi convert masih Hold.
+- `converted_to_order`: aksi convert dilakukan secara manual oleh admin setelah negosiasi selesai.
 
 ## Endpoint Tersedia
 
@@ -68,12 +68,18 @@
 - Customer package request visibility aktif di `/dashboard/package-requests` (History + Progress Timeline).
 - Sinkronisasi data riil via `GET/POST/PATCH /api/package-requests`.
 
-## Fitur Hold
+## Data/Flow yang Masih Mock atau Hold
 
-- Convert package request to order (Hold).
-- Package payment/invoice production (Hold).
-- Auth/RBAC production (Hold).
-- Hard delete package/request.
+- **Hold Production / Final**:
+  - Payment gateway production (QRIS Real/API).
+  - Auth production (Login/JWT/Session/RBAC Final).
+  - Invoice & Pajak riil (e-Faktur).
+  - Deployment hardening final.
+- **Local-Compatible (Active/Planned)**:
+  - Convert package request ke order (**Active**).
+  - Payment verification manual (**Active**).
+  - Export CSV/PDF basic (**Planned/Ready**).
+- **Future**: Hard delete package/request.
 
 ## Roadmap Berikutnya
 

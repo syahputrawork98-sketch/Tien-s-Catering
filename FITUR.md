@@ -1,94 +1,69 @@
+# Status Fitur & Scopeboard TC
+
 ## Status Order & Dashboard Batch (Accepted)
 
-- Batch 21:
-  - Package Request Operational Completion: Admin dapat melakukan review (status, estimasi harga, catatan admin) via `PATCH /api/package-requests`.
-  - Sinkronisasi data request paket antara Customer dan Admin dashboard.
-- Batch 22:
-  - Customer Dashboard Home Summary (`/dashboard`) aktif.
-  - Menampilkan ringkasan pesanan aktif, total transaksi, dan status request paket terbaru dari database.
-- Batch 23:
-  - CS Customer Handling Clarity ditingkatkan pada `/dashboard/cs/customers`.
-  - Penambahan label simulasi lokal dan filter pencarian pelanggan yang lebih informatif.
-- Batch 24:
-  - Admin Settings / Tax / Payment Config Clarity.
-  - Penegasan status "Hold Production" pada area konfigurasi sensitif untuk mencegah kebingungan demo.
-- Batch 25:
-  - Public Menu Detail Polish & A11y.
-  - Peningkatan aksesibilitas dan transisi visual pada modal detail menu.
-- Batch 26:
-  - Admin Reports Phase 2 (Local Summary).
-  - Laporan penjualan, pesanan, dan keuangan kini terintegrasi dengan database SQLite lokal (`GET /api/orders`).
-  - Pembedaan jelas antara data riil database dan data simulasi visual (tren/grafik).
-- Batch 27:
-  - Customer Profile & Address Local CRUD Polish.
-  - Peningkatan UX untuk pengeditan profil dan alamat dalam mode simulasi lokal.
-- Batch 28:
-  - Admin Users Local Simulation Phase 2.
-  - Peningkatan manajemen user admin dengan summary cards, search/filter, dan penegasan status RBAC Hold.
-- Batch 29:
-  - End-to-End Demo Flow Polish.
-  - Penyelarasan alur navigasi dari publik (order success) ke dashboard operasional.
-  - Standardisasi label "Local SQLite Database Simulation" di seluruh dashboard.
+- Batch 21: Package Request Operational Completion.
+- Batch 22: Customer Dashboard Home Summary.
+- Batch 23: CS Customer Handling Clarity.
+- Batch 24: Admin Settings / Tax / Payment Config Clarity.
+- Batch 25: Public Menu Detail Polish & A11y.
+- Batch 26: Admin Reports Phase 2 (Local Summary).
+- Batch 27: Customer Profile & Address Local CRUD Polish.
+- Batch 28: Admin Users Local Simulation Phase 2.
+- Batch 29: End-to-End Demo Flow Polish.
 
-## Selesai
+---
 
-- Public katalog membaca menu dari API (`GET /api/menus`).
-- Cart sudah stock-aware (batas qty mengikuti stok).
-- Checkout submit order ke API (`POST /api/orders`).
-- Order tersimpan ke database SQLite lokal.
-- Order-success menampilkan response order API + link ke dashboard.
-- Admin order list dan order detail membaca database (`GET /api/orders`).
-- Admin update status order minimal aktif (`PATCH /api/orders/[id]/status`).
-- Admin update payment status manual aktif (`PATCH /api/orders/[id]/payment-status`).
-- Transaksi stok aktif (Stock-aware operations).
-- Local backend foundation aktif (`/api/health`, `/api/menus`, `/api/orders`, `/api/package-requests`).
-- Public `/paket-catering` membaca package API (`GET /api/packages`).
-- Admin package management `/dashboard/admin/packages` aktif.
-- Admin package request review aktif (status, estimasi, catatan).
-- Customer dashboard orders & summary DB-backed (`/dashboard`).
-- CS dashboard orders & customers handling clarity.
-- Admin Reports DB-backed summary (Revenue, Orders, Finance).
-- Customer Profile & Address local simulation.
-- Admin Users management local simulation.
-- End-to-End demo flow consistency (Public -> Customer -> Admin/CS).
-- Convert Package Request ke Order (Admin-driven conversion).
-- Package Request to Order relation & source metadata tracking.
-- Customer Payment Proof Upload (Images/PDF max 5MB, local storage).
-- Admin Payment Verification Workflow (Approve/Reject with notes).
-- Payment statuses: unpaid, waiting_verification, paid, rejected.
-- Commercial Invoice Basic (Print-friendly, basic number generation).
-- Checkpoint 1 (Batch 36): Package + Payment Proof integration solid.
-- Tracking lama dari `kanban-master/` sudah diserap/ditutup ke status aktif.
+## 1. Done / Selesai
+*Fitur yang sudah aktif di database SQLite lokal.*
 
-## Berjalan / Local-Compatible
+- **Public**: Katalog menu (API), Cart stock-aware, Checkout order, Order-success response, Public `/paket-catering` (API).
+- **Customer**: Dashboard home summary, Order list, Profile/Address local CRUD, Payment Proof Upload (local storage).
+- **Admin**: Order management (List, Detail, Status update, Payment status manual), Package management, Package Request review (Review, Status, Notes), Commercial Invoice Basic, Reports summary (Revenue, Orders, Finance), Users local simulation.
+- **CS**: Dashboard orders & customers handling clarity.
+- **Foundation**: Local backend active (`/api/health`, `/api/menus`, `/api/orders`, `/api/packages`, `/api/package-requests`).
+- **Integration**: Convert Package Request to Order (Admin-driven), Source metadata tracking.
 
-- Seluruh operasional dashboard (Orders, Packages, Reports) berjalan di atas SQLite lokal.
-- Simulasi CRUD lokal untuk profil, alamat, dan user admin.
+## 2. Ready for Batch
+*Fitur yang siap dikerjakan dalam waktu dekat.*
 
-## Hold
+- **Batch 39**: Invoice Print/PDF Polish + Order Export Basic.
+- **Batch 40**: Reporting Revenue Logic Phase 3.
+- **Batch 41**: Reports Export CSV/PDF Basic.
 
-- Package public checkout (Admin-driven conversion only for now).
-- Hard delete package/request.
-- Super Admin flow final (RBAC production).
-- Role management production (JWT/Session).
-- Rekening/payment account integration production.
-- Auth production (login/JWT/session/password/RBAC).
-- Reporting engine/export production (Batch 38+).
+## 3. Local-Compatible / Bisa Dikerjakan
+*Fitur bisnis yang bisa dikembangkan secara lokal (Pre-Auth).*
+
+- **Payment Account**: Konfigurasi nomor rekening/tujuan transfer lokal (Admin).
+- **Advanced Reporting**: Grafik tren bulanan/tahunan berbasis data SQLite.
+- **Bulk Operations**: Update status order masal atau export data transaksi.
+- **Super Admin Simulation**: Simulasi pengaturan sistem global/pajak lokal.
+- **Feedback System**: Customer feedback/review lokal setelah order selesai.
+
+## 4. Hold Production / Final
+*Ditahan hingga Fase E (Batch 46+) atau keputusan Room 00.*
+
+- **Auth Production**: Login, Register, Password, JWT, Session.
+- **RBAC Final**: Penguncian hak akses tingkat server (Security hardening).
+- **Payment Gateway**: Integrasi QRIS Real, Webhook Midtrans, atau API pihak ketiga.
+- **Legal/Tax**: e-Faktur resmi, integrasi perpajakan pemerintah.
+- **Storage Final**: S3/Cloud storage untuk upload (saat ini masih local folder).
+- **Deployment**: Final production hardening, SSL, & server setup.
+
+## 5. Future / Nanti
+- Package public checkout (Direct checkout tanpa request).
+- Hard delete data sensitif (Saat ini hanya status/soft delete).
+- Real-time notification (WebSocket/Push).
+
+---
+
+## Catatan Scope & Policy
+- Project berjalan dalam mode **Pre-Auth Local Development**.
+- **Developer Persona Switcher** tetap digunakan untuk demo dan pengujian.
+- Dokumentasi aktif hanya di `Docs/`, `FITUR.md`, dan `README.md`.
+- Tracking lama dari `kanban-master/` sudah diserap/ditutup.
 
 ## Known Issue (Project-wide)
-
-- `npm run check` sudah `0 errors` dan baseline warnings berkurang secara bertahap.
-- Area warning tersisa:
-  - `src/lib/components/ModalMenuDetail.svelte` (A11y click/key events)
-- Batch 29 telah menstandardisasi label "Local SQLite Database Simulation" di seluruh aplikasi.
-
-## Roadmap Berikutnya (Batch 31–45)
-
-TC memasuki fase **Pre-Auth Production Readiness** (Fase A–D). Detail roadmap tersedia di [Docs/ROADMAP_BATCH_31_45.md](file:///i:/Workspace/Workspace-Syahputrawork/Tien-s-Catering/Docs/ROADMAP_BATCH_31_45.md).
-
-- **Fase A**: Package to Order (Batch 31–33) - **SELESAI**.
-- **Fase B**: Payment Proof + Invoice (Batch 34–37) - **SELESAI**.
-- **Fase C**: Reporting + Export (Batch 39–41) - **DITUNDA**.
-- **Fase D**: Deployment Readiness (Batch 42–45) - **DITUNDA**.
-
-*Catatan: Fase E (Auth/Security/RBAC) ditunda ke fase berikutnya.*
+- `npm run check` sudah `0 errors`.
+- Area warning tersisa: `src/lib/components/ModalMenuDetail.svelte` (A11y).
+- Label "Local SQLite Database Simulation" sudah distandardisasi di seluruh aplikasi.

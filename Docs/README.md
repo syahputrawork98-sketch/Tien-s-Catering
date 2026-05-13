@@ -24,5 +24,5 @@ Dokumen di sini dipakai sebagai acuan product direction, scope, dan alur kerja l
 ## Status Terakhir (Mei 2026)
 
 - **Fase A & B Selesai**: Batch 31–38 telah selesai (*Accepted*). Fitur Package to Order, Payment Proof Upload/Verification, dan Commercial Invoice Basic sudah aktif.
-- **Fase C & D Ditunda**: Fokus beralih ke stabilitas hasil Fase B sebelum melanjutkan ke Reporting dan Deployment.
-- **Fase E Tetap Deferred**: Sistem Auth/RBAC produksi masih menggunakan simulasi persona switcher.
+- **Prinsip Scope**: Fitur bisnis yang bersifat **Local-Compatible** boleh dikerjakan, sementara fitur **Production/Final** tetap Hold.
+- **Developer Persona Switcher**: Masih digunakan sebagai standar navigasi multi-role selama fase Pre-Auth.

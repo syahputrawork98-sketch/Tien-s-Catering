@@ -58,11 +58,15 @@ Dokumen ini merangkum alur order lokal setelah payment manual, transaksi stok, d
 
 ## Data/Flow yang Masih Mock atau Hold
 
-- Convert package request ke order (Hold).
-- Export PDF/CSV production (Hold).
-- Payment verification otomatis & Payment gateway production.
-- Auth production (Login/JWT/Session/RBAC).
-- Invoice & Pajak riil production.
+- **Hold Production / Final**:
+  - Payment gateway production (QRIS Real/API).
+  - Auth production (Login/JWT/Session/RBAC Final).
+  - Invoice & Pajak riil (e-Faktur).
+  - Deployment hardening final.
+- **Local-Compatible (Active/Planned)**:
+  - Convert package request ke order (**Active**).
+  - Payment verification manual (**Active**).
+  - Export CSV/PDF basic (**Planned/Ready**).
 
 ## Known Issue (Project-wide)
 

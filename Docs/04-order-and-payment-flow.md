@@ -46,16 +46,16 @@
   - `released`
 - Status lain (`processing`, `ready`, `delivered`, `completed`) tidak mengubah stok.
 
-## Item Hold (Belum Aktif)
+## Item Hold (Production / Final)
 
-- Payment verification.
-- Payment gateway/QRIS production.
-- Upload bukti pembayaran production.
-- Auth production (login/JWT/session/password/RBAC).
+- Payment gateway/QRIS production (Real API).
+- Auth production (login/JWT/session/password/RBAC final).
+- Official e-Faktur / Pajak resmi.
+- Upload storage production (S3/Cloud).
 
 ## Catatan Package Catering
 
 - Package request flow terpisah dari order menu harian.
 - Package request belum masuk checkout standar.
 - Package request belum langsung menjadi order pada `orders`.
-- Convert package request ke order masih Hold.
+- Convert package request ke order aktif (Admin-driven conversion).
