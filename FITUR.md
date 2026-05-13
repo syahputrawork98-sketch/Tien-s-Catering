@@ -32,7 +32,8 @@
 
 - [x] **Batch 43**: Admin Customer Management Overview Polish. (Selesai)
 - [x] **Batch 44**: Local Deployment Readiness & Build Hygiene. (Selesai)
-- [ ] **Batch 45**: Pre-Auth Production Readiness Checklist.
+- [x] **Batch 45**: Pre-Auth Production Readiness Checklist. (Selesai)
+- [ ] **Batch 46**: Final Fase A–D Handover + Health Check.
 
 ## 3. Local-Compatible / Bisa Dikerjakan
 *Fitur bisnis yang bisa dikembangkan secara lokal (Pre-Auth).*

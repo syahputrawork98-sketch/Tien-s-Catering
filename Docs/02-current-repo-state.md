@@ -22,7 +22,7 @@
 - Payment gateway masih dalam mode simulasi bukti transfer (Hold Production).
 - Stock management (decrement/restore) sudah aktif dalam alur konfirmasi/pembatalan order.
 
-## Deployment Readiness Status (Batch 44)
+## Deployment Readiness Status (Batch 44–45)
 
 - **Build Hygiene**: `npm run check` sudah bersih (0 errors, 0 warnings) untuk area aktif.
 - **Build Success**: `npm run build` berhasil dijalankan secara lokal menggunakan adapter-auto.

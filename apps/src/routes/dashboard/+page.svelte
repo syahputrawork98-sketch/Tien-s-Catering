@@ -312,7 +312,7 @@
 						<p class="text-[10px] font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-widest italic">Local SQLite Database Simulation Aktif</p>
 					</div>
 					<p class="text-[9px] font-bold text-zinc-400 uppercase tracking-tighter italic max-w-lg">
-						Demo Mode: Pengelolaan Profil & Alamat menggunakan local state. Fitur Pembayaran Otomatis, Invoice Riil, dan Export Laporan saat ini berstatus <span class="text-brand-primary">HOLD (Production Ready Phase)</span>.
+						Demo Mode: Pengelolaan Profil & Alamat menggunakan local state. Fitur Pembayaran Otomatis, Invoice Riil, dan Export Laporan saat ini berstatus <span class="text-brand-primary">HOLD (Fase E Production Readiness)</span>.
 					</p>
 				</div>
 			</footer>

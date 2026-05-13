@@ -43,8 +43,8 @@ Batch 31–45 **TIDAK** mencakup fitur-fitur berikut (HOLD hingga Fase E):
 ### Fase D — Deployment Readiness
 - **Batch 43**: Admin Customer Management Polish (Selesai).
 - **Batch 44**: Local Deployment Readiness & Build Hygiene (Selesai).
-- **Batch 45**: Pre-Auth Production Readiness Checklist (Ditunda).
-- **Batch 46**: **Final Fase A–D Handover + Health Check** (Ditunda).
+- **Batch 45**: Pre-Auth Production Readiness Checklist (Selesai).
+- **Batch 46**: **Final Fase A–D Handover + Health Check** (Ready).
 
 ## D. Checkpoint Policy
 
@@ -53,12 +53,34 @@ Untuk menjaga efisiensi pengembangan, pengecekan sistem secara menyeluruh (QA be
 2. **Batch 41**: Integrasi Invoice dan Reporting Engine dengan data riil.
 3. **Batch 45**: Finalisasi Fase A–D dan kesiapan menuju Fase E.
 
-## E. Batch 32 Next Action
+## E. Pre-Auth Production Readiness Checklist (Batch 45)
 
-**Batch 38 — Fase A & B Documentation & Stabilization Wrap-up**
+Berikut adalah checklist final untuk memastikan aplikasi siap dalam mode **Pre-Auth Local Development**:
 
-Fokus eksekusi:
-- Finalisasi dokumentasi fitur Fase A (Package to Order) dan Fase B (Payment Proof + Invoice).
-- Pencatatan status integrasi pada Checkpoint 1 (Batch 36).
-- Penegasan batasan *pre-auth production readiness* sebelum masuk ke fase Reporting/Deployment.
-- Verifikasi stabilitas sistem melalui `npm run check` terakhir untuk Fase B.
+### 1. Technical Health
+- [x] **npm run check**: Bersih (0 errors, 0 warnings di area aktif).
+- [x] **npm run build**: Berhasil dijalankan secara lokal (Success).
+- [x] **Local API Foundation**: Endpoint `/api/orders`, `/api/reports`, `/api/menus`, `/api/packages` stabil.
+- [x] **SQLite Integrity**: Skema database lokal mendukung seluruh alur bisnis yang diimplementasikan.
+
+### 2. Functional Readiness (Business Flow)
+- [x] **Public Catalog**: API Menu & Paket aktif.
+- [x] **Ordering Flow**: Checkout ke database lokal berhasil.
+- [x] **Admin Orders**: Manajemen status dan mutasi stok aktif.
+- [x] **Payment Proof**: Sistem upload lokal dan verifikasi manual aktif.
+- [x] **Reporting**: Export CSV berbasis data riil SQLite aktif.
+- [x] **Invoicing**: Tampilan Commercial Invoice Basic siap cetak.
+- [x] **Customer Management**: Approval dan klasifikasi tipe akun aktif.
+
+### 3. Documentation & Governance
+- [x] **Persona Switcher**: Terpasang jelas sebagai navigasi peran (Customer, CS, Admin).
+- [x] **Hold Production**: Seluruh fitur sensitif (Auth/Payment/Legal) terdokumentasi sebagai **HOLD**.
+- [x] **Terminology**: Penggunaan istilah "Local Simulation" dan "Pre-Auth" konsisten.
+- [x] **Source of Truth**: README, FITUR, dan Docs sudah sinkron.
+
+## F. Next Action: Batch 46
+
+**Final Fase A–D Handover + Health Check**
+- Serah terima hasil kerja Fase A–D.
+- Verifikasi akhir integritas project-wide.
+- Persiapan transisi ke Fase E (Auth & Production Hardening).
