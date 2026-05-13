@@ -113,6 +113,7 @@
 	let paymentStatusDraftByOrderId = $state<Record<string, PaymentStatus>>({});
 	let searchQuery = $state('');
 	let paymentFilter = $state<PaymentFilter>('ALL');
+	let orderStatusFilter = $state<string>('ALL');
 
 	const orderStatusFlow: OrderStatus[] = ['new', 'confirmed', 'processing', 'ready', 'delivered', 'completed'];
 	const manualPaymentStatuses: PaymentStatus[] = ['unpaid', 'waiting_verification', 'paid', 'cod_pending', 'rejected'];
@@ -328,6 +329,9 @@
 			const isPaymentMatch = paymentFilter === 'ALL' || order.paymentStatus === paymentFilter;
 			if (!isPaymentMatch) return false;
 
+			const isOrderStatusMatch = orderStatusFilter === 'ALL' || order.status === orderStatusFilter;
+			if (!isOrderStatusMatch) return false;
+
 			return matchesOrderKeyword(order, normalizedKeyword);
 		});
 	});
@@ -465,6 +469,7 @@
 	function resetListFilters() {
 		searchQuery = '';
 		paymentFilter = 'ALL';
+		orderStatusFilter = 'ALL';
 		activeTab = 'ALL';
 	}
 
@@ -790,11 +795,11 @@
 	{:else}
 		<div class="grid grid-cols-2 lg:grid-cols-5 gap-4" in:fade={{ delay: 120 }}>
 			{#each [
-				{ label: 'Total Pesanan', value: stats().total, color: 'text-brand-charcoal dark:text-white' },
-				{ label: 'Menunggu Konfirmasi', value: stats().new, color: 'text-blue-600' },
-				{ label: 'Diproses', value: stats().process, color: 'text-amber-600' },
-				{ label: 'Selesai', value: stats().done, color: 'text-emerald-600' },
-				{ label: 'Dibatalkan', value: stats().cancelled, color: 'text-red-500' }
+				{ label: 'Total Pesanan (Volume)', value: stats().total, color: 'text-brand-charcoal dark:text-white' },
+				{ label: 'Revenue Final (Paid)', value: orders.filter(o => o.paymentStatus === 'paid' || o.status === 'completed' || o.status === 'delivered').length, color: 'text-emerald-600' },
+				{ label: 'Revenue Pending', value: orders.filter(o => (o.paymentStatus !== 'paid' && o.status !== 'completed' && o.status !== 'delivered') && o.status !== 'cancelled').length, color: 'text-amber-600' },
+				{ label: 'Menunggu Verifikasi', value: stats().verifikasi, color: 'text-orange-600' },
+				{ label: 'Dibatalkan / Void', value: stats().cancelled, color: 'text-red-500' }
 			] as stat}
 				<div class="bg-white dark:bg-zinc-900 p-6 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 shadow-sm">
 					<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-2">{stat.label}</p>
@@ -835,13 +840,28 @@
 
 					<select
 						bind:value={paymentFilter}
-						class="w-full lg:w-[220px] rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-3 text-xs font-bold text-zinc-700 dark:text-zinc-200"
+						class="w-full lg:w-[200px] rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-3 text-xs font-bold text-zinc-700 dark:text-zinc-200"
 					>
-						<option value="ALL">Semua Payment</option>
-						<option value="unpaid">Belum Dibayar</option>
+						<option value="ALL">Semua Pembayaran</option>
+						<option value="unpaid">Belum Lunas (Unpaid)</option>
 						<option value="waiting_verification">Menunggu Verifikasi</option>
-						<option value="paid">Sudah Dibayar</option>
-						<option value="cod_pending">COD</option>
+						<option value="paid">Lunas (Paid)</option>
+						<option value="cod_pending">COD Pending</option>
+						<option value="rejected">Ditolak (Rejected)</option>
+					</select>
+
+					<select
+						bind:value={orderStatusFilter}
+						class="w-full lg:w-[200px] rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-3 text-xs font-bold text-zinc-700 dark:text-zinc-200"
+					>
+						<option value="ALL">Semua Status Order</option>
+						<option value="new">Menunggu Konfirmasi</option>
+						<option value="confirmed">Dikonfirmasi</option>
+						<option value="processing">Diproses</option>
+						<option value="ready">Siap Diantar</option>
+						<option value="delivered">Dalam/Sudah Diantar</option>
+						<option value="completed">Selesai (Completed)</option>
+						<option value="cancelled">Dibatalkan (Cancelled)</option>
 					</select>
 
 					{#if hasActiveListFilter}
@@ -850,7 +870,7 @@
 							onclick={resetListFilters}
 							class="w-full lg:w-auto px-5 py-3 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-500 text-[10px] font-black uppercase tracking-widest hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
 						>
-							Reset Filter
+							Reset
 						</button>
 					{/if}
 				</div>
@@ -873,7 +893,17 @@
 										</span>
 									{/if}
 
-									<span class="px-3 py-1 rounded-full text-[10px] font-black bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 uppercase tracking-wider">Data Database Lokal</span>
+									<span class="px-3 py-1 rounded-full text-[10px] font-black bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 uppercase tracking-wider">Local DB</span>
+									
+									{#if order.paymentStatus === 'paid' || order.status === 'completed' || order.status === 'delivered'}
+										<span class="px-3 py-1 rounded-full text-[10px] font-black bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-300 uppercase tracking-wider border border-emerald-100 dark:border-emerald-900/50">
+											💰 Revenue Final
+										</span>
+									{:else if order.status !== 'cancelled'}
+										<span class="px-3 py-1 rounded-full text-[10px] font-black bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-300 uppercase tracking-wider border border-amber-100 dark:border-amber-900/50">
+											⏳ Revenue Pending
+										</span>
+									{/if}
 								</div>
 
 								<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -1129,7 +1159,10 @@
 
 			<div class="p-6 bg-zinc-50 dark:bg-zinc-800 rounded-[2rem] border border-zinc-100 dark:border-zinc-700 space-y-6">
 				<div class="flex items-center justify-between">
-					<p class="text-[10px] font-black text-zinc-500 uppercase tracking-widest italic">Payment Proof Verification</p>
+					<div class="space-y-1">
+						<p class="text-[10px] font-black text-zinc-500 uppercase tracking-widest italic">Payment Proof Verification</p>
+						<p class="text-[9px] font-bold text-zinc-400 italic uppercase">Workflow simulasi lokal / manual verifikasi</p>
+					</div>
 					{#if selectedOrder.paymentProof}
 						<span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider 
 							{selectedOrder.paymentProof.status === 'verified' ? 'bg-emerald-100 text-emerald-700' : 
@@ -1137,6 +1170,10 @@
 							 'bg-amber-100 text-amber-700'}">
 							{selectedOrder.paymentProof.status}
 						</span>
+					{:else}
+						<div class="px-3 py-1 bg-zinc-100 dark:bg-zinc-900 rounded-full border border-zinc-200 dark:border-zinc-800">
+							<span class="text-[9px] font-black text-zinc-400 uppercase tracking-widest">No Proof Uploaded</span>
+						</div>
 					{/if}
 				</div>
 
