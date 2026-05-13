@@ -23,8 +23,8 @@ Dokumen di sini dipakai sebagai acuan product direction, scope, dan alur kerja l
 
 ## Status Terakhir (Mei 2026)
 
-- **Fase A–D Selesai**: Seluruh rangkaian Batch 31–45 telah selesai.
-  - **Fase A & B**: Package to Order, Payment Proof Upload/Verification, dan Commercial Invoice Basic aktif.
-  - **Fase C & D**: Reporting Deep Analytics, CSV Export, Admin Customer Management Polish, dan Local Build Hygiene/Readiness aktif.
-- **Prinsip Scope**: Fitur bisnis bersifat **Local-Compatible** sudah matang secara fungsional. Fitur **Production/Final (Auth & Security)** tetap Hold hingga Fase E.
-- **Developer Persona Switcher**: Standar navigasi multi-role yang terverifikasi stabil untuk demo alur bisnis.
+- **Fase A–D Selesai**: Seluruh rangkaian Batch 31–47 telah selesai (**Accepted**).
+  - **Status**: *Business-Complete (Pre-Auth)*. Aplikasi stabil untuk simulasi alur bisnis lokal.
+  - **Technical**: `npm run check` 0 errors, `npm run build` sukses.
+  - **Persona**: *Developer Persona Switcher + Account Selector* aktif untuk demo multi-role.
+- **Prinsip Scope**: Fitur bisnis bersifat **Local-Compatible** sudah matang. Fitur **Production/Final (Auth & Security)** tetap Hold hingga Fase E (Batch 48+).
