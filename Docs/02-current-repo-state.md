@@ -4,7 +4,8 @@
 
 - Repo fokus pada fungsionalitas bisnis (Pre-Auth mode).
 - `apps/` adalah aplikasi utama (SvelteKit + local API routes).
-- Project menggunakan **Developer Persona Switcher** untuk simulasi multi-role.
+- Project menggunakan **Developer Persona Switcher** (Role + Account Selector) untuk simulasi multi-role.
+- Pilihan Role dan Akun Aktif disimpan di **localStorage** untuk persistensi simulasi.
 - Penyimpanan data menggunakan **SQLite Lokal**.
 
 ## Status Teknis Saat Ini

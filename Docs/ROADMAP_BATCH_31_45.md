@@ -44,7 +44,8 @@ Batch 31–45 **TIDAK** mencakup fitur-fitur berikut (HOLD hingga Fase E):
 - **Batch 43**: Admin Customer Management Polish (Selesai).
 - **Batch 44**: Local Deployment Readiness & Build Hygiene (Selesai).
 - **Batch 45**: Pre-Auth Production Readiness Checklist (Selesai).
-- **Batch 46**: **Final Fase A–D Handover + Health Check** (Ready).
+- **Batch 46**: Pre-Handover Fix: Developer Persona Account Selector (Selesai).
+- **Batch 47**: **Final Fase A–D Handover + Health Check** (Ready).
 
 ## D. Checkpoint Policy
 

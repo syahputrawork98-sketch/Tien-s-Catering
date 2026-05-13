@@ -5,6 +5,7 @@
     import { page } from '$app/state';
     import { goto } from '$app/navigation';
     import { fade, fly } from 'svelte/transition';
+    import { mockAccounts } from '$lib/mock/accounts';
     import type { MockRole } from '$lib/mock/session';
 
     let { children } = $props();
@@ -88,34 +89,57 @@
                 {/each}
             </nav>
 
-            <!-- Role Switcher (Dev Only) -->
+            <!-- Role & Account Switcher (Dev Only) -->
             <div class="p-4 mt-auto border-t border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/20">
-                <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest text-center mb-4 italic">Dev Role Switcher</p>
-                <div class="flex flex-col gap-2">
-                    <button 
-                        onclick={() => switchRole('USER')}
-                        class="text-[10px] font-black py-2 rounded-lg transition-all {mockSession.role === 'USER' ? 'bg-brand-charcoal text-white' : 'bg-white dark:bg-zinc-800 text-zinc-400 border border-zinc-100 dark:border-zinc-700'}"
-                    >
-                        CUSTOMER
-                    </button>
-                    <button 
-                        onclick={() => switchRole('CUSTOMER_SERVICE')}
-                        class="text-[10px] font-black py-2 rounded-lg transition-all {mockSession.role === 'CUSTOMER_SERVICE' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-zinc-800 text-zinc-400 border border-zinc-100 dark:border-zinc-700'}"
-                    >
-                        CS
-                    </button>
-                    <button 
-                        onclick={() => switchRole('ADMIN')}
-                        class="text-[10px] font-black py-2 rounded-lg transition-all {mockSession.role === 'ADMIN' ? 'bg-indigo-600 text-white' : 'bg-white dark:bg-zinc-800 text-zinc-400 border border-zinc-100 dark:border-zinc-700'}"
-                    >
-                        ADMIN
-                    </button>
+                <div class="mb-4 text-center">
+                    <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1 italic">Dev Persona Switcher</p>
+                    <p class="text-[7px] font-bold text-amber-600 dark:text-amber-500 uppercase tracking-tighter">Bukan Login Production • Local Only</p>
                 </div>
+                
+                <div class="space-y-4">
+                    <!-- Role Select -->
+                    <div class="flex flex-col gap-2">
+                        <button 
+                            onclick={() => switchRole('USER')}
+                            class="text-[10px] font-black py-2 rounded-lg transition-all {mockSession.role === 'USER' ? 'bg-brand-charcoal text-white' : 'bg-white dark:bg-zinc-800 text-zinc-400 border border-zinc-100 dark:border-zinc-700'}"
+                        >
+                            CUSTOMER
+                        </button>
+                        <button 
+                            onclick={() => switchRole('CUSTOMER_SERVICE')}
+                            class="text-[10px] font-black py-2 rounded-lg transition-all {mockSession.role === 'CUSTOMER_SERVICE' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-zinc-800 text-zinc-400 border border-zinc-100 dark:border-zinc-700'}"
+                        >
+                            CS
+                        </button>
+                        <button 
+                            onclick={() => switchRole('ADMIN')}
+                            class="text-[10px] font-black py-2 rounded-lg transition-all {mockSession.role === 'ADMIN' ? 'bg-indigo-600 text-white' : 'bg-white dark:bg-zinc-800 text-zinc-400 border border-zinc-100 dark:border-zinc-700'}"
+                        >
+                            ADMIN
+                        </button>
+                    </div>
+
+                    <!-- Account Select (Dynamic) -->
+                    <div class="space-y-1">
+                        <label for="accSelect" class="text-[8px] font-black text-zinc-400 uppercase tracking-widest block ml-1">Pilih Akun Demo:</label>
+                        <select 
+                            id="accSelect"
+                            value={mockSession.user.id}
+                            onchange={(e) => mockSession.setAccountId(e.currentTarget.value)}
+                            class="w-full bg-white dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-lg px-2 py-2 text-[10px] font-bold text-zinc-600 dark:text-zinc-300 focus:outline-none focus:ring-1 focus:ring-brand-primary"
+                        >
+                            {#each mockAccounts.filter(a => a.role === mockSession.role) as acc}
+                                <option value={acc.id}>{acc.name} ({acc.status})</option>
+                            {/each}
+                        </select>
+                    </div>
+                </div>
+
                 <button 
                     onclick={() => { localStorage.clear(); location.href = '/'; }}
                     class="w-full mt-4 text-[10px] font-black text-red-500 hover:bg-red-50 py-2 rounded-lg transition-all uppercase tracking-widest"
                 >
-                    Logout
+                    Clear Simulation
                 </button>
             </div>
         </div>
