@@ -32,4 +32,4 @@
 
 ## Catatan Konsistensi
 
-Role `CS/USER/ADMIN` di `kanban-master/` adalah kondisi UI lama/current tracking dan belum tentu menjadi role final produk.
+Role `CS/USER/ADMIN` pada tracking UI awal/lama adalah referensi kondisi awal dan belum tentu menjadi role final produk.

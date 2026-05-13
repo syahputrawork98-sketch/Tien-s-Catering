@@ -58,6 +58,7 @@
 - Payment statuses: unpaid, waiting_verification, paid, rejected.
 - Commercial Invoice Basic (Print-friendly, basic number generation).
 - Checkpoint 1 (Batch 36): Package + Payment Proof integration solid.
+- Tracking lama dari `kanban-master/` sudah diserap/ditutup ke status aktif.
 
 ## Berjalan / Local-Compatible
 

@@ -2,9 +2,7 @@
 
 ## Ringkasan Kondisi Repo Saat Ini
 
-- Repo tidak lagi murni UI-only.
 - `apps/` tetap menjadi aplikasi utama (SvelteKit frontend + local API routes).
-- `kanban-master/` tetap sebagai referensi teknis/current UI tracking lama.
 - Project berjalan pada mode local development.
 
 ## Status Teknis Saat Ini
@@ -28,6 +26,5 @@
 
 ## Catatan Arah Dokumen
 
-`Docs/` adalah acuan arah produk dan keputusan Room 00.
-`kanban-master/` tetap dipakai sebagai referensi teknis/tracking lama.
-Jika ada perbedaan arah, keputusan terbaru Room 00 menjadi acuan utama.
+`Docs/`, `FITUR.md`, dan `README.md` aktif adalah source of truth arah produk dan status repo.
+Keputusan terbaru Room Chat 00 menjadi acuan utama.

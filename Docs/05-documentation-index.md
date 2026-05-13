@@ -1,13 +1,11 @@
 # 05 - Documentation Index
 
-## Hubungan Docs dan kanban-master
+## Lokasi Dokumentasi Aktif
 
-- `Docs/` adalah dokumentasi arah produk dan keputusan Room Chat 00.
-- `kanban-master/` adalah referensi teknis/current UI tracking.
-
-## Aturan Acuan Saat Konflik
-
-Jika ada konflik arah antara `Docs/` dan `kanban-master/`, keputusan terbaru Room Chat 00 menjadi acuan utama.
+Dokumentasi aktif dan source of truth project hanya berada di:
+- `Docs/`: Detail teknis, roadmap, dan keputusan arsitektur.
+- `FITUR.md`: Status fitur dan backlog aktif.
+- `README.md`: Struktur folder dan status high-level.
 
 ## Ritme Sinkronisasi Dokumen
 
