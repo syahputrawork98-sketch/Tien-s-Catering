@@ -37,7 +37,7 @@ Batch 31–45 **TIDAK** mencakup fitur-fitur berikut (HOLD hingga Fase E):
 ### Fase C — Reporting + Export
 - **Batch 39**: Reporting + Export Foundation Polish (Selesai).
 - **Batch 40**: Invoice Print/PDF Polish (Selesai).
-- **Batch 41**: Reporting Revenue Logic Advanced (Ditunda).
+- **Batch 41**: Reporting Revenue Logic Advanced (Selesai).
 - **Batch 42**: **Checkpoint 2** — Payment + Invoice + Reporting Export Check (Ditunda).
 
 ### Fase D — Deployment Readiness

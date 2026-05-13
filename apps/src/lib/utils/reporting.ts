@@ -30,6 +30,79 @@ export type ReportingSummary = {
 	paymentBreakdown: Record<string, number>;
 };
 
+export type PeriodFilter = 'today' | 'week' | 'month' | '3months' | 'year' | 'all';
+
+export function isDateInSelectedPeriod(dateValue: string, selectedPeriod: PeriodFilter): boolean {
+	if (selectedPeriod === 'all') return true;
+
+	const date = new Date(dateValue);
+	if (Number.isNaN(date.getTime())) return false;
+
+	const now = new Date();
+	const startOfToday = new Date(now);
+	startOfToday.setHours(0, 0, 0, 0);
+
+	if (selectedPeriod === 'today') {
+		const startOfDate = new Date(date);
+		startOfDate.setHours(0, 0, 0, 0);
+		return startOfDate.getTime() === startOfToday.getTime();
+	}
+
+	if (selectedPeriod === 'week') {
+		const sevenDaysAgo = new Date(startOfToday);
+		sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+		return date >= sevenDaysAgo;
+	}
+
+	if (selectedPeriod === 'month') {
+		return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+	}
+
+	if (selectedPeriod === '3months') {
+		const threeMonthsAgo = new Date(startOfToday);
+		threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+		return date >= threeMonthsAgo;
+	}
+
+	if (selectedPeriod === 'year') {
+		return date.getFullYear() === now.getFullYear();
+	}
+
+	return true;
+}
+
+export function filterOrders(
+	orders: ReportingOrderItem[],
+	filters: { period?: PeriodFilter; paymentStatus?: string; search?: string }
+): ReportingOrderItem[] {
+	const { period = 'all', paymentStatus = 'ALL', search = '' } = filters;
+	const normalizedSearch = search.trim().toLowerCase();
+
+	return orders.filter((order) => {
+		// Period filter
+		if (!isDateInSelectedPeriod(order.orderDate || '', period)) return false;
+
+		// Status filter
+		if (paymentStatus !== 'ALL' && order.paymentStatus !== paymentStatus) return false;
+
+		// Search filter
+		if (normalizedSearch) {
+			const searchable = [
+				order.id,
+				order.orderNumber,
+				order.customerName,
+				order.paymentStatus,
+				order.status
+			]
+				.map((v) => String(v ?? '').toLowerCase())
+				.join(' ');
+			if (!searchable.includes(normalizedSearch)) return false;
+		}
+
+		return true;
+	});
+}
+
 function normalizeOrderStatus(status: string | null | undefined): string {
 	return typeof status === 'string' && status.trim().length > 0 ? status.trim().toLowerCase() : 'new';
 }
@@ -149,12 +222,12 @@ export function buildOrdersCsv(orders: ReportingOrderItem[]): string {
 		'Order ID',
 		'Order Number',
 		'Customer',
-		'Source Type',
+		'Source',
 		'Order Status',
 		'Payment Status',
 		'Total Amount',
-		'Created Date',
-		'Revenue Category'
+		'Order Date',
+		'Revenue Rule'
 	];
 
 	const rows = orders.map((order) => [

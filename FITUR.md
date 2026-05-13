@@ -18,8 +18,9 @@
 *Fitur yang sudah aktif di database SQLite lokal.*
 
 - **Public**: Katalog menu (API), Cart stock-aware, Checkout order, Order-success response, Public `/paket-catering` (API).
-- [x] **Batch 39**: Reporting + Export Foundation Polish.
-- [x] **Batch 40**: Invoice Print/PDF Polish (Commercial Invoice styling).
+- [x] **Batch 41**: Reporting Revenue Logic Advanced (Deep Analytics). (Selesai)
+- [x] **Batch 40**: Invoice Print/PDF Polish (Commercial Invoice styling). (Selesai)
+- [x] **Batch 39**: Reporting + Export Foundation Polish. (Selesai)
 - [x] **Batch 37**: Commercial Invoice Basic (Print-friendly).
 - [x] **Batch 35**: Admin Payment Verification (Manual).
 - [x] **Batch 34**: Payment Proof Upload (Local Storage).
@@ -29,7 +30,6 @@
 - **Integration**: Convert Package Request to Order (Admin-driven), Source metadata tracking.
 
 ### 2. Ready for Batch (Antrian Eksekusi)
-- [ ] **Batch 41**: Reporting Revenue Logic Advanced (Deep Analytics).
 - [ ] **Batch 43-45**: Deployment Readiness Foundation.
 
 ## 3. Local-Compatible / Bisa Dikerjakan

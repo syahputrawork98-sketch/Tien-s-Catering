@@ -7,7 +7,9 @@
         computeReportingSummary,
         getOrderSourceLabel,
         isRevenueEligibleOrder,
-        type ReportingOrderItem
+        filterOrders,
+        type ReportingOrderItem,
+        type PeriodFilter
     } from '$lib/utils/reporting';
     import { fade } from 'svelte/transition';
 
@@ -19,6 +21,7 @@
     let activeTab = $state<ReportTabId>('overview');
     let searchQuery = $state('');
     let periodFilter = $state<PeriodFilter>('month');
+    let paymentStatusFilter = $state<string>('ALL');
     let dbOrders = $state<ReportingOrderItem[]>([]);
     let isLoading = $state(true);
     let fetchError = $state('');
@@ -76,44 +79,6 @@
         'Cari invoice, payment status, atau metode...'
     );
 
-    function isDateInSelectedPeriod(dateValue: string, selectedPeriod: PeriodFilter): boolean {
-        if (selectedPeriod === 'all') return true;
-
-        const date = new Date(dateValue);
-        if (Number.isNaN(date.getTime())) return false;
-
-        const now = new Date();
-        const startOfToday = new Date(now);
-        startOfToday.setHours(0, 0, 0, 0);
-
-        if (selectedPeriod === 'today') {
-            const startOfDate = new Date(date);
-            startOfDate.setHours(0, 0, 0, 0);
-            return startOfDate.getTime() === startOfToday.getTime();
-        }
-
-        if (selectedPeriod === 'week') {
-            const sevenDaysAgo = new Date(startOfToday);
-            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-            return date >= sevenDaysAgo;
-        }
-
-        if (selectedPeriod === 'month') {
-            return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
-        }
-
-        if (selectedPeriod === '3months') {
-            const threeMonthsAgo = new Date(startOfToday);
-            threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-            return date >= threeMonthsAgo;
-        }
-
-        if (selectedPeriod === 'year') {
-            return date.getFullYear() === now.getFullYear();
-        }
-
-        return true;
-    }
 
     function orderMatchesSearch(order: ReportingOrderItem, keyword: string): boolean {
         if (!keyword) return true;
@@ -134,10 +99,11 @@
 
     // Filtered data based on search and period (Prioritaskan DB if overview/orders/finance)
     let filteredOrders = $derived(
-        dbOrders.filter((order) =>
-            isDateInSelectedPeriod(order.orderDate || '', periodFilter) &&
-            orderMatchesSearch(order, normalizedSearchQuery)
-        )
+        filterOrders(dbOrders, {
+            period: periodFilter,
+            paymentStatus: paymentStatusFilter,
+            search: normalizedSearchQuery
+        })
     );
 
     const dbStats = $derived(computeReportingSummary(filteredOrders));
@@ -248,6 +214,7 @@
     function resetFilters() {
         searchQuery = '';
         periodFilter = 'month';
+        paymentStatusFilter = 'ALL';
     }
 
     const hasOverviewSearchResult = $derived(
@@ -301,7 +268,7 @@
                     </svg>
                 </button>
                 <a
-                    href="/api/reports/export.csv"
+                    href={`/api/reports/export.csv?period=${periodFilter}&paymentStatus=${paymentStatusFilter}&search=${encodeURIComponent(normalizedSearchQuery)}`}
                     aria-label={exportLabel}
                     title={exportLabel}
                     class="bg-brand-charcoal dark:bg-brand-primary text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest border border-brand-charcoal dark:border-brand-primary flex items-center gap-2 hover:scale-[1.02] active:scale-[0.99] transition-transform shadow-lg shadow-brand-charcoal/10"
@@ -319,7 +286,7 @@
     </header>
 
     <!-- Top Controls -->
-    <div class="grid lg:grid-cols-3 gap-6">
+    <div class="grid lg:grid-cols-4 gap-6">
         <!-- Search -->
         <div class="lg:col-span-2 relative group">
             <span class="absolute inset-y-0 left-6 flex items-center text-zinc-400 group-focus-within:text-brand-primary transition-colors">
@@ -351,6 +318,26 @@
             <span class="absolute inset-y-0 right-6 flex items-center pointer-events-none text-zinc-400">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </span>
+        </div>
+
+        <!-- Status Filter -->
+        <div class="relative">
+            <select 
+                bind:value={paymentStatusFilter}
+                class="w-full pl-8 pr-12 py-5 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-[2rem] outline-none focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary font-bold text-brand-charcoal dark:text-white transition-all shadow-sm appearance-none cursor-pointer"
+            >
+                <option value="ALL">Semua Status</option>
+                <option value="paid">Lunas (Paid)</option>
+                <option value="waiting_verification">Menunggu Verifikasi</option>
+                <option value="unpaid">Belum Lunas</option>
+                <option value="cod_pending">COD Pending</option>
+                <option value="rejected">Ditolak</option>
+            </select>
+            <span class="absolute inset-y-0 right-6 flex items-center pointer-events-none text-zinc-400">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                 </svg>
             </span>
         </div>
@@ -451,34 +438,51 @@
             </div>
 
             <section class="bg-white dark:bg-zinc-900 rounded-[3rem] border border-zinc-100 dark:border-zinc-800 shadow-sm p-8">
-                <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
-                    <h3 class="text-sm font-black text-brand-charcoal dark:text-white uppercase tracking-widest italic">Revenue Eligibility Snapshot</h3>
-                    <p class="text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em]">Revenue dianggap final jika pesanan sudah dibayar (PAID) atau barang sudah diterima (COMPLETED/DELIVERED).</p>
+                <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
+                    <div>
+                        <h3 class="text-lg font-black text-brand-charcoal dark:text-white tracking-tight uppercase italic">Financial Health Summary</h3>
+                        <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mt-1 italic">Analisa kelayakan pendapatan berdasarkan status verifikasi pembayaran.</p>
+                    </div>
+                    <div class="px-6 py-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-full border border-emerald-100 dark:border-emerald-900/30">
+                        <span class="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest italic">✓ Finance Approved Logic</span>
+                    </div>
                 </div>
+
                 <div class="grid grid-cols-2 lg:grid-cols-6 gap-4">
                     {#each [
-                        { label: 'Paid', value: dbStats.paidOrders, tone: 'text-emerald-600 bg-emerald-50 border-emerald-100' },
-                        { label: 'Unpaid', value: dbStats.unpaidOrders, tone: 'text-zinc-700 bg-zinc-50 border-zinc-200' },
-                        { label: 'Waiting', value: dbStats.waitingVerificationOrders, tone: 'text-amber-700 bg-amber-50 border-amber-100' },
-                        { label: 'Rejected', value: dbStats.rejectedOrders, tone: 'text-red-600 bg-red-50 border-red-100' },
-                        { label: 'Cancelled', value: dbStats.cancelledOrders, tone: 'text-rose-700 bg-rose-50 border-rose-100' },
-                        { label: 'Package', value: dbStats.sourceBreakdown.packageRequest, tone: 'text-indigo-700 bg-indigo-50 border-indigo-100' }
+                        { label: 'Revenue Final', value: formatRupiah(dbStats.validRevenue), tone: 'text-emerald-600 bg-emerald-50 border-emerald-100 dark:bg-emerald-950 dark:border-emerald-900', isLarge: true },
+                        { label: 'Revenue Pending', value: formatRupiah(dbStats.pendingRevenue), tone: 'text-amber-600 bg-amber-50 border-amber-100 dark:bg-amber-950 dark:border-amber-900', isLarge: true },
+                        { label: 'Paid Orders', value: dbStats.paidOrders, tone: 'text-blue-600 bg-blue-50 border-blue-100 dark:bg-blue-950 dark:border-blue-900' },
+                        { label: 'Waiting Review', value: dbStats.waitingVerificationOrders, tone: 'text-orange-600 bg-orange-50 border-orange-100 dark:bg-orange-950 dark:border-orange-900' },
+                        { label: 'Rejected/Void', value: dbStats.rejectedOrders + dbStats.cancelledOrders, tone: 'text-red-600 bg-red-50 border-red-100 dark:bg-red-950 dark:border-red-900' },
+                        { label: 'Total Volume', value: dbStats.totalOrders, tone: 'text-zinc-600 bg-zinc-50 border-zinc-200 dark:bg-zinc-800 dark:border-zinc-700' }
                     ] as item}
-                        <div class={`rounded-[1.75rem] border p-5 ${item.tone}`}>
-                            <p class="text-[9px] font-black uppercase tracking-widest mb-1">{item.label}</p>
-                            <p class="text-2xl font-black italic tracking-tighter">{item.value}</p>
+                        <div class={`rounded-[2rem] border p-6 flex flex-col justify-between min-h-[120px] ${item.tone} ${item.isLarge ? 'lg:col-span-1' : ''}`}>
+                            <p class="text-[9px] font-black uppercase tracking-widest mb-1 opacity-70">{item.label}</p>
+                            <p class={`font-black italic tracking-tighter ${item.isLarge ? 'text-lg' : 'text-2xl'}`}>{item.value}</p>
                         </div>
                     {/each}
                 </div>
-                <div class="mt-6 flex flex-wrap gap-2">
-                    <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-emerald-100 text-emerald-700">Source: Catalog</span>
-                    <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-indigo-100 text-indigo-700">Source: Package Request</span>
-                    <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-amber-100 text-amber-700">Source: Catalog Legacy</span>
+
+                <div class="mt-8 grid lg:grid-cols-2 gap-8 items-center">
+                    <div class="flex flex-wrap gap-2">
+                        <span class="px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest bg-zinc-100 dark:bg-zinc-800 text-zinc-500 border border-zinc-200 dark:border-zinc-700">Source Breakdown:</span>
+                        <span class="px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">Catalog: {dbStats.sourceBreakdown.catalog}</span>
+                        <span class="px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">Package: {dbStats.sourceBreakdown.packageRequest}</span>
+                    </div>
+                    <div class="bg-zinc-50 dark:bg-zinc-950 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800">
+                        <p class="text-[9px] font-medium text-zinc-500 dark:text-zinc-400 leading-relaxed italic">
+                            Revenue dianggap <span class="font-black text-brand-charcoal dark:text-white uppercase tracking-tighter">Final</span> jika pesanan sudah berstatus <span class="text-emerald-600 font-bold">PAID</span> atau barang sudah diterima (<span class="text-emerald-600 font-bold">COMPLETED/DELIVERED</span>).
+                        </p>
+                    </div>
                 </div>
+                
                 {#if filteredOrders.length === 0}
-                    <p class="mt-6 text-xs font-bold text-zinc-500 italic">
-                        Belum ada data order pada filter periode ini. Export CSV tetap tersedia dan akan mengikuti data yang ada.
-                    </p>
+                    <div class="mt-8 p-10 bg-zinc-50 dark:bg-zinc-950 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-3xl text-center">
+                        <p class="text-xs font-bold text-zinc-400 italic uppercase tracking-widest">
+                            Belum ada data pesanan pada filter "{periodFilterLabel(periodFilter)}" & "{paymentStatusFilter}".
+                        </p>
+                    </div>
                 {/if}
             </section>
 

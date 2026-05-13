@@ -1,5 +1,5 @@
 import { getOrders } from '$lib/server/services/orderService';
-import { buildOrdersCsv } from '$lib/utils/reporting';
+import { buildOrdersCsv, filterOrders, type PeriodFilter } from '$lib/utils/reporting';
 import type { RequestHandler } from './$types';
 
 function buildFileName(now: Date): string {
@@ -10,10 +10,16 @@ function buildFileName(now: Date): string {
 	return `tc-report-orders-${year}${month}${day}.csv`;
 }
 
-export const GET: RequestHandler = async () => {
+export const GET: RequestHandler = async ({ url }) => {
 	try {
-		const items = getOrders();
-		const csv = buildOrdersCsv(items);
+		const period = (url.searchParams.get('period') as PeriodFilter) || 'all';
+		const paymentStatus = url.searchParams.get('paymentStatus') || 'ALL';
+		const search = url.searchParams.get('search') || '';
+
+		const allItems = getOrders();
+		const filteredItems = filterOrders(allItems, { period, paymentStatus, search });
+		
+		const csv = buildOrdersCsv(filteredItems);
 		const fileName = buildFileName(new Date());
 
 		return new Response(csv, {
