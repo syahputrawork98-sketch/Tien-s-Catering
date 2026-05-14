@@ -17,7 +17,9 @@ export class AuthService {
 			name,
 			email,
 			password_hash: passwordHash,
-			role: 'CUSTOMER'
+			role: 'CUSTOMER',
+			phone: null,
+			address: null
 		});
 	}
 
@@ -57,6 +59,22 @@ export class AuthService {
 
 	async logout(token: string): Promise<void> {
 		sessionRepository.deleteByToken(token);
+	}
+
+	async updateProfile(userId: string, data: Partial<Omit<User, 'id' | 'created_at' | 'updated_at'>>): Promise<User | null> {
+		const allowedFields = ['name', 'phone', 'address'];
+		const filteredData: any = {};
+		for (const field of allowedFields) {
+			if (data[field as keyof typeof data] !== undefined) {
+				filteredData[field] = data[field as keyof typeof data];
+			}
+		}
+
+		if (Object.keys(filteredData).length === 0) {
+			return userRepository.findById(userId);
+		}
+
+		return userRepository.update(userId, filteredData);
 	}
 
 	getUserById(id: string): User | null {

@@ -3,6 +3,9 @@ export interface AuthUser {
 	name: string;
 	email: string;
 	role: 'CUSTOMER' | 'ADMIN' | 'CS';
+	phone?: string | null;
+	address?: string | null;
+	created_at?: string;
 }
 
 export const authService = {
@@ -45,5 +48,19 @@ export const authService = {
 
 	async logout(): Promise<void> {
 		await fetch('/api/auth/logout', { method: 'POST' });
+	},
+ 
+	async updateProfile(data: Partial<AuthUser>): Promise<AuthUser | null> {
+		const res = await fetch('/api/auth/me', {
+			method: 'PATCH',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(data)
+		});
+		if (!res.ok) {
+			const errorData = await res.json();
+			throw new Error(errorData.message || 'Update failed');
+		}
+		const result = await res.json();
+		return result.user;
 	}
 };

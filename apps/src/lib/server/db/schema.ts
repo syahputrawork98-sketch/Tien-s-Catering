@@ -58,6 +58,7 @@ export const createTablesSql = [
 		admin_note TEXT,
 		estimated_price INTEGER,
 		reviewed_at TEXT,
+		user_id TEXT,
 		created_at TEXT NOT NULL,
 		updated_at TEXT NOT NULL
 	);`,
@@ -75,6 +76,7 @@ export const createTablesSql = [
 		delivery_fee INTEGER NOT NULL DEFAULT 0,
 		total_amount INTEGER NOT NULL DEFAULT 0,
 		dev_persona_code TEXT,
+		user_id TEXT,
 		stock_status TEXT NOT NULL DEFAULT 'not_deducted',
 		stock_deducted_at TEXT,
 		stock_released_at TEXT,
@@ -116,6 +118,8 @@ export const createTablesSql = [
 		email TEXT NOT NULL UNIQUE,
 		password_hash TEXT NOT NULL,
 		role TEXT NOT NULL DEFAULT 'CUSTOMER',
+		phone TEXT,
+		address TEXT,
 		created_at TEXT NOT NULL,
 		updated_at TEXT NOT NULL
 	);`,

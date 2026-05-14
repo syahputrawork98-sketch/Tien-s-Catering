@@ -170,6 +170,7 @@ function parseCreateOrderPayload(payload: unknown): ParseCreateOrderPayloadResul
 	const deliveryInfo = isRecord(payload.deliveryInfo) ? payload.deliveryInfo : {};
 	const notes = parseOptionalString(payload.notes) ?? '';
 	const devPersonaCode = parseOptionalString(payload.devPersonaCode);
+	const userId = parseOptionalString(payload.userId);
 
 	return {
 		ok: true,
@@ -193,7 +194,8 @@ function parseCreateOrderPayload(payload: unknown): ParseCreateOrderPayloadResul
 				deliveryFee,
 				total
 			},
-			devPersonaCode
+			devPersonaCode,
+			userId
 		}
 	};
 }
@@ -212,8 +214,8 @@ export function createOrder(payload: unknown): CreateOrderResult {
 	};
 }
 
-export function getOrders(): OrderListRecord[] {
-	return listOrderRecords();
+export function getOrders(filters?: { userId?: string }): OrderListRecord[] {
+	return listOrderRecords(filters);
 }
 
 export function updateOrderStatus(orderId: string, payload: unknown): UpdateOrderStatusResult {

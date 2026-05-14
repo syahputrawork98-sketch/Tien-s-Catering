@@ -26,6 +26,11 @@
                  order.paymentStatus === 'cod_pending' ? 'COD / Bayar di Tempat' : 
                  order.paymentStatus === 'rejected' ? 'Pembayaran Ditolak' : 'Belum Bayar'}
             </span>
+            {#if !order.userId}
+                <span class="px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest bg-orange-100 text-orange-600 border border-orange-200">
+                    Demo Data
+                </span>
+            {/if}
         </div>
         
         <div class="space-y-1">

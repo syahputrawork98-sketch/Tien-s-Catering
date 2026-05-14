@@ -21,6 +21,7 @@ export type CreatePackageRequestInput = {
 	location: string;
 	notes: string;
 	status: PackageRequestStatus;
+	userId?: string | null;
 };
 
 export type CreatedPackageRequestSummary = {
@@ -53,6 +54,7 @@ export type PackageRequestRecord = {
 	location: string;
 	notes: string;
 	status: PackageRequestStatus;
+	userId: string | null;
 	createdAt: string;
 	updatedAt: string;
 	adminNote: string | null;

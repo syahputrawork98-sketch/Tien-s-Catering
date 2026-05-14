@@ -135,6 +135,8 @@ function parseCreatePackageRequestPayload(payload: unknown): ParseCreatePackageR
 		parseOptionalString(payload.catatan) ??
 		'';
 
+	const userId = parseOptionalString(payload.userId);
+
 	return {
 		ok: true,
 		data: {
@@ -146,7 +148,8 @@ function parseCreatePackageRequestPayload(payload: unknown): ParseCreatePackageR
 			pax,
 			location,
 			notes,
-			status: 'new'
+			status: 'new',
+			userId
 		}
 	};
 }
@@ -164,8 +167,8 @@ export function createPackageRequest(payload: unknown): CreatePackageRequestResu
 	};
 }
 
-export function getPackageRequests(): PackageRequestRecord[] {
-	return listPackageRequestRecords();
+export function getPackageRequests(filters?: { userId?: string }): PackageRequestRecord[] {
+	return listPackageRequestRecords(filters);
 }
 
 function parseUpdatePackageRequestReviewPayload(
@@ -295,7 +298,8 @@ export function convertPackageRequestToOrder(requestId: string): {
 		},
 		devPersonaCode: 'admin', // Dikonversi oleh admin
 		sourceType: 'package_request',
-		sourceId: normalizedRequestId
+		sourceId: normalizedRequestId,
+		userId: request.userId
 	};
 
 	const result = createOrder(orderPayload);

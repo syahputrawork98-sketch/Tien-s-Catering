@@ -2,9 +2,10 @@ import { json } from '@sveltejs/kit';
 import { createOrder, getOrders } from '$lib/server/services/orderService';
 import type { RequestHandler } from './$types';
 
-export const GET: RequestHandler = async () => {
+export const GET: RequestHandler = async ({ url }) => {
 	try {
-		const items = getOrders();
+		const userId = url.searchParams.get('userId');
+		const items = getOrders(userId ? { userId } : undefined);
 		return json({ items });
 	} catch (error) {
 		console.error('Failed to fetch local orders.', error);

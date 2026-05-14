@@ -42,5 +42,13 @@ export const authStore = {
 	async logout() {
 		await authService.logout();
 		currentUser = null;
+	},
+ 
+	async updateProfile(data: Partial<AuthUser>) {
+		const updated = await authService.updateProfile(data);
+		if (updated) {
+			currentUser = updated;
+		}
+		return updated;
 	}
 };

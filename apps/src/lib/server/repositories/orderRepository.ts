@@ -120,6 +120,7 @@ export function createOrderRecord(input: CreateOrderInput): CreatedOrderSummary 
 			dev_persona_code,
 			source_type,
 			source_id,
+			user_id,
 			created_at,
 			updated_at
 		) VALUES (
@@ -138,6 +139,7 @@ export function createOrderRecord(input: CreateOrderInput): CreatedOrderSummary 
 			@devPersonaCode,
 			@sourceType,
 			@sourceId,
+			@userId,
 			@createdAt,
 			@updatedAt
 		);`
@@ -223,6 +225,7 @@ export function createOrderRecord(input: CreateOrderInput): CreatedOrderSummary 
 			devPersonaCode: payload.devPersonaCode,
 			sourceType: payload.sourceType ?? 'catalog',
 			sourceId: payload.sourceId ?? null,
+			userId: payload.userId ?? null,
 			createdAt: timestamp,
 			updatedAt: timestamp
 		});
@@ -293,6 +296,7 @@ type RawOrderRow = {
 	stockReleasedAt: string | null;
 	sourceType: string | null;
 	sourceId: string | null;
+	userId: string | null;
 	departmentOrUnit: string | null;
 	floor: string | null;
 	locationNote: string | null;
@@ -344,13 +348,12 @@ type RawDailyStockRow = {
 	remainingStock: number;
 };
 
-export function listOrderRecords(): OrderListRecord[] {
+export function listOrderRecords(filters?: { userId?: string }): OrderListRecord[] {
 	ensureDatabaseInitialized();
 	const db = getDatabase();
 	ensureOrderStockColumns(db);
 
-	const orderQuery = db.prepare(
-		`SELECT
+	let sql = `SELECT
 			o.id AS id,
 			o.order_number AS orderNumber,
 			o.customer_name AS customerName,
@@ -364,6 +367,7 @@ export function listOrderRecords(): OrderListRecord[] {
 			o.total_amount AS totalAmount,
 			o.notes AS notes,
 			o.dev_persona_code AS devPersonaCode,
+			o.user_id AS userId,
 			o.stock_status AS stockStatus,
 			o.stock_deducted_at AS stockDeductedAt,
 			o.stock_released_at AS stockReleasedAt,
@@ -380,9 +384,17 @@ export function listOrderRecords(): OrderListRecord[] {
 			p.total_amount AS paymentTotalAmount
 		FROM orders o
 		LEFT JOIN delivery_info d ON d.order_id = o.id
-		LEFT JOIN payment_info p ON p.order_id = o.id
-		ORDER BY o.created_at DESC;`
-	);
+		LEFT JOIN payment_info p ON p.order_id = o.id`;
+
+	const params: any = {};
+	if (filters?.userId) {
+		sql += ` WHERE o.user_id = @userId`;
+		params.userId = filters.userId;
+	}
+
+	sql += ` ORDER BY o.created_at DESC;`;
+
+	const orderQuery = db.prepare(sql);
 
 	const orderItemQuery = db.prepare(
 		`SELECT
@@ -470,6 +482,7 @@ export function listOrderRecords(): OrderListRecord[] {
 			total: normalizedTotal,
 			notes: row.notes ?? '',
 			devPersonaCode: row.devPersonaCode,
+			userId: row.userId,
 			stockStatus: normalizeStockStatus(row.stockStatus),
 			stockDeductedAt: row.stockDeductedAt ?? null,
 			stockReleasedAt: row.stockReleasedAt ?? null,

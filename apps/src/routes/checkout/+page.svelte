@@ -2,6 +2,7 @@
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { cart, type CartItem } from '$lib/stores/cartStore.svelte';
+	import { authStore } from '$lib/stores/auth.svelte';
 	import { fade } from 'svelte/transition';
 
 	type PaymentMethod = 'cash' | 'transfer' | 'qris' | 'cod';
@@ -32,7 +33,7 @@
 	let apiError = $state('');
 
 	// Form State
-	let customerName = $state('');
+	let customerName = $state(authStore.user?.name || '');
 	let whatsapp = $state('');
 	let departmentOrUnit = $state('');
 	let floor = $state('');
@@ -165,7 +166,8 @@
 				deliveryFee: 0,
 				total: cart.totalPrice
 			},
-			devPersonaCode: 'USER'
+			devPersonaCode: 'USER',
+			userId: authStore.isAuthenticated ? authStore.user?.id : null
 		};
 
 		try {

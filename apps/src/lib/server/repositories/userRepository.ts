@@ -7,6 +7,8 @@ export interface User {
 	email: string;
 	password_hash: string;
 	role: 'CUSTOMER' | 'ADMIN' | 'CS';
+	phone: string | null;
+	address: string | null;
 	created_at: string;
 	updated_at: string;
 }
@@ -33,18 +35,38 @@ export class UserRepository {
 	create(user: Omit<User, 'created_at' | 'updated_at'>): User {
 		const now = new Date().toISOString();
 		const stmt = this.db.prepare(`
-			INSERT INTO users (id, name, email, password_hash, role, created_at, updated_at)
-			VALUES (@id, @name, @email, @password_hash, @role, @created_at, @updated_at)
+			INSERT INTO users (id, name, email, password_hash, role, phone, address, created_at, updated_at)
+			VALUES (@id, @name, @email, @password_hash, @role, @phone, @address, @created_at, @updated_at)
 		`);
 
 		const newUser = {
 			...user,
+			phone: (user as any).phone ?? null,
+			address: (user as any).address ?? null,
 			created_at: now,
 			updated_at: now
 		};
 
 		stmt.run(newUser);
 		return newUser as User;
+	}
+
+	update(id: string, data: Partial<Omit<User, 'id' | 'created_at' | 'updated_at'>>): User | null {
+		const existing = this.findById(id);
+		if (!existing) return null;
+
+		const now = new Date().toISOString();
+		const updated = { ...existing, ...data, updated_at: now };
+
+		const fields = Object.keys(data).map((k) => `${k} = @${k}`).join(', ');
+		const stmt = this.db.prepare(`
+			UPDATE users 
+			SET ${fields}, updated_at = @updated_at 
+			WHERE id = @id
+		`);
+
+		stmt.run({ ...data, id, updated_at: now });
+		return updated;
 	}
 }
 

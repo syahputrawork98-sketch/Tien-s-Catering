@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { authStore } from '$lib/stores/auth.svelte';
 	import { fade, fly, scale } from 'svelte/transition';
 
 	type PackageRequestStatus =
@@ -26,6 +27,7 @@
 		estimatedPrice: number | null;
 		reviewedAt: string | null;
 		convertedOrderId: string | null;
+		userId?: string | null;
 		createdAt: string;
 		updatedAt: string;
 	};
@@ -96,6 +98,7 @@
 					: Math.max(0, Math.floor(getNumber(raw.estimatedPrice, 0))),
 			reviewedAt: getString(raw.reviewedAt) || null,
 			convertedOrderId: getString(raw.convertedOrderId) || null,
+			userId: getString(raw.userId) || null,
 			createdAt: getString(raw.createdAt, '-'),
 			updatedAt: getString(raw.updatedAt, '-')
 		};
@@ -154,7 +157,8 @@
 		error = '';
 
 		try {
-			const response = await fetch('/api/package-requests');
+			const query = authStore.isAuthenticated ? `?userId=${authStore.user?.id}` : '';
+			const response = await fetch(`/api/package-requests${query}`);
 			const body = (await response.json().catch(() => null)) as PackageRequestApiResponse | null;
 
 			if (!response.ok) {
@@ -243,6 +247,11 @@
 										{statusLabel(request.status)}
 									</span>
 									<span class="px-5 py-2 rounded-full text-[9px] font-black bg-zinc-50 dark:bg-zinc-800 text-zinc-400 uppercase tracking-widest border border-zinc-100 dark:border-zinc-700 italic">#{request.requestNumber}</span>
+									{#if !request.userId}
+										<span class="px-3 py-1.5 rounded-full text-[8px] font-black bg-orange-100 text-orange-600 border border-orange-200 uppercase tracking-widest">
+											Demo Data
+										</span>
+									{/if}
 								</div>
 
 								<div class="space-y-2">

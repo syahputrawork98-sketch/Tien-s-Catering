@@ -53,6 +53,29 @@ function seedMenusAndStocks(db: Database.Database) {
 	runSeed();
 }
 
+function runMigrations(db: Database.Database) {
+	try {
+		db.exec('ALTER TABLE orders ADD COLUMN user_id TEXT;');
+	} catch (e) {
+		// Column might already exist
+	}
+	try {
+		db.exec('ALTER TABLE package_requests ADD COLUMN user_id TEXT;');
+	} catch (e) {
+		// Column might already exist
+	}
+	try {
+		db.exec('ALTER TABLE users ADD COLUMN phone TEXT;');
+	} catch (e) {
+		// Column might already exist
+	}
+	try {
+		db.exec('ALTER TABLE users ADD COLUMN address TEXT;');
+	} catch (e) {
+		// Column might already exist
+	}
+}
+
 export function getDatabase() {
 	if (database) return database;
 
@@ -73,6 +96,8 @@ export function ensureDatabaseInitialized() {
 	for (const sql of createTablesSql) {
 		db.exec(sql);
 	}
+
+	runMigrations(db);
 
 	seedDevPersonas(db);
 	seedMenusAndStocks(db);

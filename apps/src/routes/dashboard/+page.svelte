@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { mockSession } from '$lib/stores/mockSession.svelte';
+	import { authStore } from '$lib/stores/auth.svelte';
 	import { onMount } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
 
@@ -61,9 +62,10 @@
 		loading = true;
 		error = '';
 		try {
+			const query = authStore.isAuthenticated ? `?userId=${authStore.user?.id}` : '';
 			const [ordersRes, requestsRes] = await Promise.all([
-				fetch('/api/orders'),
-				fetch('/api/package-requests')
+				fetch(`/api/orders${query}`),
+				fetch(`/api/package-requests${query}`)
 			]);
 
 			if (!ordersRes.ok || !requestsRes.ok) {
@@ -147,12 +149,14 @@
 
 <div class="space-y-12 pb-20">
 	<header in:fly={{ y: -20, duration: 500 }}>
-		<div class="inline-flex items-center gap-2 px-3 py-1 bg-brand-primary/10 rounded-full mb-4">
-			<span class="w-1.5 h-1.5 rounded-full bg-brand-primary animate-pulse"></span>
-			<span class="text-[9px] font-black text-brand-primary uppercase tracking-widest italic">Local Dashboard View</span>
+		<div class="inline-flex items-center gap-2 px-3 py-1 {authStore.isAuthenticated ? 'bg-emerald-500/10' : 'bg-brand-primary/10'} rounded-full mb-4">
+			<span class="w-1.5 h-1.5 rounded-full {authStore.isAuthenticated ? 'bg-emerald-500' : 'bg-brand-primary'} animate-pulse"></span>
+			<span class="text-[9px] font-black {authStore.isAuthenticated ? 'text-emerald-600' : 'text-brand-primary'} uppercase tracking-widest italic">
+				{authStore.isAuthenticated ? 'Authenticated Account' : 'Local Dashboard View'}
+			</span>
 		</div>
 		<h1 class="text-4xl lg:text-5xl font-black text-brand-charcoal dark:text-white tracking-tighter italic uppercase">
-			Halo, {mockSession.user.name.split(' ')[0]}! 👋
+			Halo, {(authStore.user?.name || mockSession.user.name).split(' ')[0]}! 👋
 		</h1>
 		<p class="text-zinc-500 font-medium mt-2 max-w-2xl">
 			Selamat datang kembali di pusat kendali katering Anda. Pantau pesanan dan permintaan paket Anda secara real-time.

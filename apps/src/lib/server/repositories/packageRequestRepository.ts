@@ -25,6 +25,7 @@ type RawPackageRequestRow = {
 	adminNote: string | null;
 	estimatedPrice: number | null;
 	reviewedAt: string | null;
+	user_id: string | null;
 	convertedOrderId: string | null;
 	createdAt: string;
 	updatedAt: string;
@@ -149,6 +150,7 @@ export function createPackageRequestRecord(
 			admin_note,
 			estimated_price,
 			reviewed_at,
+			user_id,
 			created_at,
 			updated_at
 		) VALUES (
@@ -166,6 +168,7 @@ export function createPackageRequestRecord(
 			@adminNote,
 			@estimatedPrice,
 			@reviewedAt,
+			@userId,
 			@createdAt,
 			@updatedAt
 		);`
@@ -192,6 +195,7 @@ export function createPackageRequestRecord(
 		adminNote: null,
 		estimatedPrice: null,
 		reviewedAt: null,
+		userId: input.userId ?? null,
 		createdAt: timestamp,
 		updatedAt: timestamp
 	});
@@ -215,13 +219,12 @@ export function createPackageRequestRecord(
 	};
 }
 
-export function listPackageRequestRecords(): PackageRequestRecord[] {
+export function listPackageRequestRecords(filters?: { userId?: string }): PackageRequestRecord[] {
 	ensureDatabaseInitialized();
 	const db = getDatabase();
 	ensurePackageRequestReviewColumns(db);
 
-	const query = db.prepare(
-		`SELECT
+	let sql = `SELECT
 			id AS id,
 			request_number AS requestNumber,
 			package_id AS packageId,
@@ -236,14 +239,22 @@ export function listPackageRequestRecords(): PackageRequestRecord[] {
 			admin_note AS adminNote,
 			estimated_price AS estimatedPrice,
 			reviewed_at AS reviewedAt,
+			user_id AS userId,
 			converted_order_id AS convertedOrderId,
 			created_at AS createdAt,
 			updated_at AS updatedAt
-		FROM package_requests
-		ORDER BY created_at DESC;`
-	);
+		FROM package_requests`;
 
-	const rows = query.all() as RawPackageRequestRow[];
+	const params: any = {};
+	if (filters?.userId) {
+		sql += ` WHERE user_id = @userId`;
+		params.userId = filters.userId;
+	}
+
+	sql += ` ORDER BY created_at DESC;`;
+
+	const query = db.prepare(sql);
+	const rows = query.all(params) as (RawPackageRequestRow & { userId: string | null })[];
 	return rows.map((row) => ({
 		id: row.id,
 		requestNumber: row.requestNumber,
@@ -256,6 +267,7 @@ export function listPackageRequestRecords(): PackageRequestRecord[] {
 		location: row.location,
 		notes: row.notes ?? '',
 		status: normalizeRequestStatus(row.status),
+		userId: row.userId,
 		adminNote: row.adminNote ?? null,
 		estimatedPrice: row.estimatedPrice !== null ? Math.max(0, Number(row.estimatedPrice)) : null,
 		reviewedAt: row.reviewedAt ?? null,

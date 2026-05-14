@@ -42,6 +42,7 @@ export interface Order {
     locationNote: string | null;
     addressSummary: string | null;
   };
+  userId?: string | null;
 }
 
 // ─── Helper: map status lowercase -> uppercase ────────────

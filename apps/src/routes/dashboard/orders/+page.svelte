@@ -8,6 +8,7 @@
     import Modal from '$lib/components/ui/Modal.svelte';
     import { fade, fly, scale } from 'svelte/transition';
     import { onMount } from 'svelte';
+    import { authStore } from '$lib/stores/auth.svelte';
 
     let orders = $state<Order[]>([]);
     let loading = $state(true);
@@ -101,7 +102,8 @@
                 floor: apiOrder.deliveryInfo.floor || null,
                 locationNote: apiOrder.deliveryInfo.locationNote || null,
                 addressSummary: apiOrder.deliveryInfo.addressSummary || null
-            } : undefined
+            } : undefined,
+            userId: apiOrder.userId
         };
     }
 
@@ -109,7 +111,8 @@
         loading = true;
         error = '';
         try {
-            const response = await fetch('/api/orders');
+            const query = authStore.isAuthenticated ? `?userId=${authStore.user?.id}` : '';
+            const response = await fetch(`/api/orders${query}`);
             if (!response.ok) throw new Error('Gagal mengambil data pesanan.');
             const data = await response.json();
             if (Array.isArray(data.items)) {

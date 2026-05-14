@@ -1,12 +1,19 @@
 <script lang="ts">
-    import { mockUserProfile } from '$lib/mock/user';
     import { mockBusinessProfile } from '$lib/mock/business';
+    import { authStore } from '$lib/stores/auth.svelte';
     import { fade, fly } from 'svelte/transition';
     import Modal from '$lib/components/ui/Modal.svelte';
 
-    let profile = $state({ ...mockUserProfile });
+    let profile = $state({
+        name: authStore.user?.name || '',
+        whatsapp: authStore.user?.phone || '',
+        email: authStore.user?.email || '',
+        address: authStore.user?.address || ''
+    });
+
     let isSaving = $state(false);
     let showSuccess = $state(false);
+    let errorMessage = $state('');
 
     // Initial helper
     function getInitial(name: string) {
@@ -22,14 +29,24 @@
     });
     let passwordError = $state('');
 
-    function handleSave() {
+    async function handleSave() {
+        if (!authStore.isAuthenticated) return;
+        
         isSaving = true;
-        // Simulate network delay
-        setTimeout(() => {
-            isSaving = false;
+        errorMessage = '';
+        try {
+            await authStore.updateProfile({
+                name: profile.name,
+                phone: profile.whatsapp,
+                address: profile.address
+            });
             showSuccess = true;
             setTimeout(() => showSuccess = false, 3000);
-        }, 800);
+        } catch (error: any) {
+            errorMessage = error.message || 'Gagal menyimpan profil.';
+        } finally {
+            isSaving = false;
+        }
     }
 
     function handleChangePassword() {
@@ -107,8 +124,13 @@
                     </div>
 
                     <div class="space-y-2">
-                        <label for="profile-email" class="block text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">Email (Read-only Simulation)</label>
+                        <label for="profile-email" class="block text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">Email (Read-only)</label>
                         <input id="profile-email" type="email" bind:value={profile.email} readonly class="w-full px-6 py-5 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 rounded-2xl outline-none font-bold text-zinc-400 dark:text-zinc-500 text-sm cursor-not-allowed" />
+                    </div>
+
+                    <div class="space-y-2">
+                        <label for="profile-address" class="block text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">Alamat Utama</label>
+                        <textarea id="profile-address" bind:value={profile.address} rows="3" class="w-full px-6 py-5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800 rounded-2xl focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all font-bold text-brand-charcoal dark:text-white text-sm resize-none"></textarea>
                     </div>
 
                     <div class="p-6 bg-blue-50 dark:bg-blue-900/10 rounded-2xl border border-blue-100 dark:border-blue-900/20">
@@ -131,7 +153,11 @@
                             {/if}
                         </button>
                         <button 
-                            onclick={() => profile = {...mockUserProfile}} 
+                            onclick={() => {
+                                profile.name = authStore.user?.name || '';
+                                profile.whatsapp = authStore.user?.phone || '';
+                                profile.address = authStore.user?.address || '';
+                            }} 
                             class="px-10 py-5 text-zinc-400 font-black text-xs uppercase tracking-widest hover:text-brand-charcoal dark:hover:text-white transition-colors"
                         >
                             Reset Data
@@ -155,9 +181,9 @@
                         <h3 class="font-black text-xl text-white truncate italic tracking-tighter">{profile.name}</h3>
                         <div class="flex items-center gap-2 mt-1">
                             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                            <p class="text-[10px] text-emerald-400 uppercase tracking-widest font-black italic">Aktif Simulation</p>
+                            <p class="text-[10px] text-emerald-400 uppercase tracking-widest font-black italic">Aktif Account</p>
                         </div>
-                        <p class="text-[9px] text-zinc-500 font-black uppercase tracking-widest mt-2">Member Sejak: {profile.joinedAt}</p>
+                        <p class="text-[9px] text-zinc-500 font-black uppercase tracking-widest mt-2">Member Sejak: {authStore.user?.created_at?.split('T')[0] || '-'}</p>
                     </div>
                 </div>
                 <div class="space-y-3 relative z-10">

@@ -47,6 +47,7 @@ export type CreateOrderInput = {
 	devPersonaCode: string | null;
 	sourceType?: 'catalog' | 'package_request';
 	sourceId?: string | null;
+	userId?: string | null;
 };
 
 export type CreatedOrderSummary = {
@@ -100,6 +101,7 @@ export type OrderListRecord = {
 	total: number;
 	notes: string;
 	devPersonaCode: string | null;
+	userId: string | null;
 	stockStatus: OrderStockStatus;
 	stockDeductedAt: string | null;
 	stockReleasedAt: string | null;

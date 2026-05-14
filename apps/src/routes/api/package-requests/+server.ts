@@ -2,9 +2,10 @@ import { json } from '@sveltejs/kit';
 import { createPackageRequest, getPackageRequests } from '$lib/server/services/packageRequestService';
 import type { RequestHandler } from './$types';
 
-export const GET: RequestHandler = async () => {
+export const GET: RequestHandler = async ({ url }) => {
 	try {
-		const items = getPackageRequests();
+		const userId = url.searchParams.get('userId');
+		const items = getPackageRequests(userId ? { userId } : undefined);
 		return json({ items });
 	} catch (error) {
 		console.error('Failed to fetch package requests.', error);
