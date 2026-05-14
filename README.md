@@ -18,10 +18,10 @@ Tien's Catering adalah aplikasi pemesanan makanan/catering lokal untuk area Pemk
 
 ## Status Project Saat Ini
 
-- **Pre-Auth Local Development**: Fokus pada pengembangan alur bisnis menggunakan database SQLite lokal.
-- **Developer Persona Switcher**: Digunakan sebagai mekanisme navigasi antar peran (Customer, CS, Admin) tanpa sistem login.
-- **Hold Production**: Fitur sensitif (Auth, Real Payment Gateway, Official Tax) ditahan hingga fase final.
-- Frontend + backend foundation sudah berjalan stabil di lingkungan lokal.
+- **Batch 48 — Fase E Active**: Memasuki fase *Production Readiness*. Fokus pada penutupan gap keamanan, auth, dan infrastruktur.
+- **Business-Complete (Pre-Auth)**: Alur bisnis utama sudah selesai dan stabil untuk simulasi lokal (Batch 47).
+- **Developer Persona Switcher**: Masih digunakan untuk demo multi-role hingga sistem Auth produksi diimplementasikan di Batch 49.
+- **Hold Production**: Fitur sensitif (Real Payment Gateway, Cloud Storage, Deployment) tetap ditahan mengikuti roadmap Fase E.
 
 ## Struktur Folder Utama
 

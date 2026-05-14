@@ -15,7 +15,9 @@ Dokumen di sini dipakai sebagai acuan product direction, scope, dan alur kerja l
 8. `07-backend-foundation-plan.md`
 9. `08-order-api-and-admin-flow.md`
 10. `09-package-catering-request-flow.md`
-11. `ROADMAP_BATCH_31_45.md` (Roadmap Fase A-D)
+11. `10-production-readiness-gap.md`
+12. `ROADMAP_BATCH_31_45.md` (Roadmap Fase A-D - Legacy)
+13. `ROADMAP_PHASE_E_BATCH_48_60.md` (Roadmap Fase E - Active)
 
 ## Prinsip Workflow
 
@@ -23,8 +25,10 @@ Dokumen di sini dipakai sebagai acuan product direction, scope, dan alur kerja l
 
 ## Status Terakhir (Mei 2026)
 
-- **Fase A–D Selesai**: Seluruh rangkaian Batch 31–47 telah selesai (**Accepted**).
+- **Batch 48 Selesai**: Fase E Opening & Production Gap Audit.
+  - **Status**: *Fase E Active / Scope Freeze*.
+  - **Technical**: Audit gap produksi selesai, roadmap Batch 48-60 dikunci.
+- **Fase A–D (Batch 31–47)**: Seluruh rangkaian telah selesai (**Accepted**).
   - **Status**: *Business-Complete (Pre-Auth)*. Aplikasi stabil untuk simulasi alur bisnis lokal.
-  - **Technical**: `npm run check` 0 errors, `npm run build` sukses.
   - **Persona**: *Developer Persona Switcher + Account Selector* aktif untuk demo multi-role.
-- **Prinsip Scope**: Fitur bisnis bersifat **Local-Compatible** sudah matang. Fitur **Production/Final (Auth & Security)** tetap Hold hingga Fase E (Batch 48+).
+- **Prinsip Scope**: Fitur bisnis bersifat **Local-Compatible** sudah matang. Fitur **Production/Final (Auth & Security)** mulai dibuka secara bertahap di Fase E.

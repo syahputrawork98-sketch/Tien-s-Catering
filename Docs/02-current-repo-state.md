@@ -23,14 +23,16 @@
 - Payment gateway masih dalam mode simulasi bukti transfer (Hold Production).
 - Stock management (decrement/restore) sudah aktif dalam alur konfirmasi/pembatalan order.
 
-## Deployment Readiness Status (Batch 44–45)
+## Deployment Readiness & Phase E (Batch 48+)
 
-- **Build Hygiene**: `npm run check` sudah bersih (0 errors, 0 warnings) untuk area aktif.
-- **Build Success**: `npm run build` berhasil dijalankan secara lokal menggunakan adapter-auto.
-- **Routing Safety**: Jalur navigasi dashboard admin dan customer telah diverifikasi, termasuk perbaikan fallback UI untuk data kosong.
-- **Hold for Production**: Deployment production riil masih ditahan (Hold) menunggu Fase E (Auth & Security).
+- **Batch 47**: Business-Complete / Pre-Auth. Aplikasi siap untuk demo bisnis lokal secara penuh.
+- **Batch 48**: Fase E (Production Readiness) resmi dibuka.
+- **Build Hygiene**: `npm run check` 0 errors.
+- **Status Production**: Belum ready untuk public release. Fokus saat ini adalah menutup gap antara simulasi lokal dan standar produksi (Auth, Security, Cloud Storage).
+- **Hold for Production**: Beberapa fitur (Payment Gateway Real, Auth Production, Cloud Storage) masih ditahan hingga batch yang ditentukan di roadmap Fase E.
 
 ## Catatan Arah Dokumen
 
 `Docs/`, `FITUR.md`, dan `README.md` aktif adalah source of truth arah produk dan status repo.
 Keputusan terbaru Room Chat 00 menjadi acuan utama.
+Setiap Batch di Fase E akan memperbarui `Docs/10-production-readiness-gap.md` jika ada gap yang tertutup.
