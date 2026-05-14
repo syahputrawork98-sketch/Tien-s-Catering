@@ -14,20 +14,25 @@ Tujuan utama fase ini adalah melakukan *hardening*, implementasi sistem keamanan
 - [x] Sinkronisasi dokumentasi status project.
 - [x] Penentuan daftar fitur "Hold Production" yang akan dibuka atau tetap ditahan.
 
-### Batch 49: Auth Foundation Planning & Implementation
-- Perancangan skema tabel User/Auth.
-- Implementasi sistem Registrasi & Login dasar.
-- Transisi dari Persona Switcher ke Session-based Auth (Initial).
+### Batch 49: Auth Foundation Planning & Implementation (Completed)
+- [x] Perancangan skema tabel User/Auth.
+- [x] Implementasi sistem Registrasi & Login dasar.
+- [x] Transisi dari Persona Switcher ke Session-based Auth (Initial).
 
-### Batch 50: Documentation & Status Sync
-- Checkpoint dokumentasi teknis setelah Auth foundation.
-- Update API inventory untuk endpoint terproteksi.
+### Batch 50: Documentation & Status Sync (Completed)
+- [x] Session Token Hardening + Basic Dashboard Guard.
+- [x] Hindari UI crash pada unauthenticated requests.
 
-### Batch 51–54: Security & Data Isolation Hardening
-- Implementasi RBAC (Role-Based Access Control) tingkat Server.
-- Isolasi data (Customer hanya melihat data miliknya).
-- Hardening API endpoints (Validation, Sanity checks).
-- Storage Hardening (Transisi ke Cloud Storage/S3 jika diputuskan).
+### Batch 51–54: Security & Data Isolation Hardening (Completed)
+- [x] Batch 51: Account/Profile + Customer Data Isolation foundation.
+- [x] Batch 52: Basic Role Access Guard client-side.
+- [x] Batch 53: Server-side/API role guard foundation (Orders, Reports, dsb).
+- [x] Batch 54: Docs Sync Ringan Fase E Auth Progress.
+
+### Batch 55: API Guard Completion & Ownership Visibility
+- Selesaikan proteksi endpoint API yang tersisa.
+- Admin/CS ownership visibility di dashboard.
+- Session cleanup/expired token handling lanjutan.
 
 ### Batch 55: Mid-Phase Checkpoint
 - Security audit internal.

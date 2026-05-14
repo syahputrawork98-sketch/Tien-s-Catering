@@ -7,8 +7,8 @@ Fitur-fitur ini sudah diidentifikasi sebagai penghambat utama rilis publik dan m
 
 | Fitur | Status Saat Ini | Kebutuhan Produksi |
 |---|---|---|
-| **Authentication** | Minimal Foundation (Batch 49) | JWT/Session Hardening, Password Reset, Secure Cookies |
-| **RBAC** | UI Logic Only (Persona-based) | Server-side validation, Middleware protection |
+| **Authentication** | Foundation Active (Batch 49-53) | Lupa Password, Email Verif, Strict JWT, Secure Cookies |
+| **RBAC** | Partial (Client/API Guard Active) | Middleware protection, Complex Role Matrix |
 | **Payment Gateway** | Manual Transfer Proof (Local Upload) | Integrasi Midtrans/Xendit, QRIS Real, Webhooks |
 | **Storage** | Local Folder (`/uploads`) | Cloud Storage (AWS S3 / Google Cloud Storage / Supabase) |
 | **Security Hardening** | Open API (No validation/auth) | Rate limiting, CORS, Input sanitization, Helmet |
@@ -37,4 +37,4 @@ Beberapa alur bisnis masih bersifat "Happy Path" lokal.
 - **Storage Migration**: Bukti pembayaran yang saat ini tersimpan lokal harus dimigrasikan ke cloud saat sistem live.
 
 ---
-*Terakhir diupdate: Batch 49 — Minimal Auth Foundation*
+*Terakhir diupdate: Batch 54 — Docs Sync Ringan Fase E Auth Progress*
