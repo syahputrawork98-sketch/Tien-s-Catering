@@ -7,7 +7,7 @@ Fitur-fitur ini sudah diidentifikasi sebagai penghambat utama rilis publik dan m
 
 | Fitur | Status Saat Ini | Kebutuhan Produksi |
 |---|---|---|
-| **Authentication** | Simulasi Persona Switcher (localStorage) | JWT/Session, Password Hashing, Secure Cookies |
+| **Authentication** | Minimal Foundation (Batch 49) | JWT/Session Hardening, Password Reset, Secure Cookies |
 | **RBAC** | UI Logic Only (Persona-based) | Server-side validation, Middleware protection |
 | **Payment Gateway** | Manual Transfer Proof (Local Upload) | Integrasi Midtrans/Xendit, QRIS Real, Webhooks |
 | **Storage** | Local Folder (`/uploads`) | Cloud Storage (AWS S3 / Google Cloud Storage / Supabase) |
@@ -37,4 +37,4 @@ Beberapa alur bisnis masih bersifat "Happy Path" lokal.
 - **Storage Migration**: Bukti pembayaran yang saat ini tersimpan lokal harus dimigrasikan ke cloud saat sistem live.
 
 ---
-*Terakhir diupdate: Batch 48 — Fase E Opening*
+*Terakhir diupdate: Batch 49 — Minimal Auth Foundation*

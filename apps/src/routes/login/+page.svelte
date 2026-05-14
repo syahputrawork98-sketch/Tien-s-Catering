@@ -1,20 +1,26 @@
 <script lang="ts">
 	import { mockSession } from '$lib/stores/mockSession.svelte';
+	import { authStore } from '$lib/stores/auth.svelte';
 	import { goto } from '$app/navigation';
 	import type { MockRole } from '$lib/mock/session';
 
 	let loading = $state(false);
-	let phone = $state('');
+	let email = $state('');
 	let password = $state('');
+	let errorMessage = $state('');
 
-	function handleLogin(e: SubmitEvent) {
+	async function handleLogin(e: SubmitEvent) {
 		e.preventDefault();
 		loading = true;
-		setTimeout(() => {
-			mockSession.setRole('USER');
+		errorMessage = '';
+		try {
+			await authStore.login(email, password);
 			goto('/dashboard');
+		} catch (error: any) {
+			errorMessage = error.message || 'Login gagal. Periksa email dan password Anda.';
+		} finally {
 			loading = false;
-		}, 1000);
+		}
 	}
 
 	function quickLogin(role: MockRole) {
@@ -42,17 +48,23 @@
 		</div>
 
 		<form class="mt-8 space-y-6" onsubmit={handleLogin}>
+			{#if errorMessage}
+				<div class="p-3 bg-red-50 text-red-600 rounded-xl text-xs font-bold border border-red-100">
+					{errorMessage}
+				</div>
+			{/if}
+
 			<div class="-space-y-px rounded-md shadow-sm">
 				<div class="mb-4">
-					<label for="phone" class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 px-1 mb-2 uppercase tracking-widest text-[10px] font-black">Nomor Telepon</label>
+					<label for="email" class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 px-1 mb-2 uppercase tracking-widest text-[10px] font-black">Alamat Email</label>
 					<input
-						id="phone"
-						name="phone"
-						type="tel"
-						bind:value={phone}
+						id="email"
+						name="email"
+						type="email"
+						bind:value={email}
 						required
 						class="mt-1 block w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:border-brand-primary focus:outline-none focus:ring-4 focus:ring-brand-primary/10 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white sm:text-sm font-bold"
-						placeholder="08123456789"
+						placeholder="user@example.com"
 					/>
 				</div>
 				<div>

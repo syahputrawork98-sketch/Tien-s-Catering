@@ -1,6 +1,7 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import { mockSession } from '$lib/stores/mockSession.svelte';
+    import { authStore } from '$lib/stores/auth.svelte';
     import { dashboardNavigation } from '$lib/config/navigation';
     import { page } from '$app/state';
     import { goto } from '$app/navigation';
@@ -67,11 +68,31 @@
 
             <!-- User Info Card -->
             <div class="px-6 py-4 mx-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-zinc-100 dark:border-zinc-800 mb-8">
-                <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">Active User</p>
-                <h3 class="font-black text-brand-charcoal dark:text-white truncate">{mockSession.user.name}</h3>
-                <span class="inline-block mt-2 px-2 py-0.5 bg-brand-primary/10 text-brand-primary text-[9px] font-black uppercase rounded-md tracking-widest border border-brand-primary/20">
-                    {mockSession.role.replace('_', ' ')}
-                </span>
+                {#if authStore.isAuthenticated}
+                    <p class="text-[10px] font-black text-brand-primary uppercase tracking-widest mb-1">Authenticated Account</p>
+                    <h3 class="font-black text-brand-charcoal dark:text-white truncate">{authStore.user?.name}</h3>
+                    <span class="inline-block mt-2 px-2 py-0.5 bg-green-500/10 text-green-500 text-[9px] font-black uppercase rounded-md tracking-widest border border-green-500/20">
+                        {authStore.user?.role}
+                    </span>
+                    <button
+                        onclick={() => { authStore.logout(); goto('/login'); }}
+                        class="block w-full mt-3 text-left text-[9px] font-black text-zinc-400 hover:text-red-500 transition-colors uppercase tracking-widest"
+                    >
+                        Keluar Akun (Auth)
+                    </button>
+                {:else}
+                    <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">Active Persona (Demo)</p>
+                    <h3 class="font-black text-brand-charcoal dark:text-white truncate">{mockSession.user.name}</h3>
+                    <span class="inline-block mt-2 px-2 py-0.5 bg-brand-primary/10 text-brand-primary text-[9px] font-black uppercase rounded-md tracking-widest border border-brand-primary/20">
+                        {mockSession.role.replace('_', ' ')}
+                    </span>
+                    <a
+                        href="/login"
+                        class="block w-full mt-3 text-left text-[9px] font-black text-brand-primary hover:underline transition-colors uppercase tracking-widest"
+                    >
+                        Login Production
+                    </a>
+                {/if}
             </div>
 
             <!-- Navigation -->

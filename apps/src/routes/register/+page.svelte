@@ -1,18 +1,27 @@
 <script lang="ts">
+	import { authStore } from '$lib/stores/auth.svelte';
+	import { goto } from '$app/navigation';
 	import { fade, fly } from 'svelte/transition';
 	
 	let loading = $state(false);
 	let name = $state('');
-	let phone = $state('');
+	let email = $state('');
 	let password = $state('');
+	let errorMessage = $state('');
 
-	function handleRegister(e: SubmitEvent) {
+	async function handleRegister(e: SubmitEvent) {
 		e.preventDefault();
 		loading = true;
-		setTimeout(() => {
-			alert("Auth backend belum tersedia. Registrasi UI berhasil disimulasikan.");
+		errorMessage = '';
+		try {
+			await authStore.register(name, email, password);
+			alert("Registrasi berhasil! Anda akan diarahkan ke dashboard.");
+			goto('/dashboard');
+		} catch (error: any) {
+			errorMessage = error.message || 'Registrasi gagal. Coba lagi nanti.';
+		} finally {
 			loading = false;
-		}, 1000);
+		}
 	}
 </script>
 
@@ -40,6 +49,12 @@
 		<div class="bg-white dark:bg-zinc-900 rounded-[2.5rem] shadow-2xl shadow-zinc-200/50 dark:shadow-none border border-zinc-100 dark:border-zinc-800 p-10 overflow-hidden relative">
 			
 			<form class="space-y-6" onsubmit={handleRegister}>
+				{#if errorMessage}
+					<div class="p-3 bg-red-50 text-red-600 rounded-xl text-xs font-bold border border-red-100">
+						{errorMessage}
+					</div>
+				{/if}
+
 				<!-- Progress Label -->
 				<div class="flex items-center gap-4 mb-4">
 					<span class="text-[10px] font-black text-brand-primary uppercase tracking-widest px-3 py-1 bg-brand-primary/10 rounded-full">Akun Personal</span>
@@ -66,19 +81,19 @@
 					</div>
 
 					<div>
-						<label for="reg-phone" class="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1">Nomor Telepon</label>
+						<label for="reg-email" class="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1">Alamat Email</label>
 						<div class="relative">
-							<input 
-								id="reg-phone"
-								type="text" 
-								name="phone" 
-								bind:value={phone}
-								required 
-								placeholder="0812xxxxxx"
+							<input
+								id="reg-email"
+								type="email"
+								name="email"
+								bind:value={email}
+								required
+								placeholder="user@example.com"
 								class="w-full pl-12 pr-6 py-4 bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-2xl focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all font-bold text-brand-charcoal dark:text-white"
 							/>
 							<svg class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
 							</svg>
 						</div>
 					</div>

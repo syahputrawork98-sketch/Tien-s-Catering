@@ -109,5 +109,14 @@ export const createTablesSql = [
 		created_at TEXT NOT NULL,
 		updated_at TEXT NOT NULL,
 		FOREIGN KEY (order_id) REFERENCES orders (id) ON DELETE CASCADE
+	);`,
+	`CREATE TABLE IF NOT EXISTS users (
+		id TEXT PRIMARY KEY,
+		name TEXT NOT NULL,
+		email TEXT NOT NULL UNIQUE,
+		password_hash TEXT NOT NULL,
+		role TEXT NOT NULL DEFAULT 'CUSTOMER',
+		created_at TEXT NOT NULL,
+		updated_at TEXT NOT NULL
 	);`
 ] as const;

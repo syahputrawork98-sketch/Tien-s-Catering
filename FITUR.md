@@ -36,6 +36,7 @@
 - [x] **Batch 46**: Developer Persona Account Selector (Multi-account simulation). (Selesai)
 - [x] **Batch 47**: Final Fase A–D Handover + Health Check. (Selesai)
 - [x] **Batch 48**: Fase E Opening & Production Gap Audit. (Selesai)
+- [x] **Batch 49**: Minimal Auth Foundation (Register/Login API + UI). (Selesai)
 
 ## 3. Local-Compatible / Bisa Dikerjakan
 *Fitur bisnis yang bisa dikembangkan secara lokal (Pre-Auth).*
@@ -49,7 +50,7 @@
 ## 4. Hold Production / Phase E Focus
 *Ditahan hingga dibuka di Fase E (Batch 48+) atau keputusan Room 00.*
 
-- **Auth Production**: Login, Register, Password, JWT, Session. (Batch 49 Focus)
+- **Auth Production**: Minimal Foundation (Batch 49). Login, Register active. (Batch 50+ Hardening)
 - **RBAC Final**: Penguncian hak akses tingkat server (Security hardening).
 - **Payment Gateway**: Integrasi QRIS Real, Webhook Midtrans, atau API pihak ketiga.
 - **Legal/Tax**: e-Faktur resmi, integrasi perpajakan pemerintah.
