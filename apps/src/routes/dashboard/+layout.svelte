@@ -8,14 +8,19 @@
     import { fade, fly } from 'svelte/transition';
     import { mockAccounts } from '$lib/mock/accounts';
     import type { MockRole } from '$lib/mock/session';
+    import { canAccess, toAppRole, defaultRouteForRole, roleLabelId } from '$lib/utils/roleGuard';
 
     let { children } = $props();
     let isSidebarOpen = $state(false);
 
+    const isPersonaMode = $derived(
+        typeof localStorage !== 'undefined' && !!localStorage.getItem('tiens_persona_mode')
+    );
+
     onMount(() => {
         mockSession.init();
 
-        // Initial check
+        // Unauthenticated + no persona → force login
         if (!authStore.loading && !authStore.isAuthenticated && !localStorage.getItem('tiens_persona_mode')) {
             goto('/login?error=auth_required');
         }
@@ -24,10 +29,40 @@
     $effect(() => {
         if (!authStore.loading && !authStore.isAuthenticated && !localStorage.getItem('tiens_persona_mode')) {
             goto('/login?error=auth_required');
+            return;
+        }
+
+        // Role-based redirect for authenticated (non-persona) users
+        if (!authStore.loading && authStore.isAuthenticated) {
+            const appRole = toAppRole(authStore.user?.role);
+            const path = page.url.pathname;
+
+            // CUSTOMER trying to enter admin/CS area → send them home
+            if (appRole === 'CUSTOMER' && (path.startsWith('/dashboard/admin') || path.startsWith('/dashboard/cs'))) {
+                goto('/dashboard?error=access_denied');
+                return;
+            }
+
+            // CS trying to enter admin area → send to CS home
+            if (appRole === 'CS' && path.startsWith('/dashboard/admin')) {
+                goto('/dashboard/cs?error=access_denied');
+                return;
+            }
         }
     });
 
-    const navItems = $derived(dashboardNavigation[mockSession.role] || []);
+    // Use real auth role for nav when authenticated, else use persona role
+    const effectiveNavRole = $derived((): MockRole => {
+        if (authStore.isAuthenticated && authStore.user) {
+            const r = authStore.user.role;
+            if (r === 'ADMIN') return 'ADMIN';
+            if (r === 'CS') return 'CUSTOMER_SERVICE';
+            return 'USER';
+        }
+        return mockSession.role;
+    });
+
+    const navItems = $derived(dashboardNavigation[effectiveNavRole()] || []);
 
     function switchRole(role: MockRole) {
         mockSession.setRole(role);
@@ -35,6 +70,12 @@
         else if (role === 'CUSTOMER_SERVICE') goto('/dashboard/cs');
         else goto('/dashboard');
     }
+
+    // Derive access-denied message from URL param
+    const accessDeniedMsg = $derived(page.url.searchParams.get('error') === 'access_denied'
+        ? `Akses tidak tersedia untuk role ${roleLabelId(toAppRole(authStore.user?.role))}.`
+        : null
+    );
 </script>
 
 <div class="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col lg:flex-row">
@@ -193,6 +234,16 @@
                         </div>
                     </div>
                     <a href="/login" class="px-4 py-2 bg-amber-600 text-white text-[10px] font-black uppercase rounded-lg hover:bg-amber-700 transition-colors">Login Sekarang</a>
+                </div>
+            {/if}
+
+            {#if accessDeniedMsg}
+                <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl flex items-center gap-4 shadow-sm" in:fade>
+                    <div class="w-10 h-10 bg-red-100 text-red-600 rounded-xl flex items-center justify-center font-bold text-lg flex-shrink-0">🚫</div>
+                    <div>
+                        <p class="text-xs font-black text-red-800 uppercase tracking-tight">Akses Ditolak</p>
+                        <p class="text-[10px] text-red-700 font-medium leading-tight mt-0.5">{accessDeniedMsg}</p>
+                    </div>
                 </div>
             {/if}
 

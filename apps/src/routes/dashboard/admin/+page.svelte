@@ -4,9 +4,15 @@
     import { mockAccounts } from '$lib/mock/accounts';
     import { mockAdminMetrics, mockAdminSalesReports } from '$lib/mock/admin';
     import { getRecentAudit } from '$lib/mock/audit';
+    import { authStore } from '$lib/stores/auth.svelte';
+    import { canAccess, toAppRole } from '$lib/utils/roleGuard';
+    import { browser } from '$app/environment';
 
     const metrics = mockAdminMetrics;
     const recentAudit = getRecentAudit(5);
+
+    const isPersonaMode = browser && !!localStorage.getItem('tiens_persona_mode');
+    const allowed = $derived(canAccess(authStore.user, 'ADMIN', isPersonaMode));
 
     const orderStats = {
         total: mockOrders.length,
@@ -40,6 +46,23 @@
 </script>
 
 <div class="space-y-10 pb-24">
+    {#if !allowed && !isPersonaMode && authStore.isAuthenticated}
+        <!-- Access denied for wrong-role authenticated users -->
+        <div class="flex flex-col items-center justify-center py-24 text-center" in:fade>
+            <div class="w-20 h-20 bg-red-100 rounded-3xl flex items-center justify-center text-4xl mb-6">🚫</div>
+            <h1 class="text-2xl font-black text-brand-charcoal dark:text-white tracking-tighter uppercase">Akses Ditolak</h1>
+            <p class="text-zinc-500 font-medium mt-2 max-w-sm">Area ini hanya tersedia untuk Administrator. Role Anda saat ini tidak memiliki izin akses.</p>
+            <a href="/dashboard" class="mt-8 px-8 py-4 bg-brand-charcoal text-white rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-brand-primary transition-all">
+                Kembali ke Dashboard
+            </a>
+        </div>
+    {:else}
+    {#if isPersonaMode}
+        <div class="mb-2 px-4 py-2 bg-indigo-50 border border-indigo-200 rounded-xl flex items-center gap-3" in:fade>
+            <span class="text-indigo-600 font-black text-xs">🎭</span>
+            <p class="text-[10px] font-black text-indigo-700 uppercase tracking-widest">Dev Persona Mode — Simulasi Admin, Bukan Akun Produksi</p>
+        </div>
+    {/if}
     <!-- Header -->
     <header in:fly={{ y: -20, duration: 500 }}>
         <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-red-50 dark:bg-red-900/20 rounded-full mb-4">
@@ -167,4 +190,5 @@
             </div>
         </div>
     </div>
+    {/if}
 </div>

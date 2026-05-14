@@ -1,8 +1,31 @@
 <script lang="ts">
     import { mockSession } from '$lib/stores/mockSession.svelte';
+    import { authStore } from '$lib/stores/auth.svelte';
+    import { canAccess, toAppRole } from '$lib/utils/roleGuard';
+    import { browser } from '$app/environment';
+    import { fade } from 'svelte/transition';
+
+    const isPersonaMode = browser && !!localStorage.getItem('tiens_persona_mode');
+    const allowed = $derived(canAccess(authStore.user, 'CS', isPersonaMode));
 </script>
 
 <div class="space-y-10">
+    {#if !allowed && !isPersonaMode && authStore.isAuthenticated}
+        <div class="flex flex-col items-center justify-center py-24 text-center" in:fade>
+            <div class="w-20 h-20 bg-red-100 rounded-3xl flex items-center justify-center text-4xl mb-6">🚫</div>
+            <h1 class="text-2xl font-black text-brand-charcoal dark:text-white tracking-tighter uppercase">Akses Ditolak</h1>
+            <p class="text-zinc-500 font-medium mt-2 max-w-sm">Area ini hanya tersedia untuk Customer Service atau Admin.</p>
+            <a href="/dashboard" class="mt-8 px-8 py-4 bg-brand-charcoal text-white rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-brand-primary transition-all">
+                Kembali ke Dashboard
+            </a>
+        </div>
+    {:else}
+    {#if isPersonaMode}
+        <div class="mb-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-xl flex items-center gap-3" in:fade>
+            <span class="text-blue-600 font-black text-xs">🎭</span>
+            <p class="text-[10px] font-black text-blue-700 uppercase tracking-widest">Dev Persona Mode — Simulasi CS, Bukan Akun Produksi</p>
+        </div>
+    {/if}
     <header>
         <h1 class="text-3xl font-black text-brand-charcoal dark:text-white tracking-tighter">CS Overview 🎧</h1>
         <p class="text-zinc-500 font-medium mt-1">Monitoring dan manajemen pesanan pelanggan.</p>
@@ -70,4 +93,5 @@
             </div>
         </section>
     </div>
+    {/if}
 </div>

@@ -4,6 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import type { MockRole } from '$lib/mock/session';
+	import { defaultRouteForRole, toAppRole } from '$lib/utils/roleGuard';
 
 	let loading = $state(false);
 	let email = $state('');
@@ -17,9 +18,10 @@
 		loading = true;
 		errorMessage = '';
 		try {
-			await authStore.login(email, password);
+			const user = await authStore.login(email, password);
 			localStorage.removeItem('tiens_persona_mode');
-			goto('/dashboard');
+			const route = user ? defaultRouteForRole(toAppRole(user.role)) : '/dashboard';
+			goto(route);
 		} catch (error: any) {
 			errorMessage = error.message || 'Login gagal. Periksa email dan password Anda.';
 		} finally {
