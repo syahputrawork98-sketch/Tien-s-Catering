@@ -10,14 +10,18 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			return json({ error: 'Invalid email or password' }, { status: 401 });
 		}
 
-		// Set a simple cookie for minimal session
-		cookies.set('session_user_id', user.id, {
+		// Create a session and set a random token cookie
+		const session = await authService.createSession(user.id);
+		cookies.set('session_token', session.token, {
 			path: '/',
 			httpOnly: true,
 			sameSite: 'lax',
 			secure: process.env.NODE_ENV === 'production',
 			maxAge: 60 * 60 * 24 * 7 // 1 week
 		});
+
+		// Clean up old insecure cookie if it exists
+		cookies.delete('session_user_id', { path: '/' });
 
 		const { password_hash, ...safeUser } = user;
 		return json(safeUser);

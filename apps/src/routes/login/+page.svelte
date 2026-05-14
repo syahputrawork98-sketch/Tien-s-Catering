@@ -2,6 +2,7 @@
 	import { mockSession } from '$lib/stores/mockSession.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
 	import type { MockRole } from '$lib/mock/session';
 
 	let loading = $state(false);
@@ -9,12 +10,15 @@
 	let password = $state('');
 	let errorMessage = $state('');
 
+	const isAuthRequired = $derived(page.url.searchParams.get('error') === 'auth_required');
+
 	async function handleLogin(e: SubmitEvent) {
 		e.preventDefault();
 		loading = true;
 		errorMessage = '';
 		try {
 			await authStore.login(email, password);
+			localStorage.removeItem('tiens_persona_mode');
 			goto('/dashboard');
 		} catch (error: any) {
 			errorMessage = error.message || 'Login gagal. Periksa email dan password Anda.';
@@ -25,6 +29,7 @@
 
 	function quickLogin(role: MockRole) {
 		mockSession.setRole(role);
+		localStorage.setItem('tiens_persona_mode', 'true');
 		if (role === 'ADMIN') goto('/dashboard/admin');
 		else if (role === 'CUSTOMER_SERVICE') goto('/dashboard/cs');
 		else goto('/dashboard');
@@ -48,6 +53,12 @@
 		</div>
 
 		<form class="mt-8 space-y-6" onsubmit={handleLogin}>
+			{#if isAuthRequired}
+				<div class="p-3 bg-amber-50 text-amber-700 rounded-xl text-xs font-bold border border-amber-100 mb-4">
+					Silakan masuk untuk mengakses dashboard. Anda juga dapat menggunakan mode simulasi di bawah.
+				</div>
+			{/if}
+
 			{#if errorMessage}
 				<div class="p-3 bg-red-50 text-red-600 rounded-xl text-xs font-bold border border-red-100">
 					{errorMessage}

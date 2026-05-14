@@ -2,14 +2,14 @@ import { json, type RequestHandler } from '@sveltejs/kit';
 import { authService } from '$lib/server/services/authService';
 
 export const GET: RequestHandler = async ({ cookies }) => {
-	const userId = cookies.get('session_user_id');
-	if (!userId) {
+	const token = cookies.get('session_token');
+	if (!token) {
 		return json({ user: null });
 	}
 
-	const user = authService.getUserById(userId);
+	const user = await authService.validateSession(token);
 	if (!user) {
-		cookies.delete('session_user_id', { path: '/' });
+		cookies.delete('session_token', { path: '/' });
 		return json({ user: null });
 	}
 

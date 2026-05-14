@@ -37,6 +37,7 @@
 - [x] **Batch 47**: Final Fase A–D Handover + Health Check. (Selesai)
 - [x] **Batch 48**: Fase E Opening & Production Gap Audit. (Selesai)
 - [x] **Batch 49**: Minimal Auth Foundation (Register/Login API + UI). (Selesai)
+- [x] **Batch 50**: Auth Session Hardening + Basic Dashboard Guard. (Selesai)
 
 ## 3. Local-Compatible / Bisa Dikerjakan
 *Fitur bisnis yang bisa dikembangkan secara lokal (Pre-Auth).*

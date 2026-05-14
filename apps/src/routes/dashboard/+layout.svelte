@@ -14,6 +14,17 @@
 
     onMount(() => {
         mockSession.init();
+
+        // Initial check
+        if (!authStore.loading && !authStore.isAuthenticated && !localStorage.getItem('tiens_persona_mode')) {
+            goto('/login?error=auth_required');
+        }
+    });
+
+    $effect(() => {
+        if (!authStore.loading && !authStore.isAuthenticated && !localStorage.getItem('tiens_persona_mode')) {
+            goto('/login?error=auth_required');
+        }
     });
 
     const navItems = $derived(dashboardNavigation[mockSession.role] || []);
@@ -172,6 +183,19 @@
         <div class="absolute top-0 right-0 w-64 h-64 bg-brand-primary/5 blur-[100px] -z-10"></div>
         
         <div in:fade={{ duration: 400 }}>
+            {#if !authStore.isAuthenticated}
+                <div class="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center justify-between gap-4 shadow-sm animate-pulse">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center font-bold">!</div>
+                        <div>
+                            <p class="text-xs font-black text-amber-900 uppercase tracking-tight">Mode Simulasi (Persona)</p>
+                            <p class="text-[10px] text-amber-700 font-medium leading-tight">Anda mengakses dashboard tanpa akun produksi. Beberapa fitur mungkin dibatasi.</p>
+                        </div>
+                    </div>
+                    <a href="/login" class="px-4 py-2 bg-amber-600 text-white text-[10px] font-black uppercase rounded-lg hover:bg-amber-700 transition-colors">Login Sekarang</a>
+                </div>
+            {/if}
+
             {@render children()}
         </div>
     </main>
