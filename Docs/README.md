@@ -32,10 +32,10 @@ Dokumen di sini dipakai sebagai acuan product direction, scope, dan alur kerja l
 
 ## Status Terakhir (Mei 2026)
 
-- **Batch 48 Selesai**: Fase E Opening & Production Gap Audit.
-  - **Status**: *Fase E Active / Scope Freeze*.
-  - **Technical**: Audit gap produksi selesai, roadmap Batch 48-60 dikunci.
-- **Fase A–D (Batch 31–47)**: Seluruh rangkaian telah selesai (**Accepted**).
-  - **Status**: *Production Readiness Transition*. Alur bisnis utama stabil dan siap untuk integrasi keamanan.
-  - **Persona**: *Development Persona Switcher + Account Selector* aktif untuk pemilihan role secara resmi.
-- **Prinsip Scope**: Fitur bisnis utama sudah matang dalam logika produksi. Fitur **Production/Final (Auth & Security)** mulai dibuka secara bertahap di Fase E.
+- **Batch 60 Selesai**: Docs Sync + Handoff Room Baru.
+  - **Status**: *Production Candidate (Controlled Mode)*.
+  - **Technical**: Auth Foundation & API Role Guards (Batch 55), Data Isolation (Batch 56), Session Hardening (Batch 57), Manual Payment Settings (Batch 59) selesai.
+- **Fase A–E (Batch 31–60)**: Seluruh rangkaian transisi keamanan utama telah selesai (**Accepted**).
+  - **Status**: *Ready for Commercial Features*.
+  - **Persona**: *Development Persona Switcher* tetap aktif sebagai orchestrator role resmi.
+- **Prinsip Scope**: Sistem siap untuk fitur operasional komersial (Invoice/Faktur) dengan batasan "Manual Payment" dan "Local SQLite".

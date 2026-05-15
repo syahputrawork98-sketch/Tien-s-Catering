@@ -29,25 +29,28 @@ Tujuan utama fase ini adalah melakukan *hardening*, implementasi sistem keamanan
 - [x] Batch 53: Server-side/API role guard foundation (Orders, Reports, dsb).
 - [x] Batch 54: Docs Sync Ringan Fase E Auth Progress.
 
-### Batch 55: API Guard Completion & Ownership Visibility
-- Selesaikan proteksi endpoint API yang tersisa.
-- Admin/CS ownership visibility di dashboard.
-- Session cleanup/expired token handling lanjutan.
+### Batch 55–58: Security, Ownership & Session Hardening (Completed)
+- [x] Batch 55: API Guard Completion & Ownership Visibility.
+- [x] Batch 56: Ownership & Data Isolation Polish.
+- [x] Batch 57: Session Cleanup & Unauthorized Handling.
+- [x] Batch 58: Role Flow Regression & Guard Consistency Polish.
 
-### Batch 55: Mid-Phase Checkpoint
-- Security audit internal.
-- Dokumentasi status keamanan dan sisa gap.
+### Batch 59: Payment Setting Integration (Completed)
+- [x] Manual QRIS & Bank Transfer Settings (Admin).
+- [x] Live Payment Instructions for Customer Dashboard.
+- [x] Persistence via `system_settings` SQLite.
 
-### Batch 56–59: Integration & QA Hardening
-- Integrasi Payment Gateway / QRIS Production (jika scope dibuka).
-- Penanganan Invoice & Pajak untuk standar produksi.
-- Pengujian E2E (End-to-End) pada environment staging/simulasi produksi.
-- Bug fixing & performance tuning.
+### Batch 60: Docs Sync + Handoff Room Baru (Completed)
+- [x] Final documentation synchronization for Batch 55-59.
+- [x] Room handover preparation via `handoff.md`.
+- [x] Codebase health check & build verification.
 
-### Batch 60: Production Candidate Handover
-- Final documentation.
-- Deployment guide & Infrastructure setup.
-- Handover ke tim operasional/produksi.
+---
+
+## Batch 61+ (Next Room Chat)
+Rangkaian batch selanjutnya akan dilanjutkan di Room Chat baru dengan fokus pada:
+- **Batch 61**: Official Internal Invoice / Commercial Billing.
+- **Batch 62+**: Operational Monitoring & Final Hardening.
 
 ---
 

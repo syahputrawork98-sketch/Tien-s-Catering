@@ -28,6 +28,7 @@
 - **Admin**: Order management (List, Detail, Status update, Payment status manual), Package management, Package Request review (Review, Status, Notes), Commercial Invoice Basic, Reports summary (Revenue, Orders, Finance), User Management (Development mode).
 - **CS**: Dashboard orders & customers handling clarity.
 - **Foundation**: Local backend active (`/api/health`, `/api/menus`, `/api/orders`, `/api/packages`, `/api/package-requests`).
+- **Security**: Server-side role guards (Batch 53/55), Ownership isolation (Batch 56), 401 Unauthorized handling (Batch 57/58).
 - **Integration**: Convert Package Request to Order (Admin-driven), Source metadata tracking.
 
 - [x] **Batch 43**: Admin Customer Management Overview Polish. (Selesai)
@@ -42,11 +43,17 @@
 - [x] **Batch 52**: Basic Role Access Guard client-side. (Selesai)
 - [x] **Batch 53**: Server-side/API role guard foundation. (Selesai)
 - [x] **Batch 54**: Docs Sync Ringan Fase E Auth Progress. (Selesai)
+- [x] **Batch 55**: API Guard Completion & Ownership Visibility. (Selesai)
+- [x] **Batch 56**: Ownership & Data Isolation Polish. (Selesai)
+- [x] **Batch 57**: Session Cleanup & Unauthorized Handling. (Selesai)
+- [x] **Batch 58**: Role Flow Regression & Guard Consistency Polish. (Selesai)
+- [x] **Batch 59**: Payment Setting QRIS & Bank Account. (Selesai)
+- [x] **Batch 60**: Docs Sync + Handoff Room Baru. (Selesai)
 
 ## 3. Production-Ready Features
 *Fitur bisnis yang dikembangkan dengan logika produksi.*
 
-- **Payment Account**: Konfigurasi nomor rekening/tujuan transfer lokal (Admin).
+- **Payment Account**: Konfigurasi nomor rekening/tujuan transfer lokal (Admin) — `system_settings` SQLite.
 - **Advanced Reporting**: Grafik tren bulanan/tahunan berbasis data SQLite.
 - **Bulk Operations**: Update status order masal atau export data transaksi.
 - **Super Admin Control**: Kontrol pengaturan sistem global/pajak secara fungsional.

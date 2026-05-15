@@ -9,7 +9,7 @@ Fitur-fitur ini sudah diidentifikasi sebagai penghambat utama rilis publik dan m
 |---|---|---|
 | **Authentication** | Foundation Active (Batch 49-53) | Lupa Password, Email Verif, Strict JWT, Secure Cookies |
 | **RBAC** | Partial (Client/API Guard Active) | Middleware protection, Complex Role Matrix |
-| **Payment Gateway** | Manual Transfer Proof (Local Upload) | Integrasi Midtrans/Xendit, QRIS Real, Webhooks |
+| **Payment Gateway** | Manual Transfer (Admin Config Active) | Integrasi Midtrans/Xendit, QRIS Real, Webhooks (Hold) |
 | **Storage** | Local Folder (`/uploads`) | Cloud Storage (AWS S3 / Google Cloud Storage / Supabase) |
 | **Security Hardening** | Open API (No validation/auth) | Rate limiting, CORS, Input sanitization, Helmet |
 | **Export PDF/CSV** | Client-side simulation | Server-side secure generation |
@@ -37,4 +37,4 @@ Beberapa alur bisnis masih bersifat "Happy Path" lokal.
 - **Storage Migration**: Bukti pembayaran yang saat ini tersimpan lokal harus dimigrasikan ke cloud saat sistem live.
 
 ---
-*Terakhir diupdate: Batch 54 — Docs Sync Ringan Fase E Auth Progress*
+*Terakhir diupdate: Batch 60 — Docs Sync + Handoff Room Baru*
