@@ -3,6 +3,7 @@
 ## Lokasi Dokumentasi Aktif
 
 Dokumentasi aktif dan source of truth project hanya berada di:
+- `Docs/project-control/`: Pusat kontrol resmi, workflow, dan status project.
 - `Docs/`: Detail teknis, roadmap, dan keputusan arsitektur.
 - `FITUR.md`: Status fitur dan backlog aktif.
 - `README.md`: Struktur folder dan status high-level.

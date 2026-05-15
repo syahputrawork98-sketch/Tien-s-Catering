@@ -1,37 +1,48 @@
-# Scope Guard
+# TC Scope Guard
 
-## Struktur Peran
+## Prinsip Scope
 
-### CEO / Owner
-- Pemilik keputusan akhir.
-- Melakukan commit & push manual.
-- Menentukan arah besar project.
+Project TC / Tien’s Catering dikembangkan dengan prinsip **Pre-Auth Local Development** yang kini menuju **Production Readiness**.
+Artinya, fitur bisnis dikembangkan secara fungsional menggunakan **Development Persona Switcher** sebelum masuk ke fase pengamanan (Authentication/Security) final.
 
-### Room Chat 00 - Team Lead
-- Mengambil keputusan.
-- Menjaga scope.
-- Membuat instruksi untuk Room Chat 01.
-- Membuat instruksi final untuk Gemini 3 Flash.
-- Mengevaluasi hasil eksekusi.
+## Aturan Utama
 
-### Room Chat 01 - Analis
-- Hanya menganalisa.
-- Membaca repository dan dokumen.
-- Menemukan gap, risiko, konflik, dan rekomendasi.
-- Tidak boleh mengubah file.
-- Tidak boleh mengambil keputusan final.
-- Tidak boleh memberi instruksi langsung ke Gemini.
+1. **Project Ready Produksi**: Tetap memakai **Development Persona Switcher**. Jangan menghapus atau mengganti persona switcher menjadi auth production final tanpa instruksi khusus.
+2. **Jangan membuka fitur besar** tanpa instruksi dari Room 00.
+3. **Jangan membuat loop eksekusi** (Gemini 3 Flash hanya eksekusi satu kali per batch).
+4. **Jangan memperluas scope** ke sistem produksi besar lain kecuali diminta Room 00, seperti:
+   - Payment gateway real.
+   - Deployment production final.
+   - Legal/tax/e-Faktur.
+   - Cloud storage.
 
-### Gemini 3 Flash - Eksekutor
-- Hanya menjalankan instruksi dari Room Chat 00.
-- Hanya eksekusi satu kali per instruksi.
-- Tidak boleh memperluas scope.
-- Tidak boleh mengambil keputusan strategis.
-- Setelah eksekusi, wajib melaporkan hasil.
+## Kategori Fitur
 
-## Aturan Hemat Token
+1.  **Done / Selesai**: Fitur yang sudah diimplementasikan, diuji dalam batch, dan masuk ke status Accepted.
+2.  **Ready for Batch**: Fitur yang sudah jelas definisinya dan siap dimasukkan ke dalam antrian pengerjaan batch berikutnya.
+3.  **Local-Compatible / Bisa Dikerjakan**: Fitur bisnis yang dapat diimplementasikan fungsionalitasnya tanpa memerlukan sistem produksi (Auth/Payment Gateway riil). Contoh:
+    *   Payment proof upload (local storage).
+    *   Admin payment verification (manual logic).
+    *   Commercial Invoice (basic print/PDF).
+    *   Reporting & Export (data SQLite).
+    *   Super Admin Simulation.
+4.  **Hold Production / Final**: Fitur yang ditahan karena memerlukan integrasi pihak ketiga, sistem keamanan tingkat tinggi, atau legalitas resmi. Contoh:
+    *   Login/Register/JWT/Session/Password.
+    *   RBAC Final (Server-side locking).
+    *   Payment Gateway API (QRIS Real/Midtrans/dll).
+    *   e-Faktur / Pajak Resmi.
+    *   Deployment Production Hardening.
 
-- Gemini 3 Flash tidak boleh melakukan loop analisa-fix-check berulang.
-- Gemini hanya boleh melakukan satu kali check ringan setelah eksekusi.
-- Jika ada error/blocker, Gemini cukup melaporkan.
-- Room Chat 00 yang menentukan langkah berikutnya.
+## Larangan Keras
+
+Jangan membuat sistem berikut selama fase pre-auth:
+- Login/Register production dengan password database.
+- JWT atau Session management production.
+- Integrasi API Payment Gateway pihak ketiga.
+- Sistem e-Faktur resmi.
+- Deployment production final.
+
+## Prinsip Utama
+
+Lebih baik jujur bahwa fitur sedang "Hold" atau "Simulasi Lokal" daripada membuat fitur palsu yang terlihat production-ready tetapi rapuh di sisi keamanan.
+`Docs/project-control/` menjadi satu-satunya pusat kontrol resmi.

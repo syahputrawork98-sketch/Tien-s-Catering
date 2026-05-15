@@ -2,7 +2,7 @@
 
 ## Tujuan
 
-Dokumen ini menetapkan aturan commit/push untuk menjaga workflow Room 01, Room 00, dan eksekusi Codex tetap aman serta terkontrol.
+Dokumen ini menetapkan aturan commit/push untuk menjaga workflow Room 01, Room 00, dan eksekusi Gemini 3 Flash tetap aman serta terkontrol.
 
 ## Format Commit Message
 
@@ -44,7 +44,7 @@ Gunakan format:
 
 ## Aturan Eksekusi Commit
 
-- Codex tidak boleh commit/push tanpa instruksi eksplisit dari Room 00.
+- Gemini 3 Flash tidak boleh commit/push tanpa instruksi eksplisit dari Room 00.
 - Sebelum commit, wajib cek `git status --short`.
 - Commit hanya boleh memasukkan file sesuai scope task yang disetujui.
 - Wajib hindari ikut memasukkan file di luar scope, termasuk perubahan tidak terkait.

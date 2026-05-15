@@ -72,7 +72,8 @@
 ## Catatan Scope & Policy
 - Project berjalan dalam mode **Pre-Auth Local Development**.
 - **Developer Persona Switcher** tetap digunakan untuk demo dan pengujian.
-- Dokumentasi aktif hanya di `Docs/`, `FITUR.md`, dan `README.md`.
+- Dokumentasi kontrol resmi di `Docs/project-control/`.
+- Dokumentasi aktif lainnya di `Docs/`, `FITUR.md`, dan `README.md`.
 - Tracking lama dari `kanban-master/` sudah diserap/ditutup.
 
 ## Known Issue (Project-wide)

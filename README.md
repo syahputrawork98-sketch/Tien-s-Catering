@@ -26,6 +26,7 @@ Tien's Catering adalah aplikasi pemesanan makanan/catering lokal untuk area Pemk
 ## Struktur Folder Utama
 
 - `apps/`: aplikasi utama SvelteKit (frontend + API route lokal).
+- `Docs/project-control/`: Pusat kontrol resmi (Workflow, Status, Executor Rules).
 - `Docs/`: dokumentasi aktif, arah produk, dan keputusan Room 00.
 
 ## Dokumentasi

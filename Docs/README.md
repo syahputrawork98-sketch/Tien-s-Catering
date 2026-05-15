@@ -18,10 +18,17 @@ Dokumen di sini dipakai sebagai acuan product direction, scope, dan alur kerja l
 11. `10-production-readiness-gap.md`
 12. `ROADMAP_BATCH_31_45.md` (Roadmap Fase A-D - Legacy)
 13. `ROADMAP_PHASE_E_BATCH_48_60.md` (Roadmap Fase E - Active)
+14. `project-control/` (Pusat Kontrol Resmi)
 
 ## Prinsip Workflow
 
-`Room 01 Analisa -> Room 00 Keputusan -> Codex Eksekusi -> Room 00 Evaluasi`
+`Room 01 Analisa -> Room 00 Keputusan -> Gemini 3 Flash Eksekusi -> Room 00 Evaluasi`
+
+## Lokasi Dokumentasi Aktif
+- `Docs/project-control/`: Pusat kontrol resmi, workflow, dan status project.
+- `Docs/`: Detail teknis, roadmap, dan keputusan arsitektur.
+- `FITUR.md`: Status fitur dan backlog aktif.
+- `README.md`: Struktur folder dan status high-level.
 
 ## Status Terakhir (Mei 2026)
 
