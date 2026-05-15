@@ -68,9 +68,9 @@
         const map: Record<string, string> = {
             unpaid: 'Belum Lunas',
             waiting_verification: 'Menunggu Verifikasi',
-            paid: 'Lunas',
+            paid: 'Terverifikasi / Lunas',
             cod_pending: 'COD (Pending)',
-            rejected: 'Ditolak'
+            rejected: 'Ditolak / Perlu Perbaikan'
         };
         return map[status] || status.toUpperCase();
     };
@@ -165,6 +165,11 @@
                             <p class="text-xs font-black uppercase {paymentColor(order.paymentStatus)}">
                                 {paymentLabel(order.paymentStatus)}
                             </p>
+                            {#if order.paymentStatus === 'rejected' && order.paymentProof?.verificationNote}
+                                <p class="text-[8px] font-bold text-red-500 mt-1 italic leading-tight">
+                                    Ket: {order.paymentProof.verificationNote}
+                                </p>
+                            {/if}
                         </div>
                         <div>
                             <h3 class="text-[9px] font-black uppercase tracking-widest text-zinc-400">Source</h3>

@@ -640,15 +640,20 @@
                                     {/if}
 
 
-                                    <div class="space-y-4 pt-6 border-t border-zinc-100 dark:border-zinc-800">
-                                        <div class="flex items-center justify-between">
-                                            <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Manual Payment Proof ({selectedOrder.paymentStatus === 'partially_paid' ? 'Pelunasan' : 'Pembayaran'})</p>
-                                            <p class="text-[10px] font-black text-brand-primary italic uppercase tracking-widest">
-                                                {formatRupiah(selectedOrderUploadAmount)}
-                                            </p>
-                                        </div>
+									<div class="space-y-4 pt-6 border-t border-zinc-100 dark:border-zinc-800">
+										<div class="p-3 bg-blue-50 dark:bg-blue-900/10 rounded-xl border border-blue-100 dark:border-blue-900/30 mb-2">
+											<p class="text-[9px] font-bold text-blue-700 dark:text-blue-400 italic">
+												ℹ️ Pembayaran akan diverifikasi secara manual oleh Admin/CS. Tidak ada sistem otomatis.
+											</p>
+										</div>
+										<div class="flex items-center justify-between">
+											<p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Manual Payment Proof ({selectedOrder.paymentStatus === 'partially_paid' ? 'Pelunasan' : 'Pembayaran'})</p>
+											<p class="text-[10px] font-black text-brand-primary italic uppercase tracking-widest">
+												{formatRupiah(selectedOrderUploadAmount)}
+											</p>
+										</div>
 
-                                        <textarea bind:value={uploadNote} rows="2" class="w-full px-5 py-4 bg-white dark:bg-zinc-900 border-none rounded-2xl text-xs font-medium focus:ring-2 focus:ring-brand-primary shadow-inner" placeholder="Catatan tambahan (opsional)..."></textarea>
+										<textarea bind:value={uploadNote} rows="2" class="w-full px-5 py-4 bg-white dark:bg-zinc-900 border-none rounded-2xl text-xs font-medium focus:ring-2 focus:ring-brand-primary shadow-inner" placeholder="Catatan tambahan (opsional)..."></textarea>
 
                                         <label class="relative block w-full group">
                                             <input type="file" accept="image/*" onchange={handleFileUpload} class="sr-only" disabled={isUploading} />
@@ -704,12 +709,13 @@
                                                 </div>
                                             </div>
 
-                                            {#if proof.status === 'rejected'}
-                                                <div class="px-4 py-3 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-100 dark:border-red-900/30 -mt-1 ml-4 border-l-4">
-                                                    <p class="text-[9px] font-black text-red-600 uppercase tracking-widest mb-1">Alasan Penolakan:</p>
-                                                    <p class="text-xs font-medium text-red-700 dark:text-red-400 italic leading-relaxed">"{proof.rejectionReason}"</p>
-                                                </div>
-                                            {/if}
+											{#if proof.status === 'rejected'}
+												<div class="px-4 py-3 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-100 dark:border-red-900/30 -mt-1 ml-4 border-l-4">
+													<p class="text-[9px] font-black text-red-600 uppercase tracking-widest mb-1">Alasan Penolakan:</p>
+													<p class="text-xs font-medium text-red-700 dark:text-red-400 italic leading-relaxed">"{proof.rejectionReason}"</p>
+													<p class="text-[8px] font-black text-red-500 uppercase tracking-widest mt-2 animate-pulse">💡 Silakan upload ulang bukti pembayaran yang benar di atas.</p>
+												</div>
+											{/if}
                                         {/each}
                                     </div>
                                 </div>
