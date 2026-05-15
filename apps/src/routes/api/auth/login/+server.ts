@@ -7,7 +7,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 		const user = await authService.login(email, password);
 		if (!user) {
-			return json({ error: 'Invalid email or password' }, { status: 401 });
+			return json({ message: 'Email atau password salah.' }, { status: 401 });
 		}
 
 		// Create a session and set a random token cookie
@@ -26,6 +26,6 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		const { password_hash, ...safeUser } = user;
 		return json(safeUser);
 	} catch (error: any) {
-		return json({ error: error.message }, { status: 400 });
+		return json({ message: error.message }, { status: 400 });
 	}
 };

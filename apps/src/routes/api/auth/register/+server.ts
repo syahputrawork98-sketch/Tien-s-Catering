@@ -6,11 +6,11 @@ export const POST: RequestHandler = async ({ request }) => {
 		const { name, email, password } = await request.json();
 
 		if (!name || !email || !password) {
-			return json({ error: 'Missing required fields' }, { status: 400 });
+			return json({ message: 'Data pendaftaran tidak lengkap.' }, { status: 400 });
 		}
 
 		if (password.length < 6) {
-			return json({ error: 'Password too short' }, { status: 400 });
+			return json({ message: 'Kata sandi minimal 6 karakter.' }, { status: 400 });
 		}
 
 		const user = await authService.register(name, email, password);
@@ -19,6 +19,6 @@ export const POST: RequestHandler = async ({ request }) => {
 		const { password_hash, ...safeUser } = user;
 		return json(safeUser);
 	} catch (error: any) {
-		return json({ error: error.message }, { status: 400 });
+		return json({ message: error.message }, { status: 400 });
 	}
 };

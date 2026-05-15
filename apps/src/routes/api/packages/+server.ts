@@ -1,5 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { createPackage, getReadOnlyPackages } from '$lib/server/services/packageService';
+import { requireRole } from '$lib/server/utils/authGuard';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async () => {
@@ -13,7 +14,6 @@ export const GET: RequestHandler = async () => {
 };
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
-	const { requireRole } = await import('$lib/server/utils/authGuard');
 	const { user, error } = await requireRole(cookies, ['ADMIN', 'CS']);
 	if (error) return error;
 
@@ -22,7 +22,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 	try {
 		payload = await request.json();
 	} catch {
-		return json({ message: 'Invalid JSON payload.' }, { status: 400 });
+		return json({ message: 'Format JSON tidak valid.' }, { status: 400 });
 	}
 
 	try {

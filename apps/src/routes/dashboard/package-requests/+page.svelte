@@ -159,6 +159,13 @@
 		try {
 			const query = authStore.isAuthenticated ? `?userId=${authStore.user?.id}` : '';
 			const response = await fetch(`/api/package-requests${query}`);
+
+			if (response.status === 401) {
+				error = 'Sesi Anda telah berakhir. Silakan pilih kembali akun melalui Persona Switcher.';
+				authStore.handleUnauthorized();
+				return;
+			}
+
 			const body = (await response.json().catch(() => null)) as PackageRequestApiResponse | null;
 
 			if (!response.ok) {

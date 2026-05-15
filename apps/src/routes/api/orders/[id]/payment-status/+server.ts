@@ -12,7 +12,7 @@ export const PATCH: RequestHandler = async ({ params, request, cookies }) => {
 	try {
 		payload = await request.json();
 	} catch {
-		return json({ message: 'Invalid JSON payload.' }, { status: 400 });
+		return json({ message: 'Format data JSON tidak valid.' }, { status: 400 });
 	}
 
 	try {

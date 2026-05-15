@@ -116,6 +116,7 @@
 
             if (response.status === 401) {
                 error = 'Sesi Anda telah berakhir. Silakan pilih kembali akun melalui Persona Switcher.';
+                authStore.handleUnauthorized();
                 return;
             }
 

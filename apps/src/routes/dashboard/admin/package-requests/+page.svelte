@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { authStore } from '$lib/stores/auth.svelte';
 	import { fade, fly, scale } from 'svelte/transition';
 
 	type PackageRequestStatus =
@@ -287,6 +288,13 @@
 
 		try {
 			const response = await fetch('/api/package-requests');
+
+			if (response.status === 401) {
+				error = 'Sesi Anda telah berakhir. Silakan pilih kembali akun melalui Persona Switcher.';
+				authStore.handleUnauthorized();
+				return;
+			}
+
 			const body = (await response.json().catch(() => null)) as PackageRequestApiResponse | null;
 
 			if (!response.ok) {

@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { createPackageRequest, getPackageRequests } from '$lib/server/services/packageRequestService';
-import { requireAuth } from '$lib/server/utils/authGuard';
+import { requireAuth, getCurrentUser } from '$lib/server/utils/authGuard';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ url, cookies }) => {
@@ -12,7 +12,7 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
 
 		if (user!.role === 'CUSTOMER') {
 			if (!queryUserId || queryUserId !== user!.id) {
-				return json({ message: 'Forbidden. You can only view your own package requests.' }, { status: 403 });
+				return json({ message: 'Forbidden. Anda hanya dapat melihat request paket milik sendiri.' }, { status: 403 });
 			}
 		}
 
@@ -29,7 +29,6 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
 };
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
-	const { getCurrentUser } = await import('$lib/server/utils/authGuard');
 	const user = await getCurrentUser(cookies);
 
 	let payload: any;
@@ -37,12 +36,12 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 	try {
 		payload = await request.json();
 	} catch {
-		return json({ message: 'Invalid JSON payload.' }, { status: 400 });
+		return json({ message: 'Format JSON tidak valid.' }, { status: 400 });
 	}
 
 	if (payload.userId && (!user || payload.userId !== user.id)) {
 		if (!user || (user.role !== 'ADMIN' && user.role !== 'CS')) {
-			return json({ message: 'Forbidden. Invalid userId assignment.' }, { status: 403 });
+			return json({ message: 'Forbidden. Penugasan userId tidak valid.' }, { status: 403 });
 		}
 	}
 

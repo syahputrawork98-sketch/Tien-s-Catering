@@ -18,7 +18,7 @@ export const authService = {
 
 		if (!res.ok) {
 			const data = await res.json();
-			throw new Error(data.error || 'Registration failed');
+			throw new Error(data.message || 'Pendaftaran gagal.');
 		}
 
 		return res.json();
@@ -33,7 +33,7 @@ export const authService = {
 
 		if (!res.ok) {
 			const data = await res.json();
-			throw new Error(data.error || 'Login failed');
+			throw new Error(data.message || 'Login gagal.');
 		}
 
 		return res.json();

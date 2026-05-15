@@ -6,7 +6,7 @@ export class AuthService {
 	async register(name: string, email: string, password: string): Promise<User> {
 		const existing = userRepository.findByEmail(email);
 		if (existing) {
-			throw new Error('Email already registered');
+			throw new Error('Email sudah terdaftar.');
 		}
 
 		const passwordHash = await bcrypt.hash(password, 10);

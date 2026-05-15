@@ -13,7 +13,7 @@ export async function getCurrentUser(cookies: Cookies): Promise<User | null> {
 export async function requireAuth(cookies: Cookies): Promise<{ user?: User; error?: Response }> {
 	const user = await getCurrentUser(cookies);
 	if (!user) {
-		return { error: json({ message: 'Unauthorized. Please login first.' }, { status: 401 }) };
+		return { error: json({ message: 'Unauthorized. Silakan login terlebih dahulu.' }, { status: 401 }) };
 	}
 	return { user };
 }
@@ -24,7 +24,7 @@ export async function requireRole(cookies: Cookies, allowedRoles: User['role'][]
 	if (!user) return { error: json({ message: 'Unauthorized' }, { status: 401 }) };
 
 	if (!allowedRoles.includes(user.role)) {
-		return { error: json({ message: 'Forbidden. You do not have access to this resource.' }, { status: 403 }) };
+		return { error: json({ message: 'Forbidden. Anda tidak memiliki akses ke sumber daya ini.' }, { status: 403 }) };
 	}
 	return { user };
 }

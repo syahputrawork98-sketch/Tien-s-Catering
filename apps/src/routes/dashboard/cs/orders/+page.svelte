@@ -1,6 +1,7 @@
 <script lang="ts">
     import { fade, fly, scale } from 'svelte/transition';
     import { onMount } from 'svelte';
+    import { authStore } from '$lib/stores/auth.svelte';
     import type { MockCsOrder } from '$lib/mock/cs';
     import type { MockPaymentBreakdown, MockPaymentProof } from '$lib/mock/orders';
 
@@ -260,6 +261,13 @@
         error = '';
         try {
             const response = await fetch('/api/orders');
+            
+            if (response.status === 401) {
+                error = 'Sesi Anda telah berakhir. Silakan pilih kembali akun melalui Persona Switcher.';
+                authStore.handleUnauthorized();
+                return;
+            }
+
             if (!response.ok) throw new Error('Gagal memuat data pesanan.');
             const data = await response.json();
             if (Array.isArray(data.items)) {
