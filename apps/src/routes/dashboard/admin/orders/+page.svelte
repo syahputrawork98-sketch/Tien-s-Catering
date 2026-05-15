@@ -682,6 +682,13 @@
 			return;
 		}
 
+		if (action === 'approve') {
+			const confirmed = confirm(
+				'Verifikasi pembayaran ini sebagai Lunas? Pastikan nominal dan bukti sudah sesuai.'
+			);
+			if (!confirmed) return;
+		}
+
 		isVerifying = true;
 		paymentActionError = '';
 		paymentActionSuccess = '';
@@ -1288,6 +1295,25 @@
 
 				{#if selectedOrder.paymentProof}
 					<div class="space-y-4">
+						<div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+							<div class="p-2 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-100 dark:border-zinc-800">
+								<p class="text-[8px] font-black text-zinc-400 uppercase tracking-widest mb-1">Tagihan</p>
+								<p class="text-[11px] font-black">{formatPrice(selectedOrder.total)}</p>
+							</div>
+							<div class="p-2 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-100 dark:border-zinc-800">
+								<p class="text-[8px] font-black text-zinc-400 uppercase tracking-widest mb-1">Sudah Bayar</p>
+								<p class="text-[11px] font-black text-emerald-600">{formatPrice(selectedOrder.payment.paidAmount)}</p>
+							</div>
+							<div class="p-2 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-100 dark:border-zinc-800">
+								<p class="text-[8px] font-black text-zinc-400 uppercase tracking-widest mb-1">Sisa Bayar</p>
+								<p class="text-[11px] font-black text-red-600">{formatPrice(selectedOrder.payment.remainingAmount)}</p>
+							</div>
+							<div class="p-2 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-100 dark:border-zinc-800">
+								<p class="text-[8px] font-black text-zinc-400 uppercase tracking-widest mb-1">Metode</p>
+								<p class="text-[11px] font-black uppercase">{paymentMethodLabel(selectedOrder.paymentMethod)}</p>
+							</div>
+						</div>
+
 						<div class="aspect-video w-full bg-zinc-100 dark:bg-zinc-900 rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-700 group relative">
 							{#if selectedOrder.paymentProof.filePath.startsWith('data:image/')}
 								<img src={selectedOrder.paymentProof.filePath} alt="Payment Proof" class="w-full h-full object-contain" />
@@ -1313,6 +1339,11 @@
 
 						{#if selectedOrder.paymentStatus === 'waiting_verification'}
 							<div class="space-y-4 pt-4 border-t border-zinc-200 dark:border-zinc-700">
+								<div class="p-3 bg-amber-50 dark:bg-amber-900/10 rounded-xl border border-amber-100 dark:border-amber-900/30">
+									<p class="text-[9px] font-bold text-amber-700 dark:text-amber-400 italic">
+										⚠️ Verifikasi manual oleh Admin/CS. Pastikan bukti cocok dengan total tagihan sebelum approve. Tidak ada gateway otomatis.
+									</p>
+								</div>
 								<textarea
 									bind:value={verificationNote}
 									placeholder="Catatan verifikasi atau alasan penolakan (wajib jika reject)..."
@@ -1326,14 +1357,14 @@
 										disabled={isVerifying}
 										class="flex-1 py-3 bg-red-50 text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest border border-red-100 hover:bg-red-100 transition-all disabled:opacity-50"
 									>
-										Tolak (Reject)
+										{isVerifying ? 'Memproses...' : 'Tolak (Reject)'}
 									</button>
 									<button
 										onclick={() => verifyPayment(selectedOrder!.id, 'approve')}
 										disabled={isVerifying}
 										class="flex-1 py-3 bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-600/20 hover:scale-[1.02] transition-all disabled:opacity-50"
 									>
-										Verifikasi Lunas (Approve)
+										{isVerifying ? 'Memproses...' : 'Verifikasi Lunas (Approve)'}
 									</button>
 								</div>
 							</div>
