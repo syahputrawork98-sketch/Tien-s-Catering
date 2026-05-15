@@ -25,7 +25,13 @@
     let selectedPlan = $state<MockPaymentPlan | null>(null);
     let selectedMethod = $state<MockPaymentMethod | null>(null);
 
-    const primaryPayment = getPrimaryPaymentAccount();
+    const primaryPaymentMock = getPrimaryPaymentAccount();
+    let livePaymentSettings = $state({
+        bankName: '',
+        accountNumber: '',
+        accountOwner: '',
+        qrisImage: ''
+    });
 
     function mapStatus(status: string): UiOrderStatus {
         const s = status.toLowerCase();
@@ -133,8 +139,20 @@
         }
     }
 
+    async function loadPaymentSettings() {
+        try {
+            const res = await fetch('/api/settings/payment');
+            if (res.ok) {
+                livePaymentSettings = await res.json();
+            }
+        } catch (err) {
+            console.error('Failed to load payment settings', err);
+        }
+    }
+
     onMount(() => {
         loadOrders();
+        loadPaymentSettings();
     });
 
     function getOrderById(orderId: string): Order | null {
@@ -569,32 +587,58 @@
                             {:else}
                                 <!-- Upload Section -->
                                 <div class="bg-zinc-50 dark:bg-zinc-800 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 space-y-8">
-                                    {#if primaryPayment}
+                                    {#if livePaymentSettings.bankName || livePaymentSettings.accountNumber}
                                         <div class="space-y-4">
                                             <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Instruksi Pembayaran</p>
                                             <div class="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-zinc-100 dark:border-zinc-800 flex items-center gap-4">
                                                 <div class="w-12 h-12 bg-brand-primary rounded-xl flex items-center justify-center text-white text-2xl shadow-lg">🏦</div>
                                                 <div class="flex-1">
                                                     <div class="flex justify-between items-start">
-                                                        <p class="text-[10px] font-black uppercase tracking-tighter text-zinc-400">{primaryPayment.bankName}</p>
+                                                        <p class="text-[10px] font-black uppercase tracking-tighter text-zinc-400">{livePaymentSettings.bankName || 'Bank Transfer'}</p>
+                                                        {#if selectedOrder.paymentMethod === 'qris' && livePaymentSettings.qrisImage}
+                                                            <span class="px-2 py-0.5 bg-brand-primary/10 text-brand-primary text-[8px] font-black uppercase rounded">QRIS Aktif</span>
+                                                        {/if}
+                                                    </div>
+                                                    <p class="text-xl font-black italic tracking-widest text-brand-charcoal dark:text-white mt-0.5">{livePaymentSettings.accountNumber || '-'}</p>
+                                                    <p class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">a.n. {livePaymentSettings.accountOwner || '-'}</p>
+                                                </div>
+                                            </div>
+
+                                            {#if selectedOrder.paymentMethod === 'qris' && livePaymentSettings.qrisImage}
+                                                <div class="flex justify-center pt-4" in:scale>
+                                                    <div class="bg-white p-4 rounded-3xl border border-zinc-100 shadow-xl group">
+                                                        <img src={livePaymentSettings.qrisImage} alt="QRIS" class="w-40 h-40 object-contain group-hover:scale-105 transition-transform" />
+                                                    </div>
+                                                </div>
+                                            {/if}
+                                        </div>
+                                    {:else if primaryPaymentMock}
+                                        <div class="space-y-4">
+                                            <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Instruksi Pembayaran (Default)</p>
+                                            <div class="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-zinc-100 dark:border-zinc-800 flex items-center gap-4">
+                                                <div class="w-12 h-12 bg-brand-primary rounded-xl flex items-center justify-center text-white text-2xl shadow-lg">🏦</div>
+                                                <div class="flex-1">
+                                                    <div class="flex justify-between items-start">
+                                                        <p class="text-[10px] font-black uppercase tracking-tighter text-zinc-400">{primaryPaymentMock.bankName}</p>
                                                         {#if selectedOrder.paymentMethod === 'qris'}
                                                             <span class="px-2 py-0.5 bg-brand-primary/10 text-brand-primary text-[8px] font-black uppercase rounded">QRIS Aktif</span>
                                                         {/if}
                                                     </div>
-                                                    <p class="text-xl font-black italic tracking-widest text-brand-charcoal dark:text-white mt-0.5">{primaryPayment.accountNumber}</p>
-                                                    <p class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">a.n. {primaryPayment.accountHolder}</p>
+                                                    <p class="text-xl font-black italic tracking-widest text-brand-charcoal dark:text-white mt-0.5">{primaryPaymentMock.accountNumber}</p>
+                                                    <p class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">a.n. {primaryPaymentMock.accountHolder}</p>
                                                 </div>
                                             </div>
 
-                                            {#if selectedOrder.paymentMethod === 'qris' && primaryPayment.qrImageUrl}
+                                            {#if selectedOrder.paymentMethod === 'qris' && primaryPaymentMock.qrImageUrl}
                                                 <div class="flex justify-center pt-4">
                                                     <div class="bg-white p-4 rounded-3xl border border-zinc-100 shadow-xl group">
-                                                        <img src={primaryPayment.qrImageUrl} alt="QRIS" class="w-40 h-40 object-contain group-hover:scale-105 transition-transform" />
+                                                        <img src={primaryPaymentMock.qrImageUrl} alt="QRIS" class="w-40 h-40 object-contain group-hover:scale-105 transition-transform" />
                                                     </div>
                                                 </div>
                                             {/if}
                                         </div>
                                     {/if}
+
 
                                     <div class="space-y-4 pt-6 border-t border-zinc-100 dark:border-zinc-800">
                                         <div class="flex items-center justify-between">
