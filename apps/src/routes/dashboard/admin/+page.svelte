@@ -162,16 +162,16 @@
                 <!-- Monitoring Stats Cards -->
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4" in:fade={{ delay: 100 }}>
                     {#each [
-                        { label: 'Total Pesanan Aktif', value: stats.totalActive, color: 'text-brand-charcoal dark:text-white', sub: 'Semua status non-final' },
-                        { label: 'Menunggu Verifikasi', value: stats.waitingVerification, color: 'text-amber-600', sub: 'Bukti bayar butuh approval' },
-                        { label: 'Total Lunas (Paid)', value: stats.paid, color: 'text-emerald-600', sub: 'Pembayaran terverifikasi' },
-                        { label: 'Bermasalah / Dibatalkan', value: stats.problematic, color: 'text-red-600', sub: 'Status ditolak atau void' }
+                        { label: 'Total Pesanan Aktif', value: stats.totalActive, color: 'text-brand-charcoal dark:text-white', sub: 'Semua status non-final', href: '/dashboard/admin/orders' },
+                        { label: 'Menunggu Verifikasi', value: stats.waitingVerification, color: 'text-amber-600', sub: 'Bukti bayar butuh approval', href: '/dashboard/admin/orders?tab=VERIFIKASI' },
+                        { label: 'Total Lunas (Paid)', value: stats.paid, color: 'text-emerald-600', sub: 'Pembayaran terverifikasi', href: '/dashboard/admin/orders?paymentStatus=paid' },
+                        { label: 'Bermasalah / Dibatalkan', value: stats.problematic, color: 'text-red-600', sub: 'Status ditolak atau void', href: '/dashboard/admin/orders?paymentStatus=rejected' }
                     ] as m}
-                        <div class="bg-white dark:bg-zinc-900 p-6 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 shadow-sm hover:shadow-lg transition-all group">
+                        <a href={m.href} class="bg-white dark:bg-zinc-900 p-6 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 shadow-sm hover:shadow-lg transition-all group block">
                             <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-3 group-hover:text-brand-primary transition-colors">{m.label}</p>
                             <p class="text-3xl font-black {m.color} italic mb-1">{m.value}</p>
                             <p class="text-[9px] font-medium text-zinc-400 italic">{m.sub}</p>
-                        </div>
+                        </a>
                     {/each}
                 </div>
 

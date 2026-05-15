@@ -115,6 +115,7 @@
 	let searchQuery = $state('');
 	let paymentFilter = $state<PaymentFilter>('ALL');
 	let orderStatusFilter = $state<string>('ALL');
+	let isFilteredFromMonitor = $state(false);
 
 	const orderStatusFlow: OrderStatus[] = ['new', 'confirmed', 'processing', 'ready', 'delivered', 'completed'];
 	const manualPaymentStatuses: PaymentStatus[] = ['unpaid', 'waiting_verification', 'paid', 'cod_pending', 'rejected'];
@@ -716,9 +717,33 @@
 	onMount(() => {
 		const urlParams = new URLSearchParams(window.location.search);
 		const searchParam = urlParams.get('search');
+		const tabParam = urlParams.get('tab');
+		const paymentStatusParam = urlParams.get('paymentStatus');
+		const orderStatusParam = urlParams.get('orderStatus');
+
 		if (searchParam) {
 			searchQuery = searchParam;
+			isFilteredFromMonitor = true;
 		}
+
+		if (tabParam) {
+			const validTabs: TabType[] = ['ALL', 'NEW', 'VERIFIKASI', 'PROCESS', 'DONE', 'CANCELLED'];
+			if (validTabs.includes(tabParam.toUpperCase() as TabType)) {
+				activeTab = tabParam.toUpperCase() as TabType;
+				isFilteredFromMonitor = true;
+			}
+		}
+
+		if (paymentStatusParam) {
+			paymentFilter = normalizePaymentStatus(paymentStatusParam) as PaymentFilter;
+			isFilteredFromMonitor = true;
+		}
+
+		if (orderStatusParam) {
+			orderStatusFilter = normalizeOrderStatus(orderStatusParam);
+			isFilteredFromMonitor = true;
+		}
+
 		void loadOrders();
 	});
 
@@ -760,6 +785,28 @@
 			</a>
 		</div>
 	</header>
+
+	{#if isFilteredFromMonitor && (searchQuery || activeTab !== 'ALL' || paymentFilter !== 'ALL' || orderStatusFilter !== 'ALL')}
+		<div class="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 rounded-[2rem] p-6 flex flex-col md:flex-row items-center justify-between gap-4" in:fade>
+			<div class="flex items-center gap-4 text-center md:text-left">
+				<div class="w-12 h-12 bg-white dark:bg-zinc-800 rounded-2xl flex items-center justify-center text-2xl shadow-sm">🛰️</div>
+				<div>
+					<p class="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">Operational Monitor Filter Aktif</p>
+					<p class="text-xs text-indigo-500 font-medium mt-1">Menampilkan data spesifik berdasarkan pilihan navigasi Dashboard Monitor.</p>
+				</div>
+			</div>
+			<button
+				type="button"
+				onclick={() => {
+					resetListFilters();
+					isFilteredFromMonitor = false;
+				}}
+				class="px-8 py-3 bg-white dark:bg-zinc-800 border border-indigo-100 dark:border-zinc-700 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-50 dark:hover:bg-zinc-700 transition-all shadow-sm"
+			>
+				Reset Filter & Lihat Semua
+			</button>
+		</div>
+	{/if}
 
 	{#if statusActionError}
 		<div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/40 rounded-2xl p-4" in:fade>
