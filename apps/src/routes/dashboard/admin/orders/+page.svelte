@@ -116,6 +116,20 @@
 	let paymentFilter = $state<PaymentFilter>('ALL');
 	let orderStatusFilter = $state<string>('ALL');
 	let isFilteredFromMonitor = $state(false);
+	let ignoredQueryParams = $state<string[]>([]);
+
+	function isValidTab(tab: string): tab is TabType {
+		const validTabs: TabType[] = ['ALL', 'NEW', 'VERIFIKASI', 'PROCESS', 'DONE', 'CANCELLED'];
+		return validTabs.includes(tab.toUpperCase() as TabType);
+	}
+
+	function isValidPaymentStatus(status: string): status is PaymentStatus {
+		return manualPaymentStatuses.includes(status.toLowerCase() as PaymentStatus);
+	}
+
+	function isValidOrderStatus(status: string): status is OrderStatus {
+		return allowedOrderStatuses.includes(status.toLowerCase() as OrderStatus);
+	}
 
 	const orderStatusFlow: OrderStatus[] = ['new', 'confirmed', 'processing', 'ready', 'delivered', 'completed'];
 	const manualPaymentStatuses: PaymentStatus[] = ['unpaid', 'waiting_verification', 'paid', 'cod_pending', 'rejected'];
@@ -473,6 +487,7 @@
 		paymentFilter = 'ALL';
 		orderStatusFilter = 'ALL';
 		activeTab = 'ALL';
+		ignoredQueryParams = [];
 	}
 
 	function paymentColor(status: PaymentStatus): string {
@@ -721,27 +736,46 @@
 		const paymentStatusParam = urlParams.get('paymentStatus');
 		const orderStatusParam = urlParams.get('orderStatus');
 
+		ignoredQueryParams = [];
+
 		if (searchParam) {
 			searchQuery = searchParam;
 			isFilteredFromMonitor = true;
 		}
 
 		if (tabParam) {
-			const validTabs: TabType[] = ['ALL', 'NEW', 'VERIFIKASI', 'PROCESS', 'DONE', 'CANCELLED'];
-			if (validTabs.includes(tabParam.toUpperCase() as TabType)) {
+			if (isValidTab(tabParam)) {
 				activeTab = tabParam.toUpperCase() as TabType;
 				isFilteredFromMonitor = true;
+			} else {
+				ignoredQueryParams.push(`Tab: ${tabParam}`);
 			}
 		}
 
 		if (paymentStatusParam) {
-			paymentFilter = normalizePaymentStatus(paymentStatusParam) as PaymentFilter;
-			isFilteredFromMonitor = true;
+			const val = paymentStatusParam.toLowerCase();
+			if (val === 'all') {
+				paymentFilter = 'ALL';
+				isFilteredFromMonitor = true;
+			} else if (isValidPaymentStatus(val)) {
+				paymentFilter = val;
+				isFilteredFromMonitor = true;
+			} else {
+				ignoredQueryParams.push(`Payment Status: ${paymentStatusParam}`);
+			}
 		}
 
 		if (orderStatusParam) {
-			orderStatusFilter = normalizeOrderStatus(orderStatusParam);
-			isFilteredFromMonitor = true;
+			const val = orderStatusParam.toLowerCase();
+			if (val === 'all') {
+				orderStatusFilter = 'ALL';
+				isFilteredFromMonitor = true;
+			} else if (isValidOrderStatus(val)) {
+				orderStatusFilter = val;
+				isFilteredFromMonitor = true;
+			} else {
+				ignoredQueryParams.push(`Order Status: ${orderStatusParam}`);
+			}
 		}
 
 		void loadOrders();
@@ -792,7 +826,25 @@
 				<div class="w-12 h-12 bg-white dark:bg-zinc-800 rounded-2xl flex items-center justify-center text-2xl shadow-sm">🛰️</div>
 				<div>
 					<p class="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">Operational Monitor Filter Aktif</p>
-					<p class="text-xs text-indigo-500 font-medium mt-1">Menampilkan data spesifik berdasarkan pilihan navigasi Dashboard Monitor.</p>
+					<div class="flex flex-wrap gap-2 mt-2">
+						{#if searchQuery}
+							<span class="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900/40 rounded text-[9px] font-bold text-indigo-700 dark:text-indigo-300 uppercase">Search: {searchQuery}</span>
+						{/if}
+						{#if activeTab !== 'ALL'}
+							<span class="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900/40 rounded text-[9px] font-bold text-indigo-700 dark:text-indigo-300 uppercase">Tab: {activeTab}</span>
+						{/if}
+						{#if paymentFilter !== 'ALL'}
+							<span class="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900/40 rounded text-[9px] font-bold text-indigo-700 dark:text-indigo-300 uppercase">Payment: {paymentLabel(paymentFilter as PaymentStatus)}</span>
+						{/if}
+						{#if orderStatusFilter !== 'ALL'}
+							<span class="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900/40 rounded text-[9px] font-bold text-indigo-700 dark:text-indigo-300 uppercase">Status: {statusLabel(orderStatusFilter as OrderStatus)}</span>
+						{/if}
+					</div>
+					{#if ignoredQueryParams.length > 0}
+						<p class="text-[9px] font-bold text-red-500 uppercase tracking-tight mt-2 animate-pulse">
+							⚠️ Filter diabaikan (Invalid): {ignoredQueryParams.join(', ')}
+						</p>
+					{/if}
 				</div>
 			</div>
 			<button
