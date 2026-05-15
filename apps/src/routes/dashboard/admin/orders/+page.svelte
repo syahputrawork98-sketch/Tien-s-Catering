@@ -980,7 +980,7 @@
 								{/if}
 								<div class="p-3 bg-sky-50 dark:bg-sky-900/20 border border-sky-200 dark:border-sky-900/40 rounded-xl space-y-2">
 									<p class="text-[9px] font-black text-sky-700 dark:text-sky-300 uppercase tracking-widest">
-										Review Pembayaran (Manual)
+										Manual Payment Proof (Quick)
 									</p>
 									<select
 										aria-label="Pilih Status Pembayaran (Simulasi)"
@@ -1168,15 +1168,17 @@
 			<div class="p-6 bg-zinc-50 dark:bg-zinc-800 rounded-[2rem] border border-zinc-100 dark:border-zinc-700 space-y-6">
 				<div class="flex items-center justify-between">
 					<div class="space-y-1">
-						<p class="text-[10px] font-black text-zinc-500 uppercase tracking-widest italic">Payment Proof Verification</p>
-						<p class="text-[9px] font-bold text-zinc-400 italic uppercase">Workflow simulasi lokal / manual verifikasi</p>
+						<p class="text-[10px] font-black text-zinc-500 uppercase tracking-widest italic">Manual Payment Proof Verification</p>
+						<p class="text-[9px] font-bold text-zinc-400 italic uppercase">Manual verification simulation flow</p>
 					</div>
 					{#if selectedOrder.paymentProof}
 						<span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider
 							{selectedOrder.paymentProof.status === 'verified' ? 'bg-emerald-100 text-emerald-700' :
 							 selectedOrder.paymentProof.status === 'rejected' ? 'bg-red-100 text-red-700' :
 							 'bg-amber-100 text-amber-700'}">
-							{selectedOrder.paymentProof.status}
+							{selectedOrder.paymentProof.status === 'verified' ? 'Terverifikasi' :
+							 selectedOrder.paymentProof.status === 'rejected' ? 'Ditolak' :
+							 'Menunggu Verifikasi'}
 						</span>
 					{:else}
 						<div class="px-3 py-1 bg-zinc-100 dark:bg-zinc-900 rounded-full border border-zinc-200 dark:border-zinc-800">
@@ -1225,14 +1227,14 @@
 										disabled={isVerifying}
 										class="flex-1 py-3 bg-red-50 text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest border border-red-100 hover:bg-red-100 transition-all disabled:opacity-50"
 									>
-										Reject Proof
+										Tolak (Reject)
 									</button>
 									<button
 										onclick={() => verifyPayment(selectedOrder!.id, 'approve')}
 										disabled={isVerifying}
 										class="flex-1 py-3 bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-600/20 hover:scale-[1.02] transition-all disabled:opacity-50"
 									>
-										Approve Payment
+										Verifikasi Lunas (Approve)
 									</button>
 								</div>
 							</div>

@@ -642,7 +642,7 @@
 
                                     <div class="space-y-4 pt-6 border-t border-zinc-100 dark:border-zinc-800">
                                         <div class="flex items-center justify-between">
-                                            <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Simulasi Bukti {selectedOrder.paymentStatus === 'partially_paid' ? 'Pelunasan' : 'Pembayaran'}</p>
+                                            <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Manual Payment Proof ({selectedOrder.paymentStatus === 'partially_paid' ? 'Pelunasan' : 'Pembayaran'})</p>
                                             <p class="text-[10px] font-black text-brand-primary italic uppercase tracking-widest">
                                                 {formatRupiah(selectedOrderUploadAmount)}
                                             </p>
@@ -698,7 +698,7 @@
                                                         <span class="text-[9px] font-black uppercase tracking-widest
                                                             {proof.status === 'verified' ? 'text-emerald-500' :
                                                              proof.status === 'rejected' ? 'text-red-500' : 'text-amber-500'}">
-                                                            {proof.status === 'verified' ? 'Terverifikasi ✓' : proof.status === 'rejected' ? 'Ditolak ✗' : 'Menunggu •'}
+                                                            {proof.status === 'verified' ? 'Terverifikasi ✓' : proof.status === 'rejected' ? 'Ditolak ✗' : 'Menunggu Verifikasi •'}
                                                         </span>
                                                     </div>
                                                 </div>
