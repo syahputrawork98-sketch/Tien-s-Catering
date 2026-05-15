@@ -49,10 +49,19 @@
 - [x] **Batch 58**: Role Flow Regression & Guard Consistency Polish. (Selesai)
 - [x] **Batch 59**: Payment Setting QRIS & Bank Account. (Selesai)
 - [x] **Batch 60**: Docs Sync + Handoff Room Baru. (Selesai)
+- [x] **Batch 61**: Official Internal Invoice / Commercial Billing. (Selesai)
+- [x] **Batch 62**: Admin Operational Monitoring Foundation. (Selesai)
+- [x] **Batch 63**: Operational Monitoring Data Honesty & Error State Polish. (Selesai)
+- [x] **Batch 64**: Operational Monitor to Admin Orders Handoff Polish. (Selesai)
+- [x] **Batch 65**: Docs Sync project-control. (Selesai)
 
 ## 3. Production-Ready Features
 *Fitur bisnis yang dikembangkan dengan logika produksi.*
 
+- **Official Internal Invoice**: Commercial billing document dengan instruksi pembayaran manual QRIS/Bank (Batch 61).
+- **Admin Operational Monitor**: Real-time summary cards, needs attention list, dan recent activity (Batch 62).
+- **Data Honesty Guard**: Dashboard monitoring dengan proteksi terhadap kegagalan API/koneksi (Batch 63).
+- **Handoff Actionability**: Navigasi terintegrasi dari Dashboard Monitor ke halaman Orders dengan query filter (Batch 64).
 - **Payment Account**: Konfigurasi nomor rekening/tujuan transfer lokal (Admin) — `system_settings` SQLite.
 - **Advanced Reporting**: Grafik tren bulanan/tahunan berbasis data SQLite.
 - **Bulk Operations**: Update status order masal atau export data transaksi.
@@ -65,9 +74,10 @@
 - **Auth Production**: Foundation selesai (Batch 49-53). Sisa: Security hardening, JWT/Production Auth, Lupa Password.
 - **RBAC Final**: Penguncian hak akses tingkat server (Security hardening).
 - **Payment Gateway**: Integrasi QRIS Real, Webhook Midtrans, atau API pihak ketiga.
-- **Legal/Tax**: e-Faktur resmi, integrasi perpajakan pemerintah.
+- **Legal/Tax**: e-Faktur resmi pemerintah (Batch 61 tetap Commercial Billing).
 - **Storage Final**: S3/Cloud storage untuk upload (saat ini masih local folder).
 - **Deployment**: Final production hardening, SSL, & server setup.
+- **Backup Monitor**: Monitoring infrastruktur/backup real-time.
 
 ## 5. Future / Nanti
 - Package public checkout (Direct checkout tanpa request).

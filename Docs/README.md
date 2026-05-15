@@ -32,10 +32,10 @@ Dokumen di sini dipakai sebagai acuan product direction, scope, dan alur kerja l
 
 ## Status Terakhir (Mei 2026)
 
-- **Batch 60 Selesai**: Docs Sync + Handoff Room Baru.
+- **Batch 65 Selesai**: Docs Sync project-control.
   - **Status**: *Production Candidate (Controlled Mode)*.
-  - **Technical**: Auth Foundation & API Role Guards (Batch 55), Data Isolation (Batch 56), Session Hardening (Batch 57), Manual Payment Settings (Batch 59) selesai.
-- **Fase A–E (Batch 31–60)**: Seluruh rangkaian transisi keamanan utama telah selesai (**Accepted**).
-  - **Status**: *Ready for Commercial Features*.
+  - **Technical**: Official Internal Invoice (Batch 61), Admin Operational Monitor (Batch 62), Data Honesty Hardening (Batch 63), dan Monitor-to-Orders Handoff (Batch 64) selesai.
+- **Fase A–E (Batch 31–65)**: Seluruh rangkaian transisi keamanan dan fondasi operasional internal telah selesai (**Accepted**).
+  - **Status**: *Ready for Operational Hardening*.
   - **Persona**: *Development Persona Switcher* tetap aktif sebagai orchestrator role resmi.
-- **Prinsip Scope**: Sistem siap untuk fitur operasional komersial (Invoice/Faktur) dengan batasan "Manual Payment" dan "Local SQLite".
+- **Prinsip Scope**: Sistem siap untuk operasional komersial internal dengan kejujuran data riil dari database lokal.

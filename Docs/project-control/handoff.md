@@ -5,7 +5,7 @@
 - **Status**: Production Candidate (Controlled Mode).
 - **Mekanisme**: Development Persona Switcher / Account Selector (Orchestrator Utama).
 - **Source of Truth**: GitHub & `Docs/project-control/`.
-- **Commit Terakhir**: `114f4acf13812c08f980938032b17b77bd0d0ca7` (Verifikasi di Git).
+- **Commit Terakhir**: `afbb1a67270df137e79e72e53d45bed9628d6d91` (Verifikasi di Git).
 
 ## Peran & Tanggung Jawab
 1. **Room 00**: Pengambil keputusan final, penentu scope, prioritas, dan evaluasi hasil.
@@ -13,21 +13,22 @@
 3. **Gemini 3 Flash**: Executor murni. Fokus pada implementasi kode sesuai instruksi Room 00/01.
 
 ## Status Batch
-- **Batch Terakhir (Accepted)**: Batch 59 (Payment Setting QRIS & Bank Account).
-- **Batch Aktif (Checkpoint)**: Batch 60 (Docs Sync + Handoff).
-- **Batch Berikutnya (Target Room Baru)**: Batch 61 (Official Internal Invoice / Commercial Billing).
+- **Batch Terakhir (Accepted)**: Batch 64 (Operational Monitor to Admin Orders Handoff Polish).
+- **Batch Aktif (Checkpoint)**: Batch 65 (Docs Sync project-control).
+- **Batch Berikutnya**: Batch 66 (Operational Hardening).
 
 ## Keputusan Scope Owner (Fixed Boundaries)
 - ✅ **Akses**: Ready produksi menggunakan Development Persona Switcher.
 - ✅ **Pembayaran**: Manual QRIS & Bank Transfer (Upload Bukti + Verifikasi Manual).
-- ❌ **Hold**: Payment Gateway API (Midtrans/Xendit), Cloud Storage (S3), Deployment Live, Auth Production Final (JWT/Social), Email Verification, e-Faktur Pajak Pemerintah.
-- 💡 **Ready Scope**: Invoice/Faktur internal, Monitoring operasional internal.
+- ✅ **Invoice**: Official Internal Invoice / Commercial Billing (Tanpa e-Faktur Pajak).
+- ✅ **Monitoring**: Dashboard Operational Monitor dengan Data Honesty (No Mock Fallback).
+- ❌ **Hold**: Payment Gateway API (Midtrans/Xendit), Cloud Storage (S3), Deployment Live, Auth Production Final (JWT/Social), Email Verification, e-Faktur Pajak Pemerintah, Backup Monitor.
 
-## Ringkasan Teknis Terakhir
-1. **Security**: `authGuard.ts` dan `requireRole` sudah memproteksi seluruh endpoint mutasi sensitif.
-2. **Data Isolation**: Pesanan dan data customer sudah terisolasi berdasarkan `userId`.
-3. **Payment Config**: Menggunakan tabel `system_settings` di SQLite untuk menyimpan QRIS (Base64) dan rekening bank yang dikelola Admin.
-4. **UX**: Penanganan session expired (401) sudah terintegrasi di seluruh dashboard utama.
+## Ringkasan Progres Batch 61-64
+1. **Batch 61 (Invoice)**: Implementasi Commercial Billing dengan instruksi pembayaran manual dan disclaimer non-faktur pajak.
+2. **Batch 62 (Monitoring)**: Fondasi Dashboard Admin untuk memantau pesanan aktif, verifikasi pembayaran, dan aktivitas terbaru.
+3. **Batch 63 (Data Honesty)**: Penghapusan data mock pada monitoring; implementasi loading, error, dan empty states yang jujur.
+4. **Batch 64 (Handoff Polish)**: Integrasi navigasi dari Dashboard Monitor ke halaman Orders menggunakan query parameters divalidasi.
 
 ## Prompt Pembuka Room Baru (Saran)
-> "Saya berpindah dari Room Chat sebelumnya. Project: Tien's Catering (TC). Status: Production Candidate (Controlled Mode) dengan Development Persona Switcher. Batch terakhir yang diselesaikan adalah Batch 60 (Docs Sync). Rujukan utama Anda adalah `Docs/project-control/`. Mari mulai dengan Batch 61: Perancangan Invoice Resmi Internal."
+> "Saya berpindah dari Room Chat sebelumnya. Project: Tien's Catering (TC). Status: Production Candidate (Controlled Mode). Batch terakhir yang diselesaikan adalah Batch 65 (Docs Sync). Rujukan utama adalah `Docs/project-control/`. Mari mulai dengan Batch 66 untuk penguatan fitur administratif lainnya."

@@ -24,17 +24,18 @@ Beberapa alur bisnis masih bersifat "Happy Path" lokal.
 - **Role Management**: Penugasan role ke user baru belum memiliki workflow pendaftaran yang aman.
 - **Package Request to Order**: Transisi status dan notifikasi otomatis masih sangat minimal/manual.
 - **Package Cart/Checkout**: Alur paket masuk cart/checkout/order tetap ditahan (Hold) kecuali dibuka secara eksplisit untuk skenario tertentu.
-- **Invoice & Pajak**: Format invoice saat ini baru bersifat "Commercial" sederhana, belum memenuhi standar e-Faktur atau integrasi perpajakan resmi.
+- **Invoice & Pajak**: Format invoice saat ini sudah memenuhi standar **Official Internal Invoice / Commercial Billing** (Batch 61), namun tetap bukan dokumen e-Faktur resmi pemerintah.
+- **Operational Monitoring**: Dashboard Admin sudah memiliki monitoring operasional riil dengan **Data Honesty** (Batch 62-64), mengurangi risiko data menyesatkan di level administratif.
 - **Export Data**: Fitur export PDF/CSV masih bersifat client-side simulation, perlu dipindahkan ke server-side untuk data besar dan keamanan.
 
 ## 3. Infrastruktur & DevOps
 - **Database**: Menggunakan SQLite lokal. Perlu diputuskan apakah tetap SQLite (dengan backup) atau migrasi ke PostgreSQL untuk skalabilitas produksi.
 - **Environment Variables**: Penanganan `.env` harus diperketat (pemisahan dev/prod secrets).
-- **Logging & Monitoring**: Belum ada sistem logging (seperti Winston/Pino) atau monitoring error (seperti Sentry).
+- **Logging & Monitoring**: Sudah ada fondasi dashboard monitoring operasional (Batch 62). Monitoring sistem/error (seperti Sentry) tetap berada dalam status Hold.
 
 ## 4. Risiko & Mitigasi
 - **Data Migration**: Migrasi dari akun persona simulasi ke akun user riil berisiko kehilangan data transaksi jika tidak dipetakan dengan baik.
 - **Storage Migration**: Bukti pembayaran yang saat ini tersimpan lokal harus dimigrasikan ke cloud saat sistem live.
 
 ---
-*Terakhir diupdate: Batch 60 — Docs Sync + Handoff Room Baru*
+*Terakhir diupdate: Batch 65 — Docs Sync project-control*

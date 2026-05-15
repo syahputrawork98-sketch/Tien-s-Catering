@@ -45,12 +45,21 @@ Tujuan utama fase ini adalah melakukan *hardening*, implementasi sistem keamanan
 - [x] Room handover preparation via `handoff.md`.
 - [x] Codebase health check & build verification.
 
+### Batch 61–64: Internal Operational Monitoring & Billing (Completed)
+- [x] Batch 61: Official Internal Invoice / Commercial Billing.
+- [x] Batch 62: Admin Operational Monitoring Foundation.
+- [x] Batch 63: Operational Monitoring Data Honesty & Error State Polish.
+- [x] Batch 64: Operational Monitor to Admin Orders Handoff Polish.
+
+### Batch 65: Docs Sync project-control (Current)
+- [x] Documentation synchronization for Batch 61-64.
+- [x] Update project status and handoff records.
+
 ---
 
-## Batch 61+ (Next Room Chat)
-Rangkaian batch selanjutnya akan dilanjutkan di Room Chat baru dengan fokus pada:
-- **Batch 61**: Official Internal Invoice / Commercial Billing.
-- **Batch 62+**: Operational Monitoring & Final Hardening.
+## Batch 66+ (Future)
+- **Batch 66**: Operational Hardening & Feedback.
+- **Batch 67+**: Reserved for final production preparation.
 
 ---
 
@@ -58,3 +67,4 @@ Rangkaian batch selanjutnya akan dilanjutkan di Room Chat baru dengan fokus pada
 1. **Security First**: Setiap fitur baru atau perubahan harus mempertimbangkan aspek keamanan (Auth/Authz).
 2. **Backward Compatibility**: Memastikan transisi dari data simulasi lokal ke skema produksi tidak merusak integritas data bisnis yang sudah ada.
 3. **Docs-Driven**: Perubahan arsitektur besar (seperti Auth) harus didahului dengan update dokumentasi teknis.
+4. **Data Honesty**: Dashboard harus menunjukkan status riil dari API/Database tanpa fallback mock yang menyesatkan (Batch 63).
