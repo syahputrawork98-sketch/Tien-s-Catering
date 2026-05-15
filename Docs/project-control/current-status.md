@@ -19,8 +19,8 @@ Next recommended batch: Batch 55 API Guard Completion & Ownership Visibility
 - Maintaining project-control as the official source of truth
 
 ## Current Risks
-- Security implementation is still partial (Pre-Auth phase).
-- Persona Switcher must be maintained until production final auth is ready.
+- Security implementation is still in transition to production standards.
+- Development Persona Switcher remains the primary access mode for role testing.
 
 ## Next Recommended Step
 - Proceed to Batch 55: API Guard Completion & Ownership Visibility.

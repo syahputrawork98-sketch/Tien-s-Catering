@@ -2,7 +2,7 @@
 
 ## Ringkasan Kondisi Repo Saat Ini
 
-- Repo fokus pada fungsionalitas bisnis (Pre-Auth mode).
+- Repo fokus pada fungsionalitas bisnis dalam fase **Production Readiness**.
 - `apps/` adalah aplikasi utama (SvelteKit + local API routes).
 - Project menggunakan **Developer Persona Switcher** (Role + Account Selector) untuk simulasi multi-role.
 - Pilihan Role dan Akun Aktif disimpan di **localStorage** untuk persistensi simulasi.
@@ -19,8 +19,8 @@
 - Public katalog membaca data menu dari API (`GET /api/menus`).
 - Checkout menulis order ke API (`POST /api/orders`).
 - Admin area (Orders, Reports, Customers) membaca dan menulis ke database via API lokal.
-- Auth masih simulasi/dev persona switcher (belum auth production).
-- Payment gateway masih dalam mode simulasi bukti transfer (Hold Production).
+- Akses menggunakan **Development Persona Switcher** (menuju sistem auth production).
+- Payment gateway dalam mode pematangan logika (Hold Production).
 - Stock management (decrement/restore) sudah aktif dalam alur konfirmasi/pembatalan order.
 
 ## Deployment Readiness & Phase E (Batch 48+)
@@ -28,7 +28,7 @@
 - **Batch 47**: Business-Complete / Pre-Auth. Aplikasi siap untuk demo bisnis lokal secara penuh.
 - **Batch 48**: Fase E (Production Readiness) resmi dibuka.
 - **Build Hygiene**: `npm run check` 0 errors.
-- **Status Production**: Belum ready untuk public release. Fokus saat ini adalah menutup gap antara simulasi lokal dan standar produksi (Auth, Security, Cloud Storage).
+- **Status Production**: Belum ready untuk public release. Fokus saat ini adalah menutup gap menuju standar produksi (Auth, Security, Cloud Storage).
 - **Hold for Production**: Beberapa fitur (Payment Gateway Real, Auth Production, Cloud Storage) masih ditahan hingga batch yang ditentukan di roadmap Fase E.
 
 ## Catatan Arah Dokumen

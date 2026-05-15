@@ -19,8 +19,8 @@ Tien's Catering adalah aplikasi pemesanan makanan/catering lokal untuk area Pemk
 ## Status Project Saat Ini
 
 - **Batch 54 — Fase E Active**: Fase *Production Readiness*. Saat ini fokus pada dokumentasi sinkronisasi progres Auth Foundation (Session hardening, Data isolation, Server-side role guard).
-- **Business-Complete (Pre-Auth)**: Alur bisnis utama stabil.
-- **Developer Persona Switcher**: Dipertahankan sebagai mode simulasi dengan label transparan berdampingan dengan Auth Produksi.
+- **Business-Ready / Production Readiness**: Alur bisnis utama stabil dan diarahkan menuju kesiapan produksi.
+- **Development Persona Switcher**: Cara resmi untuk memilih akun/persona selama fase pengembangan ini.
 - **Hold Production**: Fitur sensitif (Payment Gateway, S3 Storage, Super Admin, Deployment) tetap ditahan.
 
 ## Struktur Folder Utama

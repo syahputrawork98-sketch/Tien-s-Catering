@@ -93,7 +93,7 @@ Dev persona switcher tetap dipakai pada local development:
 
 ## Batasan Penting (Hold Production)
 
-Backend ini berfokus pada alur bisnis (Pre-Auth):
+Backend ini berfokus pada alur bisnis (Production Readiness Foundation):
 
 - **Hold Production**:
   - Auth production (login/JWT/session/password/RBAC final).

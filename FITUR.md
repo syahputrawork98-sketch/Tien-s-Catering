@@ -25,7 +25,7 @@
 - [x] **Batch 37**: Commercial Invoice Basic (Print-friendly).
 - [x] **Batch 35**: Admin Payment Verification (Manual).
 - [x] **Batch 34**: Payment Proof Upload (Local Storage).
-- **Admin**: Order management (List, Detail, Status update, Payment status manual), Package management, Package Request review (Review, Status, Notes), Commercial Invoice Basic, Reports summary (Revenue, Orders, Finance), Users local simulation.
+- **Admin**: Order management (List, Detail, Status update, Payment status manual), Package management, Package Request review (Review, Status, Notes), Commercial Invoice Basic, Reports summary (Revenue, Orders, Finance), User Management (Development mode).
 - **CS**: Dashboard orders & customers handling clarity.
 - **Foundation**: Local backend active (`/api/health`, `/api/menus`, `/api/orders`, `/api/packages`, `/api/package-requests`).
 - **Integration**: Convert Package Request to Order (Admin-driven), Source metadata tracking.
@@ -43,13 +43,13 @@
 - [x] **Batch 53**: Server-side/API role guard foundation. (Selesai)
 - [x] **Batch 54**: Docs Sync Ringan Fase E Auth Progress. (Selesai)
 
-## 3. Local-Compatible / Bisa Dikerjakan
-*Fitur bisnis yang bisa dikembangkan secara lokal (Pre-Auth).*
+## 3. Production-Ready Features
+*Fitur bisnis yang dikembangkan dengan logika produksi.*
 
 - **Payment Account**: Konfigurasi nomor rekening/tujuan transfer lokal (Admin).
 - **Advanced Reporting**: Grafik tren bulanan/tahunan berbasis data SQLite.
 - **Bulk Operations**: Update status order masal atau export data transaksi.
-- **Super Admin Simulation**: Simulasi pengaturan sistem global/pajak lokal.
+- **Super Admin Control**: Kontrol pengaturan sistem global/pajak secara fungsional.
 - **Feedback System**: Customer feedback/review lokal setelah order selesai.
 
 ## 4. Hold Production / Phase E Focus
@@ -70,8 +70,8 @@
 ---
 
 ## Catatan Scope & Policy
-- Project berjalan dalam mode **Pre-Auth Local Development**.
-- **Developer Persona Switcher** tetap digunakan untuk demo dan pengujian.
+- Project berada dalam fase **Production Readiness**.
+- **Development Persona Switcher** digunakan sebagai cara resmi memilih akun/persona.
 - Dokumentasi kontrol resmi di `Docs/project-control/`.
 - Dokumentasi aktif lainnya di `Docs/`, `FITUR.md`, dan `README.md`.
 - Tracking lama dari `kanban-master/` sudah diserap/ditutup.

@@ -36,6 +36,6 @@ Dokumen di sini dipakai sebagai acuan product direction, scope, dan alur kerja l
   - **Status**: *Fase E Active / Scope Freeze*.
   - **Technical**: Audit gap produksi selesai, roadmap Batch 48-60 dikunci.
 - **Fase A–D (Batch 31–47)**: Seluruh rangkaian telah selesai (**Accepted**).
-  - **Status**: *Business-Complete (Pre-Auth)*. Aplikasi stabil untuk simulasi alur bisnis lokal.
-  - **Persona**: *Developer Persona Switcher + Account Selector* aktif untuk demo multi-role.
-- **Prinsip Scope**: Fitur bisnis bersifat **Local-Compatible** sudah matang. Fitur **Production/Final (Auth & Security)** mulai dibuka secara bertahap di Fase E.
+  - **Status**: *Production Readiness Transition*. Alur bisnis utama stabil dan siap untuk integrasi keamanan.
+  - **Persona**: *Development Persona Switcher + Account Selector* aktif untuk pemilihan role secara resmi.
+- **Prinsip Scope**: Fitur bisnis utama sudah matang dalam logika produksi. Fitur **Production/Final (Auth & Security)** mulai dibuka secara bertahap di Fase E.
