@@ -13,22 +13,22 @@
 3. **Gemini 3 Flash**: Executor murni. Fokus pada implementasi kode sesuai instruksi Room 00/01.
 
 ## Status Batch
-- **Batch Terakhir (Accepted)**: Batch 64 (Operational Monitor to Admin Orders Handoff Polish).
-- **Batch Aktif (Checkpoint)**: Batch 65 (Docs Sync project-control).
-- **Batch Berikutnya**: Batch 66 (Operational Hardening).
+- **Batch Terakhir (Accepted)**: Batch 69 (Rejected Payment Proof Reupload Flow).
+- **Batch Aktif (Checkpoint)**: Batch 70 (Docs Sync Project Progress).
+- **Batch Berikutnya**: Batch 71 (Operational Hardening).
 
 ## Keputusan Scope Owner (Fixed Boundaries)
 - ✅ **Akses**: Ready produksi menggunakan Development Persona Switcher.
-- ✅ **Pembayaran**: Manual QRIS & Bank Transfer (Upload Bukti + Verifikasi Manual).
+- ✅ **Pembayaran**: Manual QRIS & Bank Transfer (Upload -> Verify -> Reject -> Reupload cycle aktif).
 - ✅ **Invoice**: Official Internal Invoice / Commercial Billing (Tanpa e-Faktur Pajak).
 - ✅ **Monitoring**: Dashboard Operational Monitor dengan Data Honesty (No Mock Fallback).
 - ❌ **Hold**: Payment Gateway API (Midtrans/Xendit), Cloud Storage (S3), Deployment Live, Auth Production Final (JWT/Social), Email Verification, e-Faktur Pajak Pemerintah, Backup Monitor.
 
-## Ringkasan Progres Batch 61-64
-1. **Batch 61 (Invoice)**: Implementasi Commercial Billing dengan instruksi pembayaran manual dan disclaimer non-faktur pajak.
-2. **Batch 62 (Monitoring)**: Fondasi Dashboard Admin untuk memantau pesanan aktif, verifikasi pembayaran, dan aktivitas terbaru.
-3. **Batch 63 (Data Honesty)**: Penghapusan data mock pada monitoring; implementasi loading, error, dan empty states yang jujur.
-4. **Batch 64 (Handoff Polish)**: Integrasi navigasi dari Dashboard Monitor ke halaman Orders menggunakan query parameters divalidasi.
+## Ringkasan Progres Batch 65-69
+1. **Batch 66 (Filter Hardening)**: Validasi ketat query parameter pada Admin Orders dan banner feedback operasional.
+2. **Batch 67 (Verify Guard)**: Implementasi safety guard (confirmation dialog, billing summary) pada verifikasi admin.
+3. **Batch 68 (Customer Guidance)**: Polish status pembayaran sisi customer dan panduan upload ulang.
+4. **Batch 69 (Reupload Flow)**: Memantapkan alur resubmit bukti pembayaran setelah penolakan admin.
 
 ## Prompt Pembuka Room Baru (Saran)
-> "Saya berpindah dari Room Chat sebelumnya. Project: Tien's Catering (TC). Status: Production Candidate (Controlled Mode). Batch terakhir yang diselesaikan adalah Batch 65 (Docs Sync). Rujukan utama adalah `Docs/project-control/`. Mari mulai dengan Batch 66 untuk penguatan fitur administratif lainnya."
+> "Saya berpindah dari Room Chat sebelumnya. Project: Tien's Catering (TC). Status: Production Candidate (Controlled Mode). Batch terakhir yang diselesaikan adalah Batch 70 (Docs Sync). Rujukan utama adalah `Docs/project-control/`. Mari mulai dengan Batch 71 untuk penguatan fitur operasional atau fitur baru lainnya sesuai arahan."

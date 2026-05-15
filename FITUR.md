@@ -53,7 +53,12 @@
 - [x] **Batch 62**: Admin Operational Monitoring Foundation. (Selesai)
 - [x] **Batch 63**: Operational Monitoring Data Honesty & Error State Polish. (Selesai)
 - [x] **Batch 64**: Operational Monitor to Admin Orders Handoff Polish. (Selesai)
-- [x] **Batch 65**: Docs Sync project-control. (Selesai)
+- [x] **Batch 65**: Docs Sync project-control (Batch 61-64). (Selesai)
+- [x] **Batch 66**: Admin Orders Filter Safety & Operational Hardening. (Selesai)
+- [x] **Batch 67**: Manual Payment Verification Safety Polish (Admin). (Selesai)
+- [x] **Batch 68**: Customer Payment Status & Reupload Guidance Polish. (Selesai)
+- [x] **Batch 69**: Rejected Payment Proof Reupload Flow Polish (Customer). (Selesai)
+- [x] **Batch 70**: Docs Sync Project Progress (Batch 65-70). (Selesai)
 
 ## 3. Production-Ready Features
 *Fitur bisnis yang dikembangkan dengan logika produksi.*
@@ -61,7 +66,9 @@
 - **Official Internal Invoice**: Commercial billing document dengan instruksi pembayaran manual QRIS/Bank (Batch 61).
 - **Admin Operational Monitor**: Real-time summary cards, needs attention list, dan recent activity (Batch 62).
 - **Data Honesty Guard**: Dashboard monitoring dengan proteksi terhadap kegagalan API/koneksi (Batch 63).
-- **Handoff Actionability**: Navigasi terintegrasi dari Dashboard Monitor ke halaman Orders dengan query filter (Batch 64).
+- **Handoff Actionability**: Navigasi terintegrasi dari Dashboard Monitor ke halaman Orders dengan query filter divalidasi (Batch 64-66).
+- **Payment Verification Guard**: Dialog konfirmasi, billing summary, dan safety microcopy pada proses verifikasi manual Admin (Batch 67).
+- **Customer Payment Guidance**: Panduan visual status pembayaran, microcopy manual verification, dan reupload guidance untuk bukti ditolak (Batch 68-69).
 - **Payment Account**: Konfigurasi nomor rekening/tujuan transfer lokal (Admin) — `system_settings` SQLite.
 - **Advanced Reporting**: Grafik tren bulanan/tahunan berbasis data SQLite.
 - **Bulk Operations**: Update status order masal atau export data transaksi.

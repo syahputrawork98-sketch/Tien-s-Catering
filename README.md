@@ -18,10 +18,10 @@ Tien's Catering adalah aplikasi pemesanan makanan/catering lokal untuk area Pemk
 
 ## Status Project Saat Ini
 
-- **Batch 60 — Fase E Checkpoint**: Fase *Production Readiness* menuju *Production Candidate*. Telah menyelesaikan Auth Foundation, Security Guard Hardening, Data Isolation, dan Manual Payment Settings (QRIS/Bank).
-- **Business-Ready / Production Candidate (Controlled Mode)**: Alur bisnis utama matang dengan penguncian keamanan tingkat server.
+- **Batch 70 — Operational Hardening Checkpoint**: Fase *Production Readiness* menuju *Production Candidate*. Telah menyelesaikan alur siklus pembayaran manual lengkap (Upload, Verifikasi, Penolakan, Unggah Ulang) dengan hardening keamanan UX.
+- **Business-Ready / Production Candidate (Controlled Mode)**: Alur bisnis utama matang dengan penguncian keamanan tingkat server dan hardening operasional manual.
 - **Development Persona Switcher**: Cara resmi untuk memilih akun/persona selama fase pengembangan ini.
-- **Hold Production**: Fitur eksternal (Payment Gateway API, S3 Storage, Auth Production Final) tetap ditahan.
+- **Hold Production**: Fitur eksternal (Payment Gateway API, S3 Storage, Auth Production Final, e-Faktur Pajak) tetap ditahan.
 
 ## Struktur Folder Utama
 
