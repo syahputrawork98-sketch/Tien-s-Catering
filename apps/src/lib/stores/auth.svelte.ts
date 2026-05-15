@@ -40,10 +40,20 @@ export const authStore = {
 	},
 
 	async logout() {
-		await authService.logout();
-		currentUser = null;
+		try {
+			await authService.logout();
+		} catch (error) {
+			console.error('Logout failed:', error);
+		} finally {
+			currentUser = null;
+		}
 	},
  
+	handleUnauthorized() {
+		currentUser = null;
+		isLoading = false;
+	},
+
 	async updateProfile(data: Partial<AuthUser>) {
 		const updated = await authService.updateProfile(data);
 		if (updated) {

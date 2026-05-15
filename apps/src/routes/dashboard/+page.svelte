@@ -68,6 +68,12 @@
 				fetch(`/api/package-requests${query}`)
 			]);
 
+			if (ordersRes.status === 401 || requestsRes.status === 401) {
+				error = 'Sesi Anda telah berakhir. Silakan pilih kembali akun melalui Persona Switcher.';
+				// Optionally we could call authStore.init() to refresh state
+				return;
+			}
+
 			if (!ordersRes.ok || !requestsRes.ok) {
 				throw new Error('Gagal menyinkronkan data dashboard.');
 			}

@@ -24,6 +24,7 @@ export class AuthService {
 	}
 
 	async login(email: string, password: string): Promise<User | null> {
+		sessionRepository.deleteExpired(); // Cleanup on login
 		const user = userRepository.findByEmail(email);
 		if (!user) return null;
 
@@ -51,6 +52,7 @@ export class AuthService {
 
 		if (new Date(session.expires_at) < new Date()) {
 			sessionRepository.deleteByToken(token);
+			sessionRepository.deleteExpired(); // Occasional cleanup
 			return null;
 		}
 

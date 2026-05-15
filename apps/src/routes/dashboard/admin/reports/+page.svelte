@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onMount } from 'svelte';
+    import { authStore } from '$lib/stores/auth.svelte';
     import { mockAdminMetrics, mockAdminSalesReports } from '$lib/mock/reports';
     import { mockAccounts } from '$lib/mock/accounts';
     import { mockCatalogItems } from '$lib/mock/catalog';
@@ -43,6 +44,13 @@
         fetchError = '';
         try {
             const response = await fetch('/api/reports');
+
+            if (response.status === 401) {
+                fetchError = 'Sesi Anda telah berakhir. Silakan pilih kembali akun melalui Persona Switcher.';
+                authStore.handleUnauthorized();
+                return;
+            }
+
             if (!response.ok) throw new Error('Gagal memuat data dari database.');
             const data = await response.json();
             dbOrders = Array.isArray(data.items) ? data.items : [];
@@ -109,7 +117,7 @@
     const dbStats = $derived(computeReportingSummary(filteredOrders));
 
     let filteredAccounts = $derived(
-        mockAccounts.filter(a => 
+        mockAccounts.filter(a =>
             a.name.toLowerCase().includes(normalizedSearchQuery) ||
             (a.email?.toLowerCase().includes(normalizedSearchQuery)) ||
             (a.whatsapp?.toLowerCase().includes(normalizedSearchQuery))
@@ -117,7 +125,7 @@
     );
 
     let filteredProducts = $derived(
-        mockCatalogItems.filter(p => 
+        mockCatalogItems.filter(p =>
             p.name.toLowerCase().includes(normalizedSearchQuery) ||
             p.category.toLowerCase().includes(normalizedSearchQuery)
         )
@@ -294,8 +302,8 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
             </span>
-            <input 
-                type="text" 
+            <input
+                type="text"
                 bind:value={searchQuery}
                 placeholder={searchPlaceholder}
                 class="w-full pl-16 pr-8 py-5 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-[2rem] outline-none focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary font-bold text-brand-charcoal dark:text-white transition-all shadow-sm"
@@ -304,7 +312,7 @@
 
         <!-- Period Filter -->
         <div class="relative">
-            <select 
+            <select
                 bind:value={periodFilter}
                 class="w-full pl-8 pr-12 py-5 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-[2rem] outline-none focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary font-bold text-brand-charcoal dark:text-white transition-all shadow-sm appearance-none cursor-pointer"
             >
@@ -324,7 +332,7 @@
 
         <!-- Status Filter -->
         <div class="relative">
-            <select 
+            <select
                 bind:value={paymentStatusFilter}
                 class="w-full pl-8 pr-12 py-5 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-[2rem] outline-none focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary font-bold text-brand-charcoal dark:text-white transition-all shadow-sm appearance-none cursor-pointer"
             >
@@ -356,11 +364,11 @@
     <!-- Tabs -->
     <div class="flex items-center gap-2 overflow-x-auto pb-4 no-scrollbar -mx-2 px-2">
         {#each tabs as tab}
-            <button 
+            <button
                 onclick={() => activeTab = tab.id}
                 class="flex items-center gap-3 px-8 py-4 rounded-full font-black text-[10px] uppercase tracking-[0.2em] transition-all shrink-0
-                    {activeTab === tab.id 
-                        ? 'bg-brand-charcoal text-white shadow-xl shadow-brand-charcoal/20 scale-105' 
+                    {activeTab === tab.id
+                        ? 'bg-brand-charcoal text-white shadow-xl shadow-brand-charcoal/20 scale-105'
                         : 'bg-white dark:bg-zinc-900 text-zinc-400 border border-zinc-100 dark:border-zinc-800 hover:border-brand-primary/30 hover:text-brand-charcoal dark:hover:text-white'}"
             >
                 <span class="text-base">{tab.icon}</span>
@@ -476,7 +484,7 @@
                         </p>
                     </div>
                 </div>
-                
+
                 {#if filteredOrders.length === 0}
                     <div class="mt-8 p-10 bg-zinc-50 dark:bg-zinc-950 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-3xl text-center">
                         <p class="text-xs font-bold text-zinc-400 italic uppercase tracking-widest">
@@ -535,7 +543,7 @@
                     </table>
                 </div>
             </section>
-        
+
         {:else if activeTab === 'sales'}
             <!-- Tab: Penjualan -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -890,7 +898,7 @@
                     <div class="text-4xl">🔍</div>
                     <h3 class="text-lg font-black text-brand-charcoal dark:text-white uppercase tracking-tighter">Data tidak ditemukan</h3>
                     <p class="text-zinc-500 text-sm font-medium">Tidak ada hasil yang cocok dengan kata kunci "{searchQuery}" pada tab ini.</p>
-                    <button 
+                    <button
                         onclick={resetFilters}
                         class="text-brand-primary font-black text-[10px] uppercase tracking-widest hover:underline"
                     >

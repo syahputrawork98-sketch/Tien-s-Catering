@@ -94,10 +94,10 @@
 
     <!-- Sidebar Overlay -->
     {#if isSidebarOpen}
-        <div 
+        <div
             role="button"
             tabindex="0"
-            class="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden" 
+            class="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden"
             onclick={() => isSidebarOpen = false}
             onkeydown={(e) => e.key === 'Escape' && (isSidebarOpen = false)}
             transition:fade
@@ -105,8 +105,8 @@
     {/if}
 
     <!-- Sidebar -->
-    <aside 
-        class="fixed inset-y-0 left-0 w-72 bg-white dark:bg-zinc-900 border-r border-zinc-100 dark:border-zinc-800 z-50 transition-transform duration-300 lg:sticky lg:translate-x-0 
+    <aside
+        class="fixed inset-y-0 left-0 w-72 bg-white dark:bg-zinc-900 border-r border-zinc-100 dark:border-zinc-800 z-50 transition-transform duration-300 lg:sticky lg:translate-x-0
                {isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}"
     >
         <div class="h-full flex flex-col">
@@ -127,7 +127,7 @@
                         {authStore.user?.role}
                     </span>
                     <button
-                        onclick={() => { authStore.logout(); goto('/login'); }}
+                        onclick={async () => { await authStore.logout(); goto('/login'); }}
                         class="block w-full mt-3 text-left text-[9px] font-black text-zinc-400 hover:text-red-500 transition-colors uppercase tracking-widest"
                     >
                         Keluar Akun (Auth)
@@ -150,11 +150,11 @@
             <!-- Navigation -->
             <nav class="flex-1 px-4 space-y-1 overflow-y-auto">
                 {#each navItems as item}
-                    <a 
+                    <a
                         href={item.href}
                         class="flex items-center px-4 py-3 rounded-xl text-sm font-bold transition-all
-                               {page.url.pathname === item.href 
-                                 ? 'bg-brand-primary text-white shadow-lg shadow-brand-primary/20' 
+                               {page.url.pathname === item.href
+                                 ? 'bg-brand-primary text-white shadow-lg shadow-brand-primary/20'
                                  : 'text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-800 dark:text-zinc-400'}"
                     >
                         {item.label}
@@ -168,23 +168,23 @@
                     <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1 italic">Dev Persona Switcher</p>
                     <p class="text-[7px] font-bold text-amber-600 dark:text-amber-500 uppercase tracking-tighter">Bukan Login Production • Local Only</p>
                 </div>
-                
+
                 <div class="space-y-4">
                     <!-- Role Select -->
                     <div class="flex flex-col gap-2">
-                        <button 
+                        <button
                             onclick={() => switchRole('USER')}
                             class="text-[10px] font-black py-2 rounded-lg transition-all {mockSession.role === 'USER' ? 'bg-brand-charcoal text-white' : 'bg-white dark:bg-zinc-800 text-zinc-400 border border-zinc-100 dark:border-zinc-700'}"
                         >
                             CUSTOMER
                         </button>
-                        <button 
+                        <button
                             onclick={() => switchRole('CUSTOMER_SERVICE')}
                             class="text-[10px] font-black py-2 rounded-lg transition-all {mockSession.role === 'CUSTOMER_SERVICE' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-zinc-800 text-zinc-400 border border-zinc-100 dark:border-zinc-700'}"
                         >
                             CS
                         </button>
-                        <button 
+                        <button
                             onclick={() => switchRole('ADMIN')}
                             class="text-[10px] font-black py-2 rounded-lg transition-all {mockSession.role === 'ADMIN' ? 'bg-indigo-600 text-white' : 'bg-white dark:bg-zinc-800 text-zinc-400 border border-zinc-100 dark:border-zinc-700'}"
                         >
@@ -195,7 +195,7 @@
                     <!-- Account Select (Dynamic) -->
                     <div class="space-y-1">
                         <label for="accSelect" class="text-[8px] font-black text-zinc-400 uppercase tracking-widest block ml-1">Pilih Akun Demo:</label>
-                        <select 
+                        <select
                             id="accSelect"
                             value={mockSession.user.id}
                             onchange={(e) => mockSession.setAccountId(e.currentTarget.value)}
@@ -208,8 +208,18 @@
                     </div>
                 </div>
 
-                <button 
-                    onclick={() => { localStorage.clear(); location.href = '/'; }}
+                <button
+                    onclick={() => {
+                        localStorage.removeItem('tiens_persona_mode');
+                        localStorage.removeItem('tiens_mock_role');
+                        // Remove account keys
+                        Object.keys(localStorage).forEach(key => {
+                            if (key.startsWith('tiens_mock_active_account_id_')) {
+                                localStorage.removeItem(key);
+                            }
+                        });
+                        location.reload();
+                    }}
                     class="w-full mt-4 text-[10px] font-black text-red-500 hover:bg-red-50 py-2 rounded-lg transition-all uppercase tracking-widest"
                 >
                     Clear Simulation
@@ -222,7 +232,7 @@
     <main class="flex-1 p-6 lg:p-10 relative overflow-hidden">
         <!-- Decoration -->
         <div class="absolute top-0 right-0 w-64 h-64 bg-brand-primary/5 blur-[100px] -z-10"></div>
-        
+
         <div in:fade={{ duration: 400 }}>
             {#if !authStore.isAuthenticated}
                 <div class="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center justify-between gap-4 shadow-sm animate-pulse">

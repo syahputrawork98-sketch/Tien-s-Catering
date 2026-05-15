@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Modal from '$lib/components/ui/Modal.svelte';
+	import { authStore } from '$lib/stores/auth.svelte';
 	import { onMount } from 'svelte';
 	import { fade, fly, scale } from 'svelte/transition';
 
@@ -511,6 +512,13 @@
 
 		try {
 			const response = await fetch('/api/orders');
+
+			if (response.status === 401) {
+				error = 'Sesi Anda telah berakhir. Silakan pilih kembali akun melalui Persona Switcher.';
+				authStore.handleUnauthorized();
+				return;
+			}
+
 			const body = (await response.json().catch(() => null)) as OrdersApiResponse | null;
 
 			if (!response.ok) {
@@ -666,8 +674,8 @@
 			const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/verify-payment`, {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify({ 
-					action, 
+				body: JSON.stringify({
+					action,
 					note: verificationNote,
 					verifiedBy: 'Admin (Demo)'
 				})
@@ -744,8 +752,8 @@
 		</div>
 
 		<div class="flex shrink-0">
-			<a 
-				href="/api/reports/export.csv" 
+			<a
+				href="/api/reports/export.csv"
 				class="inline-flex items-center gap-3 px-8 py-4 bg-brand-charcoal dark:bg-brand-primary text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl hover:scale-105 active:scale-95 transition-all"
 			>
 				<span>📥</span> Export Orders (CSV)
@@ -886,7 +894,7 @@
 									<span class="text-[10px] font-black uppercase {paymentColor(order.paymentStatus)}">{paymentLabel(order.paymentStatus)}</span>
 									<span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider {stockStatusColor(order.stockStatus)}">{stockStatusLabel(order.stockStatus)}</span>
 									<span class="px-3 py-1 rounded-full text-[10px] font-black bg-zinc-100 dark:bg-zinc-800 text-zinc-500 uppercase tracking-wider">Pembayaran: {paymentMethodLabel(order.paymentMethod)}</span>
-									
+
 									{#if order.sourceType === 'package_request'}
 										<span class="px-3 py-1 rounded-full text-[10px] font-black bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 uppercase tracking-wider border border-indigo-100 dark:border-indigo-900/50">
 											🍱 Paket Katering
@@ -894,7 +902,7 @@
 									{/if}
 
 									<span class="px-3 py-1 rounded-full text-[10px] font-black bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 uppercase tracking-wider">Local DB</span>
-									
+
 									{#if order.paymentStatus === 'paid' || order.status === 'completed' || order.status === 'delivered'}
 										<span class="px-3 py-1 rounded-full text-[10px] font-black bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-300 uppercase tracking-wider border border-emerald-100 dark:border-emerald-900/50">
 											💰 Revenue Final
@@ -1103,8 +1111,8 @@
 					<p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Total</p>
 					<div class="flex items-center gap-4">
 						<p class="text-lg font-black text-brand-charcoal dark:text-white italic">{formatPrice(selectedOrder.total)}</p>
-						<a 
-							href="/invoice/{selectedOrder.id}" 
+						<a
+							href="/invoice/{selectedOrder.id}"
 							target="_blank"
 							class="px-4 py-1.5 bg-zinc-100 dark:bg-zinc-800 text-[9px] font-black uppercase tracking-widest text-zinc-500 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all border border-zinc-200 dark:border-zinc-700"
 						>
@@ -1164,9 +1172,9 @@
 						<p class="text-[9px] font-bold text-zinc-400 italic uppercase">Workflow simulasi lokal / manual verifikasi</p>
 					</div>
 					{#if selectedOrder.paymentProof}
-						<span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider 
-							{selectedOrder.paymentProof.status === 'verified' ? 'bg-emerald-100 text-emerald-700' : 
-							 selectedOrder.paymentProof.status === 'rejected' ? 'bg-red-100 text-red-700' : 
+						<span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider
+							{selectedOrder.paymentProof.status === 'verified' ? 'bg-emerald-100 text-emerald-700' :
+							 selectedOrder.paymentProof.status === 'rejected' ? 'bg-red-100 text-red-700' :
 							 'bg-amber-100 text-amber-700'}">
 							{selectedOrder.paymentProof.status}
 						</span>
@@ -1204,7 +1212,7 @@
 
 						{#if selectedOrder.paymentStatus === 'waiting_verification'}
 							<div class="space-y-4 pt-4 border-t border-zinc-200 dark:border-zinc-700">
-								<textarea 
+								<textarea
 									bind:value={verificationNote}
 									placeholder="Catatan verifikasi atau alasan penolakan (wajib jika reject)..."
 									class="w-full px-4 py-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl text-xs font-medium focus:ring-2 focus:ring-brand-primary"
@@ -1212,14 +1220,14 @@
 								></textarea>
 
 								<div class="flex gap-3">
-									<button 
+									<button
 										onclick={() => verifyPayment(selectedOrder!.id, 'reject')}
 										disabled={isVerifying}
 										class="flex-1 py-3 bg-red-50 text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest border border-red-100 hover:bg-red-100 transition-all disabled:opacity-50"
 									>
 										Reject Proof
 									</button>
-									<button 
+									<button
 										onclick={() => verifyPayment(selectedOrder!.id, 'approve')}
 										disabled={isVerifying}
 										class="flex-1 py-3 bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-600/20 hover:scale-[1.02] transition-all disabled:opacity-50"

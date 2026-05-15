@@ -20,7 +20,7 @@
     let selectedOrder = $state<Order | null>(null);
     let isUploading = $state(false);
     let uploadNote = $state('');
-    
+
     // New states for selection
     let selectedPlan = $state<MockPaymentPlan | null>(null);
     let selectedMethod = $state<MockPaymentMethod | null>(null);
@@ -74,8 +74,8 @@
             })),
             type: mapType(apiOrder.status),
             paymentStatus: mapPaymentStatus(apiOrder.paymentStatus),
-            paymentMethod: apiOrder.paymentMethod === 'cod' ? 'cod_cash' : 
-                           apiOrder.paymentMethod === 'qris' ? 'qris' : 
+            paymentMethod: apiOrder.paymentMethod === 'cod' ? 'cod_cash' :
+                           apiOrder.paymentMethod === 'qris' ? 'qris' :
                            apiOrder.paymentMethod === 'transfer' ? 'bank_transfer' : 'bank_transfer',
             paymentBreakdown: {
                 totalAmount: apiOrder.total,
@@ -113,6 +113,12 @@
         try {
             const query = authStore.isAuthenticated ? `?userId=${authStore.user?.id}` : '';
             const response = await fetch(`/api/orders${query}`);
+
+            if (response.status === 401) {
+                error = 'Sesi Anda telah berakhir. Silakan pilih kembali akun melalui Persona Switcher.';
+                return;
+            }
+
             if (!response.ok) throw new Error('Gagal mengambil data pesanan.');
             const data = await response.json();
             if (Array.isArray(data.items)) {
@@ -208,7 +214,7 @@
         const selectedOrderId = selectedOrder.id;
         const plan = selectedPlan;
         const method = selectedMethod;
-        
+
         orders = orders.map((order) => {
             if (order.id === selectedOrderId) {
                 const breakdown = {
@@ -219,7 +225,7 @@
                     dpPercent: plan === 'dp_then_remaining' ? 30 : undefined,
                     dpAmount: plan === 'dp_then_remaining' ? Math.round(order.total * 0.3) : undefined
                 };
-                
+
                 return {
                     ...order,
                     paymentPlan: plan,
@@ -231,7 +237,7 @@
             }
             return order;
         });
-        
+
         selectedOrder = getOrderById(selectedOrderId);
     }
 
@@ -269,15 +275,23 @@
 
             const result = await response.json();
 
+            if (response.status === 401) {
+                throw new Error('Sesi Anda telah berakhir. Silakan pilih kembali akun.');
+            }
+
+            if (response.status === 403) {
+                throw new Error('Anda tidak memiliki akses untuk mengunggah bukti pada pesanan ini.');
+            }
+
             if (!response.ok) {
                 throw new Error(result.message || 'Gagal mengunggah bukti pembayaran.');
             }
 
             alert(result.message || 'Bukti pembayaran berhasil diunggah.');
-            
+
             // Reload all orders to get updated status and proof metadata
             await loadOrders();
-            
+
             // Refresh selected order in modal
             selectedOrder = getOrderById(selectedOrderId);
             uploadNote = '';
@@ -302,7 +316,7 @@
             <h1 class="text-4xl font-black text-brand-charcoal dark:text-white tracking-tighter uppercase italic">Pesanan <span class="text-brand-primary">Saya</span> 🛍️</h1>
             <p class="text-zinc-500 font-medium mt-1">Pantau status pesanan aktif dan lihat riwayat katering Anda.</p>
         </div>
-        
+
         <div class="flex gap-4" in:fly={{ x: 20, duration: 500 }}>
             <div class="bg-white dark:bg-zinc-900 px-6 py-3 rounded-2xl border border-zinc-100 dark:border-zinc-800 shadow-sm flex items-center gap-3">
                 <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
@@ -328,7 +342,7 @@
                 <span class="text-4xl block">⚠️</span>
                 <h3 class="text-lg font-black text-red-700 dark:text-red-400 italic">Gagal Memuat Data</h3>
                 <p class="text-sm text-red-600/70 font-medium">{error}</p>
-                <button 
+                <button
                     onclick={loadOrders}
                     class="px-8 py-3 bg-red-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-700 transition-all shadow-lg shadow-red-600/20"
                 >
@@ -362,8 +376,8 @@
                 <div class="text-right flex flex-col items-end gap-2">
                     <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Total Tagihan</p>
                     <p class="text-2xl font-black text-brand-charcoal dark:text-white italic">{formatRupiah(selectedOrder.total)}</p>
-                    <a 
-                        href="/invoice/{selectedOrder.id}" 
+                    <a
+                        href="/invoice/{selectedOrder.id}"
                         target="_blank"
                         class="px-4 py-1.5 bg-brand-primary/10 text-brand-primary text-[9px] font-black uppercase tracking-widest rounded-lg hover:bg-brand-primary/20 transition-all flex items-center gap-2"
                     >
@@ -416,7 +430,7 @@
                 <!-- Payment Section -->
                 <div class="space-y-6">
                     <h4 class="text-xs font-black uppercase tracking-widest text-zinc-400">Informasi Pembayaran</h4>
-                    
+
                     {#if !selectedOrder.paymentPlan}
                         <!-- Plan Selection UI -->
                         <div class="bg-zinc-50 dark:bg-zinc-800 p-8 rounded-3xl border border-zinc-100 dark:border-zinc-800 space-y-8">
@@ -427,7 +441,7 @@
 
                             <div class="grid grid-cols-1 gap-4">
                                 <!-- Option: Full Prepaid -->
-                                <button 
+                                <button
                                     onclick={() => setPaymentPlan('full_prepaid')}
                                     class="text-left p-6 rounded-2xl border-2 transition-all group
                                     {selectedPlan === 'full_prepaid' ? 'bg-brand-primary/5 border-brand-primary' : 'bg-white dark:bg-zinc-900 border-zinc-100 dark:border-zinc-800 hover:border-zinc-200'}"
@@ -441,7 +455,7 @@
 
                                 <!-- Option: DP (Hanya untuk order >= 500k atau paket) -->
                                 {#if selectedOrder.total >= 500000 || selectedOrderHasPackageMenu}
-                                    <button 
+                                    <button
                                         onclick={() => setPaymentPlan('dp_then_remaining')}
                                         class="text-left p-6 rounded-2xl border-2 transition-all group
                                         {selectedPlan === 'dp_then_remaining' ? 'bg-blue-50/50 border-blue-500' : 'bg-white dark:bg-zinc-900 border-zinc-100 dark:border-zinc-800 hover:border-zinc-200'}"
@@ -456,7 +470,7 @@
 
                                 <!-- Option: COD (Hanya untuk order < 2jt) -->
                                 {#if selectedOrder.total < 2000000}
-                                    <button 
+                                    <button
                                         onclick={() => setPaymentPlan('cod_full')}
                                         class="text-left p-6 rounded-2xl border-2 transition-all group
                                         {selectedPlan === 'cod_full' ? 'bg-amber-50/50 border-amber-500' : 'bg-white dark:bg-zinc-900 border-zinc-100 dark:border-zinc-800 hover:border-zinc-200'}"
@@ -474,12 +488,12 @@
                                 <div class="space-y-4 pt-4 border-t border-zinc-100 dark:border-zinc-800" in:fade>
                                     <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Pilih Metode Transfer</p>
                                     <div class="flex gap-3">
-                                        <button 
+                                        <button
                                             onclick={() => selectedMethod = 'bank_transfer'}
                                             class="flex-1 py-3 rounded-xl border-2 text-[10px] font-black uppercase transition-all
                                             {selectedMethod === 'bank_transfer' ? 'bg-zinc-900 text-white border-zinc-900' : 'bg-white dark:bg-zinc-900 border-zinc-100 dark:border-zinc-800'}"
                                         >Bank Transfer</button>
-                                        <button 
+                                        <button
                                             onclick={() => selectedMethod = 'qris'}
                                             class="flex-1 py-3 rounded-xl border-2 text-[10px] font-black uppercase transition-all
                                             {selectedMethod === 'qris' ? 'bg-zinc-900 text-white border-zinc-900' : 'bg-white dark:bg-zinc-900 border-zinc-100 dark:border-zinc-800'}"
@@ -488,7 +502,7 @@
                                 </div>
                             {/if}
 
-                            <button 
+                            <button
                                 onclick={confirmPaymentPlan}
                                 disabled={!selectedPlan || (selectedPlan !== 'cod_full' && !selectedMethod)}
                                 class="w-full py-5 bg-brand-charcoal dark:bg-brand-primary text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-30 disabled:grayscale disabled:scale-100"
@@ -507,9 +521,9 @@
                                         <div>
                                             <p class="text-[9px] font-black text-white/40 uppercase tracking-widest mb-1">Status Pembayaran</p>
                                             <p class="text-lg font-black italic text-brand-primary uppercase tracking-tighter">
-                                                {selectedOrder.paymentStatus === 'paid' ? 'Lunas' : 
-                                                 selectedOrder.paymentStatus === 'partially_paid' ? 'DP Terbayar' : 
-                                                 selectedOrder.paymentStatus === 'waiting_verification' ? 'Menunggu Verifikasi' : 
+                                                {selectedOrder.paymentStatus === 'paid' ? 'Lunas' :
+                                                 selectedOrder.paymentStatus === 'partially_paid' ? 'DP Terbayar' :
+                                                 selectedOrder.paymentStatus === 'waiting_verification' ? 'Menunggu Verifikasi' :
                                                  selectedOrder.paymentStatus === 'cod_pending' ? 'COD / Bayar di Tempat' : 'Belum Bayar'}
                                             </p>
                                         </div>
@@ -570,7 +584,7 @@
                                                     <p class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">a.n. {primaryPayment.accountHolder}</p>
                                                 </div>
                                             </div>
-                                            
+
                                             {#if selectedOrder.paymentMethod === 'qris' && primaryPayment.qrImageUrl}
                                                 <div class="flex justify-center pt-4">
                                                     <div class="bg-white p-4 rounded-3xl border border-zinc-100 shadow-xl group">
@@ -588,7 +602,7 @@
                                                 {formatRupiah(selectedOrderUploadAmount)}
                                             </p>
                                         </div>
-                                        
+
                                         <textarea bind:value={uploadNote} rows="2" class="w-full px-5 py-4 bg-white dark:bg-zinc-900 border-none rounded-2xl text-xs font-medium focus:ring-2 focus:ring-brand-primary shadow-inner" placeholder="Catatan tambahan (opsional)..."></textarea>
 
                                         <label class="relative block w-full group">
@@ -627,8 +641,8 @@
                                                 <div class="flex-1 min-w-0">
                                                     <div class="flex justify-between items-start mb-1">
                                                         <span class="text-[10px] font-black uppercase tracking-tighter px-2 py-0.5 rounded
-                                                            {proof.stage === 'dp' ? 'bg-blue-100 text-blue-600' : 
-                                                             proof.stage === 'remaining' ? 'bg-purple-100 text-purple-600' : 
+                                                            {proof.stage === 'dp' ? 'bg-blue-100 text-blue-600' :
+                                                             proof.stage === 'remaining' ? 'bg-purple-100 text-purple-600' :
                                                              'bg-zinc-100 text-zinc-600'}">
                                                             {proof.stage === 'dp' ? 'Uang Muka' : proof.stage === 'remaining' ? 'Pelunasan' : 'Penuh'}
                                                         </span>
@@ -637,14 +651,14 @@
                                                     <p class="text-xs font-black italic text-brand-charcoal dark:text-white truncate">{formatRupiah(proof.amount)}</p>
                                                     <div class="flex items-center gap-2 mt-1">
                                                         <span class="text-[9px] font-black uppercase tracking-widest
-                                                            {proof.status === 'verified' ? 'text-emerald-500' : 
+                                                            {proof.status === 'verified' ? 'text-emerald-500' :
                                                              proof.status === 'rejected' ? 'text-red-500' : 'text-amber-500'}">
                                                             {proof.status === 'verified' ? 'Terverifikasi ✓' : proof.status === 'rejected' ? 'Ditolak ✗' : 'Menunggu •'}
                                                         </span>
                                                     </div>
                                                 </div>
                                             </div>
-                                            
+
                                             {#if proof.status === 'rejected'}
                                                 <div class="px-4 py-3 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-100 dark:border-red-900/30 -mt-1 ml-4 border-l-4">
                                                     <p class="text-[9px] font-black text-red-600 uppercase tracking-widest mb-1">Alasan Penolakan:</p>
