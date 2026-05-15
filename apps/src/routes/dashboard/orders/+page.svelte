@@ -400,7 +400,7 @@
                         target="_blank"
                         class="px-4 py-1.5 bg-brand-primary/10 text-brand-primary text-[9px] font-black uppercase tracking-widest rounded-lg hover:bg-brand-primary/20 transition-all flex items-center gap-2"
                     >
-                        📄 Lihat Invoice
+                        📄 Lihat Invoice Internal
                     </a>
                 </div>
             </div>

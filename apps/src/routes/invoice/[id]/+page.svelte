@@ -3,12 +3,16 @@
     import { page } from '$app/state';
     import { getOrderSourceLabel } from '$lib/utils/reporting';
     import { mockBusinessProfile } from '$lib/mock/business';
-    import { fade, fly } from 'svelte/transition';
+    import { getPrimaryPaymentAccount, getActivePaymentAccounts } from '$lib/mock/paymentAccounts';
+    import { fade, fly, scale } from 'svelte/transition';
 
     let orderId = $derived(page.params.id);
     let order = $state<any>(null);
     let loading = $state(true);
     let error = $state('');
+
+    const primaryPayment = getPrimaryPaymentAccount();
+    const activePayments = getActivePaymentAccounts();
 
     async function loadOrder() {
         if (!orderId) return;
@@ -80,6 +84,9 @@
             default: return 'text-zinc-500';
         }
     };
+
+    const paidAmount = $derived(order?.payment?.paidAmount ?? 0);
+    const remainingAmount = $derived(order ? (order.total - paidAmount) : 0);
 </script>
 
 <svelte:head>
@@ -117,6 +124,12 @@
             class="invoice-container bg-white dark:bg-zinc-900 print:bg-white print:text-black print:shadow-none shadow-2xl rounded-[3rem] overflow-hidden border border-zinc-100 dark:border-zinc-800 print:border-none"
             in:fly={{ y: 20, duration: 600 }}
         >
+            <!-- Document Header Badge -->
+            <div class="bg-brand-charcoal dark:bg-brand-primary py-3 px-10 flex justify-between items-center print:bg-zinc-100 print:text-black">
+                <span class="text-[10px] font-black text-white/50 uppercase tracking-[0.3em] print:text-zinc-500">Official Internal Invoice</span>
+                <span class="text-[10px] font-black text-white uppercase tracking-[0.3em] italic print:text-zinc-800">Commercial Billing</span>
+            </div>
+
             <!-- Header Section -->
             <div class="p-10 md:p-16 border-b border-zinc-50 dark:border-zinc-800 flex flex-col md:flex-row justify-between gap-10">
                 <div class="space-y-6">
@@ -228,7 +241,42 @@
             </div>
 
             <!-- Totals Section -->
-            <div class="p-10 md:p-16 bg-zinc-50/50 dark:bg-zinc-800/30 print:bg-zinc-50/30 border-t border-zinc-100 dark:border-zinc-800 print:border-zinc-200 flex justify-end">
+            <div class="p-10 md:p-16 bg-zinc-50/50 dark:bg-zinc-800/30 print:bg-zinc-50/30 border-t border-zinc-100 dark:border-zinc-800 print:border-zinc-200 flex flex-col md:flex-row justify-between gap-10">
+                <!-- Payment Instructions -->
+                <div class="flex-1 max-w-sm space-y-6">
+                    <h3 class="text-[10px] font-black uppercase tracking-widest text-zinc-400">Instruksi Pembayaran Manual:</h3>
+                    {#if order.paymentMethod === 'cod'}
+                        <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-900/30 p-6 rounded-2xl">
+                            <p class="text-[9px] font-black text-amber-600 uppercase tracking-widest mb-2">🚚 Bayar di Tempat (COD)</p>
+                            <p class="text-xs text-amber-700 dark:text-amber-400 font-medium leading-relaxed">
+                                Silakan siapkan dana tunai sebesar <span class="font-black italic">{formatRupiah(order.total)}</span> saat pesanan diantar.
+                            </p>
+                        </div>
+                    {:else}
+                        <div class="space-y-4">
+                            {#if order.paymentMethod === 'qris' && primaryPayment?.type === 'qris'}
+                                <div class="bg-white dark:bg-zinc-950 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800 inline-block shadow-lg">
+                                    <img src={primaryPayment.qrImageUrl} alt="QRIS" class="w-32 h-32 object-contain mx-auto" />
+                                    <p class="text-[8px] font-black text-center mt-2 uppercase tracking-widest text-zinc-400">Scan QRIS Tien's Catering</p>
+                                </div>
+                            {:else if primaryPayment}
+                                <div class="bg-white dark:bg-zinc-950 p-6 rounded-2xl border border-zinc-100 dark:border-zinc-800 shadow-sm space-y-2">
+                                    <div class="flex justify-between items-center">
+                                        <p class="text-[9px] font-black text-zinc-400 uppercase tracking-widest">{primaryPayment.bankName}</p>
+                                        <span class="text-[8px] font-black bg-brand-primary/10 text-brand-primary px-1.5 py-0.5 rounded">Primary</span>
+                                    </div>
+                                    <p class="text-xl font-black italic tracking-widest text-brand-charcoal dark:text-white">{primaryPayment.accountNumber}</p>
+                                    <p class="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">a.n. {primaryPayment.accountHolder}</p>
+                                </div>
+                            {/if}
+                            <p class="text-[9px] text-zinc-400 font-medium italic">
+                                * Pembayaran akan diverifikasi secara manual oleh CS/Admin setelah bukti diunggah atau dikirim via WhatsApp.
+                            </p>
+                        </div>
+                    {/if}
+                </div>
+
+                <!-- Billing Summary -->
                 <div class="w-full md:w-80 space-y-4">
                     <div class="flex justify-between items-center">
                         <span class="text-[10px] font-black uppercase tracking-widest text-zinc-400">Subtotal</span>
@@ -246,8 +294,25 @@
                         <span class="text-sm font-bold text-zinc-700 dark:text-zinc-300 print:text-black">{formatRupiah(order.deliveryFee)}</span>
                     </div>
                     <div class="pt-4 border-t border-zinc-200 dark:border-zinc-700 print:border-zinc-300 flex justify-between items-center">
-                        <span class="text-xs font-black uppercase tracking-widest text-brand-charcoal dark:text-white print:text-black">Total Akhir</span>
-                        <span class="text-2xl font-black italic text-brand-primary tracking-tighter">{formatRupiah(order.total)}</span>
+                        <span class="text-xs font-black uppercase tracking-widest text-brand-charcoal dark:text-white print:text-black">Total Tagihan</span>
+                        <span class="text-2xl font-black italic text-brand-charcoal dark:text-white tracking-tighter">{formatRupiah(order.total)}</span>
+                    </div>
+                    <!-- Additional Billing Info -->
+                    <div class="pt-4 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-[10px] font-black uppercase tracking-widest text-emerald-500">Paid Amount</span>
+                            <span class="text-sm font-bold text-emerald-600">{formatRupiah(paidAmount)}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-[10px] font-black uppercase tracking-widest text-amber-600">Remaining</span>
+                            <span class="text-sm font-bold text-amber-700">{formatRupiah(remainingAmount)}</span>
+                        </div>
+                        <div class="pt-2 border-t border-dashed border-zinc-200 dark:border-zinc-700">
+                             <div class="flex justify-between items-center">
+                                <span class="text-[10px] font-black uppercase tracking-widest text-zinc-400">Final Status</span>
+                                <span class="text-xs font-black uppercase italic {paymentColor(order.paymentStatus)}">{paymentLabel(order.paymentStatus)}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -255,13 +320,25 @@
             <!-- Footer Section -->
             <div class="p-10 border-t border-zinc-50 dark:border-zinc-800 print:border-zinc-200 text-center space-y-4">
                 <p class="text-[10px] font-black text-zinc-300 uppercase tracking-[0.2em] italic">Terima kasih atas pesanan Anda</p>
-                <div class="bg-zinc-50 dark:bg-zinc-950 p-6 rounded-2xl border border-zinc-100 dark:border-zinc-800 print:border-zinc-200 mx-auto max-w-lg">
-                    <p class="text-[9px] font-medium text-zinc-400 leading-relaxed">
-                        Dokumen ini adalah <span class="font-black text-zinc-500">Commercial Invoice Basic</span>. Bukti rincian pesanan yang sah untuk transaksi di Tien's Catering. 
-                        Harap diperhatikan bahwa dokumen ini <span class="text-red-500 font-bold">bukan e-Faktur Pajak resmi</span> dan tidak menggantikan dokumen perpajakan legal.
-                    </p>
-                    <p class="text-[9px] font-medium text-zinc-400 leading-relaxed mt-3">
-                        Status pembayaran mencerminkan data terakhir di sistem kami. Jika ada ketidaksesuaian, hubungi kami di {mockBusinessProfile.whatsappDisplay}.
+                <div class="bg-zinc-50 dark:bg-zinc-950 p-6 rounded-2xl border border-zinc-100 dark:border-zinc-800 print:border-zinc-200 mx-auto max-w-2xl">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+                        <div class="space-y-2">
+                            <h4 class="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Wajib Diketahui:</h4>
+                            <p class="text-[8px] font-medium text-zinc-400 leading-relaxed">
+                                Dokumen ini adalah <span class="font-black text-zinc-500 uppercase">Commercial Billing / Internal Invoice</span> resmi dari Tien's Catering.
+                                Berfungsi sebagai rincian pesanan dan instruksi penagihan internal.
+                            </p>
+                        </div>
+                        <div class="space-y-2">
+                            <h4 class="text-[9px] font-black text-red-500 uppercase tracking-widest">Disclaimer Non e-Faktur:</h4>
+                            <p class="text-[8px] font-medium text-zinc-400 leading-relaxed">
+                                Dokumen ini <span class="text-red-500 font-bold uppercase">Bukan e-Faktur Pajak Pemerintah</span>.
+                                Bukan merupakan bukti pelaporan pajak resmi negara. Status pembayaran mengikuti data terakhir di sistem kami.
+                            </p>
+                        </div>
+                    </div>
+                    <p class="text-[8px] font-medium text-zinc-400 leading-relaxed mt-4 pt-4 border-t border-zinc-100 dark:border-zinc-800 italic">
+                        Jika ada ketidaksesuaian data, harap segera hubungi Customer Service kami di {mockBusinessProfile.whatsappDisplay}.
                     </p>
                 </div>
             </div>
@@ -278,14 +355,25 @@
             padding: 0 !important;
         }
 
+        :global(nav), :global(.persona-switcher) {
+            display: none !important;
+        }
+
         .max-w-4xl {
             max-width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
         }
 
         .invoice-container {
             border: none !important;
             border-radius: 0 !important;
             box-shadow: none !important;
+            width: 100% !important;
+        }
+
+        .print\:hidden {
+            display: none !important;
         }
     }
 </style>
