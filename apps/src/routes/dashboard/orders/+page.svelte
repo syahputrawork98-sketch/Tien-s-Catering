@@ -647,11 +647,22 @@
 											</p>
 										</div>
 										<div class="flex items-center justify-between">
-											<p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Manual Payment Proof ({selectedOrder.paymentStatus === 'partially_paid' ? 'Pelunasan' : 'Pembayaran'})</p>
+											<p class="text-[10px] font-black {selectedOrder.paymentStatus === 'rejected' ? 'text-red-500' : 'text-zinc-400'} uppercase tracking-widest">
+												{#if selectedOrder.paymentStatus === 'rejected'}
+													Perbaikan Bukti Pembayaran
+												{:else}
+													Manual Payment Proof ({selectedOrder.paymentStatus === 'partially_paid' ? 'Pelunasan' : 'Pembayaran'})
+												{/if}
+											</p>
 											<p class="text-[10px] font-black text-brand-primary italic uppercase tracking-widest">
 												{formatRupiah(selectedOrderUploadAmount)}
 											</p>
 										</div>
+										{#if selectedOrder.paymentStatus === 'rejected'}
+											<p class="text-[9px] font-bold text-red-500 italic uppercase">
+												Status akan kembali ke "Menunggu Verifikasi" setelah dikirim ulang.
+											</p>
+										{/if}
 
 										<textarea bind:value={uploadNote} rows="2" class="w-full px-5 py-4 bg-white dark:bg-zinc-900 border-none rounded-2xl text-xs font-medium focus:ring-2 focus:ring-brand-primary shadow-inner" placeholder="Catatan tambahan (opsional)..."></textarea>
 
@@ -661,10 +672,16 @@
                                                 {#if isUploading}
                                                     <span class="animate-spin text-2xl">🌀</span>
                                                     <span class="text-xs font-black uppercase tracking-widest italic">Memproses (Simulasi)...</span>
-                                                {:else}
-                                                    <span class="text-2xl">📤</span>
-                                                    <span class="text-xs font-black uppercase tracking-widest italic">Simulasi Kirim Bukti</span>
-                                                {/if}
+												{:else}
+													<span class="text-2xl">📤</span>
+													<span class="text-xs font-black uppercase tracking-widest italic">
+														{#if selectedOrder.paymentStatus === 'rejected'}
+															Kirim Ulang Bukti (Resubmit)
+														{:else}
+															Simulasi Kirim Bukti
+														{/if}
+													</span>
+												{/if}
                                             </div>
                                         </label>
                                     </div>
