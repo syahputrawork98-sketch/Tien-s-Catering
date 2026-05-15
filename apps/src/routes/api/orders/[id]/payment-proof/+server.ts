@@ -1,11 +1,25 @@
 import { json } from '@sveltejs/kit';
-import { uploadPaymentProof } from '$lib/server/services/orderService';
+import { uploadPaymentProof, getOrder } from '$lib/server/services/orderService';
+import { requireAuth } from '$lib/server/utils/authGuard';
 import type { RequestHandler } from './$types';
 
-export const POST: RequestHandler = async ({ params, request }) => {
+export const POST: RequestHandler = async ({ params, request, cookies }) => {
+	const { user, error: authError } = await requireAuth(cookies);
+	if (authError) return authError;
+
 	const orderId = params.id;
 	if (!orderId) {
 		return json({ message: 'Order ID wajib diisi.' }, { status: 400 });
+	}
+
+	const order = getOrder(orderId);
+	if (!order) {
+		return json({ message: 'Order tidak ditemukan.' }, { status: 404 });
+	}
+
+	// Ownership check for CUSTOMER
+	if (user?.role === 'CUSTOMER' && order.userId !== user.id) {
+		return json({ message: 'Forbidden. Anda tidak memiliki akses ke pesanan ini.' }, { status: 403 });
 	}
 
 	try {
@@ -31,7 +45,6 @@ export const POST: RequestHandler = async ({ params, request }) => {
 		}
 
 		// Simulation: Convert file to base64 Data URL for local DB storage
-		// This avoids file system permission issues in dev environment
 		const arrayBuffer = await file.arrayBuffer();
 		const buffer = Buffer.from(arrayBuffer);
 		const base64 = buffer.toString('base64');
@@ -39,7 +52,7 @@ export const POST: RequestHandler = async ({ params, request }) => {
 
 		const result = uploadPaymentProof(orderId, {
 			fileName: file.name,
-			filePath: dataUrl, // Storing data URL as path for local simulation
+			filePath: dataUrl,
 			mimeType: file.type,
 			fileSize: file.size
 		});
@@ -55,7 +68,9 @@ export const POST: RequestHandler = async ({ params, request }) => {
 				id: result.proof.id,
 				fileName: result.proof.fileName,
 				uploadedAt: result.proof.uploadedAt
-			}
+			},
+			actorRole: user?.role,
+			actorAccountId: user?.id
 		});
 	} catch (error) {
 		console.error('Error uploading payment proof:', error);

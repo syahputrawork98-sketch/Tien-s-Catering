@@ -5,7 +5,7 @@ import { requireRole } from '$lib/server/utils/authGuard';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ cookies }) => {
-	const { error } = await requireRole(cookies, ['ADMIN']);
+	const { user, error } = await requireRole(cookies, ['ADMIN']);
 	if (error) return error;
 
 	try {
@@ -15,6 +15,8 @@ export const GET: RequestHandler = async ({ cookies }) => {
 		return json({
 			items,
 			summary,
+			actorRole: user?.role,
+			actorAccountId: user?.id,
 			note: 'Report berbasis data SQLite lokal. Revenue final mencakup pesanan PAID atau COMPLETED/DELIVERED.'
 		});
 	} catch (err) {

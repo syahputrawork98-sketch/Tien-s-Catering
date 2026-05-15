@@ -20,7 +20,11 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
 		}
 
 		const items = getOrders(queryUserId ? { userId: queryUserId } : undefined);
-		return json({ items });
+		return json({
+			items,
+			actorRole: user?.role,
+			actorAccountId: user?.id
+		});
 	} catch (err) {
 		console.error('Failed to fetch local orders.', err);
 		return json({ message: 'Gagal mengambil data order.' }, { status: 500 });

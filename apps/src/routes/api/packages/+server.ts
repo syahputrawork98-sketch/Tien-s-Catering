@@ -14,7 +14,7 @@ export const GET: RequestHandler = async () => {
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
 	const { requireRole } = await import('$lib/server/utils/authGuard');
-	const { error } = await requireRole(cookies, ['ADMIN', 'CS']);
+	const { user, error } = await requireRole(cookies, ['ADMIN', 'CS']);
 	if (error) return error;
 
 	let payload: any;
@@ -31,7 +31,11 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			return json({ message: result.message }, { status: result.status });
 		}
 
-		return json({ item: result.item }, { status: 201 });
+		return json({
+			item: result.item,
+			actorRole: user?.role,
+			actorAccountId: user?.id
+		}, { status: 201 });
 	} catch (err) {
 		console.error('Failed to create package.', err);
 		return json({ message: 'Gagal membuat paket.' }, { status: 500 });

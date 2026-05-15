@@ -1,8 +1,12 @@
 import { json } from '@sveltejs/kit';
 import { convertPackageRequestToOrder } from '$lib/server/services/packageRequestService';
+import { requireRole } from '$lib/server/utils/authGuard';
 import type { RequestHandler } from './$types';
 
-export const POST: RequestHandler = async ({ params }) => {
+export const POST: RequestHandler = async ({ params, cookies }) => {
+	const { user, error: authError } = await requireRole(cookies, ['ADMIN', 'CS']);
+	if (authError) return authError;
+
 	try {
 		const result = convertPackageRequestToOrder(params.id);
 		
@@ -13,7 +17,9 @@ export const POST: RequestHandler = async ({ params }) => {
 		return json({ 
 			message: 'Request paket berhasil dikonversi menjadi order.',
 			orderId: result.orderId,
-			orderNumber: result.orderNumber
+			orderNumber: result.orderNumber,
+			actorRole: user?.role,
+			actorAccountId: user?.id
 		});
 	} catch (error) {
 		console.error('Failed to convert package request to order.', error);

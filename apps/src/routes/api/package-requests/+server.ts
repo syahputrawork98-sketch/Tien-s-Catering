@@ -17,7 +17,11 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
 		}
 
 		const items = getPackageRequests(queryUserId ? { userId: queryUserId } : undefined);
-		return json({ items });
+		return json({
+			items,
+			actorRole: user?.role,
+			actorAccountId: user?.id
+		});
 	} catch (err) {
 		console.error('Failed to fetch package requests.', err);
 		return json({ message: 'Gagal mengambil data request paket.' }, { status: 500 });
