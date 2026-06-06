@@ -55,6 +55,14 @@ Referensi eksternal yang pernah dipakai selama perencanaan hanya berfungsi sebag
 - reduced risk of AI reading conflicting instructions
 - did not touch application code
 
+### F00F — Restore Core Room Prompts
+- restored ROOM_00_MANAGER_PROMPT.md
+- restored ROOM_01_REVIEWER_PROMPT.md
+- kept ADD_INSTRUCTIONS_CHATGPT_COM.md as the only ChatGPT.com Add Instructions file
+- kept workflow active files limited to WORKING_SYSTEM.md, BATCH_GATE.md, and SCOPE_GUARD.md
+- did not recreate deprecated onboarding files
+- did not touch application code
+
 ## Important Notes
 - File name may still contain old planning reference for continuity.
 - Active project identity is TC Tien’s Catering.
@@ -72,4 +80,5 @@ F01A — Existing TC Application Inventory
 - [ ] F00C correction log added
 - [ ] F00D correction log added
 - [ ] F00E correction log added
+- [ ] F00F correction log added
 - [ ] apps/ untouched
