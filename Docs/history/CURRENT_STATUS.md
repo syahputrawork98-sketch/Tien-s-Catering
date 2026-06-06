@@ -1,40 +1,41 @@
-# TC Tien’s Catering — Current Status
+# Current Application Status — TC Tien’s Catering
 
-## Current Batch
-F00G — Repair Add Instructions File After Truncated Update
+## Last Updated
+2026-06-07
 
-## Mode
-Emergency documentation repair only
+## Overall Status
+TC adalah existing project dengan aplikasi yang sudah berjalan, bukan project kosong. File ini mencatat status terkini dari masing-masing area fungsional aplikasi berdasarkan bukti dari repositori.
 
-## Current Priority
-Review and accept F00G, then continue to F01A — Existing TC Application Inventory.
+F01A (Existing TC Application Inventory) baru saja dieksekusi. Hasil detail dapat dilihat di `Docs/history/features/F01_EXISTING_TC_APPLICATION_INVENTORY.md`.
 
-## Application Status
-Existing TC application is preserved.
+## Working / Stable
+Not confirmed yet
 
-## Active Onboarding Files
-- Docs/project/onboarding/ADD_INSTRUCTIONS_CHATGPT_COM.md
-- Docs/project/onboarding/ROOM_00_MANAGER_PROMPT.md
-- Docs/project/onboarding/ROOM_01_REVIEWER_PROMPT.md
+## Partially Working
+Not confirmed yet
 
-## Active Workflow Files
-- Docs/project/workflow/WORKING_SYSTEM.md
-- Docs/project/workflow/BATCH_GATE.md
-- Docs/project/workflow/SCOPE_GUARD.md
+## Not Working / Broken
+Not confirmed yet
 
-## Active History Layer
-Docs/history/
+## Pending / Not Yet Checked
+- Keseluruhan area aplikasi (Frontend, Backend/API, Database, dll) telah diinventarisir secara struktur (F01A), namun fungsionalitas per modul belum diuji satu per satu. Fitur F02-F08 terkonfirmasi berstatus "Existing but Partial".
 
-## Archive Layer
-Docs/archive/
+## Known Issues
+Not confirmed yet
 
-## Legacy Docs
-- Old `Docs/project-control/` archived in `Docs/archive/project-control-legacy/`
-- Old root Docs files archived in `Docs/archive/legacy-root-docs/`
-- Provisional feature files F02-F08 archived until F01 inventory is completed
+## Risk / HOLD Areas
+Area berikut adalah area sensitif yang tidak boleh dibuka atau diubah tanpa approval user dan Room 01 review:
+- auth
+- role/permission
+- database
+- payment
+- deployment
+- security
+- production readiness
+- domain/SSL
+- cloud storage
+- legal/tax/e-Faktur
 
-## Important Rule
-Only one ChatGPT instruction file is active.
-Do not recreate deleted onboarding or workflow reference files unless explicitly requested by the user.
-TC has its own internal Project Working System.
-Do not describe TC as actively using or following WPWK in current operational documents.
+## Next Priority
+- Lanjut ke F01B — Sync Current Status and Feature History (untuk memfinalisasi status paska inventory).
+- Jangan aktifkan F02-F08 sebelum F01 inventory direview dan accepted.
