@@ -3,7 +3,7 @@
 | Feature Batch | Feature Name | Area | Status | Reason / Notes | Next Step | Detail File |
 |---|---|---|---|---|---|---|
 | F00 | TC Project Working System Foundation | docs/project + docs/history | Ready for Acceptance | Final repair Add Instructions selesai; struktur aktif sudah stabil dengan 3 onboarding files dan 3 workflow files | User acceptance, then F01A — Existing Application Inventory | features/F00_TC_WPWK_WORKFLOW_ADOPTION.md |
-| F01 | Existing TC Application Inventory | app/docs | Under Review | Laporan inventarisasi aplikasi (F01A) telah dibuat dan menunggu peninjauan | F01B — Sync Current Status | features/F01_EXISTING_TC_APPLICATION_INVENTORY.md |
+| F01 | Existing TC Application Inventory | app/docs | Accepted with Notes | Laporan inventarisasi aplikasi (F01A) telah disinkronkan (F01B) | Next: Prepare F02 | features/F01_EXISTING_TC_APPLICATION_INVENTORY.md |
 
 ## Provisional / Archived Feature Candidates
 
