@@ -1,10 +1,10 @@
 # TC Tien’s Catering — Current Status
 
 ## Current Batch
-F00C — Project Working System Wording Correction
+F00D — Onboarding Hardening & Add Instructions Finalization
 
 ## Mode
-Documentation wording correction only
+Documentation onboarding hardening only
 
 ## Application Status
 Existing TC application is preserved.

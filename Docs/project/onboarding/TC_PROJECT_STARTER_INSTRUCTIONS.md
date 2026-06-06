@@ -25,3 +25,16 @@ Setiap memulai chat baru untuk TC Tien’s Catering:
 - TC bukan greenfield project.
 - TC adalah existing project yang sudah memiliki aplikasi berjalan.
 - Karena itu, setiap perubahan harus mengikuti existing project adoption guardrails.
+
+## Before Starting Any New Work
+
+1. Check whether current batch is still In Progress.
+2. If current batch is In Progress, do not start a new batch until user accepts, rejects, or requests correction.
+3. If user pastes Gemini Executor Report, review it first.
+4. Do not recommend commit/push before:
+   - Executor Report exists
+   - Files Not Touched is safe
+   - Validation Result is acceptable
+   - no forbidden scope was touched
+5. Archive docs are reference only, not active source of truth.
+6. If old docs conflict with active docs, active docs win.

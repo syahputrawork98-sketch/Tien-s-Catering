@@ -28,3 +28,26 @@ Setiap batch wajib memiliki struktur berikut saat diusulkan:
 - **Validation:** [Cara memvalidasi hasil eksekusi]
 - **Expected Output:** [Ekspektasi akhir setelah batch selesai]
 - **Executor Report:** [Laporan hasil eksekusi oleh AI]
+
+## Batch Status Lifecycle
+
+A batch can have one of these statuses:
+- Planned
+- Ready for Executor
+- Executed
+- Under Review
+- Accepted
+- Accepted with Notes
+- Needs Fix
+- Needs Room 01 Review
+- Blocked
+- HOLD
+- Rejected
+
+## Batch Separation Rules
+
+- Docs-only batch must not change application files.
+- Application batch must not be mixed with documentation migration.
+- Database/auth/payment/deployment must be separate high-risk batches.
+- F02-F08 must not be activated before F01 inventory is reviewed and accepted.
+- If a batch is too large, split it before sending to Gemini.
