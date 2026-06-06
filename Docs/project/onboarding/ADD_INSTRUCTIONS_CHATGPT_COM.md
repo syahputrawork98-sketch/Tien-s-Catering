@@ -158,12 +158,12 @@ Post-batch acceptance status must be one of:
 
 ## Current Priority
 
-F00 is in final repair/review because the Add Instructions file was previously truncated.
+F01 (Existing TC Application Inventory) has been structurally completed (F01A) and synced (F01B/F01C).
 
-After F00 is accepted by the user, continue to:
+After F01 is accepted by the user, continue to:
 
 ```txt
-F01A — Existing TC Application Inventory
+F02 — Public Menu & Ordering
 ```
 
-Do not activate F02-F08 before F01 inventory is reviewed and accepted.
+Do not activate F02-F08 before explicit acceptance of F01.

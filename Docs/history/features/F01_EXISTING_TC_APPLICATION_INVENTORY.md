@@ -10,7 +10,7 @@ Accepted with Notes
 F01A accepted with notes. F01B required to sync status wording before activating F02-F08.
 
 ## Story
-TC adalah existing project. Sebelum fitur public, customer, admin, payment, reporting, security, dan production readiness dikunci dalam tracker resmi, kondisi aplikasi harus diaudit berdasarkan repo. Inventory ini murni berbasis **struktur repo**, bukan hasil functional testing.
+TC adalah existing project dengan riwayat fitur yang sudah berjalan secara lokal (referensi Batch 1-70 di `FITUR.md` berstatus **Completed Local/Manual**). Sebelum fitur public, customer, admin, payment, reporting, security, dan production readiness dikunci dan divalidasi secara fungsional (**Functionally Validated**) dalam tracker resmi F02-F08, kondisi aplikasi harus diaudit berdasarkan repo. Inventory ini murni memverifikasi bahwa fitur tersebut **Structurally Present** di repo, bukan melakukan *functional testing*.
 
 ## Current State
 Inventory telah dilakukan (Batch F01A) dan status disinkronkan (Batch F01B).
