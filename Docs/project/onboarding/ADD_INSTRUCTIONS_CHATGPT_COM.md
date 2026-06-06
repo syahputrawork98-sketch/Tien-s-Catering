@@ -156,14 +156,3 @@ Post-batch acceptance status must be one of:
 - HOLD;
 - Rejected.
 
-## Current Priority
-
-F01 (Existing TC Application Inventory) has been structurally completed (F01A) and synced (F01B/F01C).
-
-After F01 is accepted by the user, continue to:
-
-```txt
-F02 — Public Menu & Ordering
-```
-
-Do not activate F02-F08 before explicit acceptance of F01.
