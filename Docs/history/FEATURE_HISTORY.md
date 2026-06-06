@@ -2,7 +2,7 @@
 
 | Feature Batch | Feature Name | Area | Status | Reason / Notes | Next Step | Detail File |
 |---|---|---|---|---|---|---|
-| F00 | TC Project Working System Foundation | docs/project + docs/history | In Progress | Menyederhanakan instruksi aktif agar hanya ada satu Add Instructions dan tiga workflow files | F00E — Simplification Cleanup | features/F00_TC_WPWK_WORKFLOW_ADOPTION.md |
+| F00 | TC Project Working System Foundation | docs/project + docs/history | Ready for Acceptance | Final repair Add Instructions selesai; struktur aktif sudah stabil dengan 3 onboarding files dan 3 workflow files | User acceptance, then F01A — Existing Application Inventory | features/F00_TC_WPWK_WORKFLOW_ADOPTION.md |
 | F01 | Existing TC Application Inventory | app/docs | Planned | Inventory aplikasi existing harus dilakukan sebelum feature files F02-F08 diaktifkan | F01A — Existing Application Inventory | features/F01_EXISTING_TC_APPLICATION_INVENTORY.md |
 
 ## Provisional / Archived Feature Candidates
