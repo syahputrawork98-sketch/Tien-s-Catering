@@ -1,7 +1,7 @@
 # Pusat Workflow Resmi TC (Tien's Catering)
 
 Folder ini adalah pusat workflow resmi untuk proyek Tien's Catering (TC).
-TC saat ini mengadaptasi cara kerja WPWK.
+TC menggunakan sistem kerja internal yang terstruktur dan terkontrol.
 
 **Penting:**
 - Adaptasi ini **tidak mengubah struktur aplikasi TC**.

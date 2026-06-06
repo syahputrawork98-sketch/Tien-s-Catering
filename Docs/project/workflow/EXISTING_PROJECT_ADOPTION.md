@@ -4,7 +4,7 @@ TC adalah sebuah *existing project*. Oleh karena itu, kita perlu berhati-hati da
 
 ## Aturan Penting
 
-1. Jangan mengubah struktur aplikasi hanya demi mengikuti WPWK.
+1. Jangan mengubah struktur aplikasi hanya demi mengikuti template eksternal apa pun.
 2. Jangan memindahkan aplikasi ke struktur client/server.
 3. Jangan menghapus dokumentasi lama tanpa melakukan arsip terlebih dahulu.
 4. Mulai semua pengerjaan dari proses mapping, inventory, dan feature tracker.

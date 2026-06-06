@@ -1,25 +1,56 @@
-# F00 — TC WPWK Workflow Adoption
+# F00 — TC Project Working System Foundation
 
 ## Status
 In Progress
 
 ## Area
-docs/project + docs/history
+Docs/project + Docs/history
 
 ## Purpose
-Migrasi workflow dan cara kerja TC agar mengikuti WPWK-style control layer. Tujuannya adalah membuat pemisahan yang jelas antara aturan (project), status terkini (history), dan dokumen usang (archive). F00 khusus untuk foundation workflow ini dan bukan fitur aplikasi.
+Membentuk sistem kerja internal TC yang rapi, aman, bertahap, dan terkontrol tanpa mengubah aplikasi TC yang sudah ada.
 
-## Current Understanding
-Batch ini hanya melakukan dokumentasi dan tidak menyentuh kode aplikasi. Aplikasi sudah berjalan (existing) dan tetap dipertahankan strukturnya tanpa perubahan arsitektur. F00A telah membuat control dan history layer awal. F00B sedang berjalan untuk memperbaiki arsip, panduan onboarding, dan menstabilkan feature tracker. Batch berikutnya, F01, akan fokus pada inventory aplikasi.
+## Current Framing
+TC tidak ditulis sebagai project yang “memakai WPWK”.
+TC memiliki sistem kerja internal sendiri.
 
-## HOLD / Risk Notes
-- Tidak ada risiko teknis terkait aplikasi.
-- Risiko administratif: memastikan dokumen lama terarsip rapi.
-- Aplikasi sama sekali tidak disentuh dalam F00.
+Referensi eksternal yang pernah dipakai selama perencanaan hanya berfungsi sebagai inspirasi awal, bukan sebagai identitas project aktif.
+
+## Work Log
+
+### F00A — Control Layer Migration
+- membuat Docs/project/
+- membuat Docs/history/
+- memindahkan Docs/project-control/ ke archive
+- membuat feature tracker awal
+- tidak menyentuh aplikasi
+
+### F00B — Correction & Stabilization
+- mengarsipkan file lama di root Docs/
+- menambahkan onboarding instructions
+- menambahkan workflow scenarios
+- menambahkan model usage guide
+- mengarsipkan provisional F02-F08
+- tidak menyentuh aplikasi
+
+### F00C — Wording Correction
+- menghapus wording aktif yang menyatakan TC memakai/mengikuti WPWK
+- mengganti dengan istilah TC Project Working System
+- mempertahankan catatan historis F00
+- tidak menyentuh aplikasi
+
+## Important Notes
+- File name may still contain old planning reference for continuity.
+- Active project identity is TC Tien’s Catering.
+- Active working system name is TC Project Working System.
+- Do not rewrite TC as dependent on WPWK.
+- Do not change application structure.
 
 ## Next Step
-F00B — Correction & Stabilization
+F01A — Existing TC Application Inventory
 
-## Validation Needed
-- Pastikan folder `Docs/project/` dan `Docs/history/` terbentuk dengan instruksi yang lengkap.
-- Pastikan seluruh *legacy documents* dari root maupun folder lama telah diarsipkan dengan aman.
+## Validation Checklist
+- [ ] Active docs no longer say TC uses/follows WPWK
+- [ ] F00A work log preserved
+- [ ] F00B work log preserved
+- [ ] F00C correction log added
+- [ ] apps/ untouched

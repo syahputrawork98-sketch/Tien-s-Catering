@@ -1,6 +1,6 @@
 # Format Batch Baru TC
 
-Batch baru TC mengadopsi gaya berbasis WPWK dengan kode `FXX`:
+Batch baru TC mengadopsi format terstruktur dengan kode `FXX`:
 
 - `F00` = Workflow / setup / adoption
 - `F01` = Existing application inventory

@@ -1,8 +1,8 @@
 # Feature Tracker
 
-| Feature Batch | Feature Name | Area | Status | Reason / HOLD Notes | Next Step | Detail File |
+| Feature Batch | Feature Name | Area | Status | Reason / Notes | Next Step | Detail File |
 |---|---|---|---|---|---|---|
-| F00 | TC WPWK Workflow Adoption | docs/project + docs/history | In Progress | Migrasi cara kerja TC ke WPWK-style control layer tanpa mengubah aplikasi | F00B — Correction & Stabilization | features/F00_TC_WPWK_WORKFLOW_ADOPTION.md |
+| F00 | TC Project Working System Foundation | docs/project + docs/history | In Progress | Membentuk sistem kerja internal TC tanpa mengubah aplikasi | F00C — Wording Correction | features/F00_TC_WPWK_WORKFLOW_ADOPTION.md |
 | F01 | Existing TC Application Inventory | app/docs | Planned | Inventory aplikasi existing harus dilakukan sebelum feature files F02-F08 diaktifkan | F01A — Existing Application Inventory | features/F01_EXISTING_TC_APPLICATION_INVENTORY.md |
 
 ## Provisional / Archived Feature Candidates
@@ -22,3 +22,9 @@ Feature candidates berikut belum aktif sebagai tracker resmi sampai F01 Existing
 **Note:**
 Do not mark existing features as Completed before validation.
 Feature detail files after F01 must be created or reactivated only after inventory approval.
+
+## Naming Note
+
+The F00 file name still contains the old planning reference for continuity.
+However, the active feature name is now “TC Project Working System Foundation”.
+Do not treat the old filename as an instruction to make TC depend on WPWK.

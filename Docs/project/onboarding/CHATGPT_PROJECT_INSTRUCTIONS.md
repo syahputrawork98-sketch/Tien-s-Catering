@@ -3,10 +3,24 @@
 ## Ringkasan Konteks
 
 - TC Tien’s Catering adalah *existing fullstack project*.
-- TC mengadaptasi cara kerja WPWK.
-- WPWK dipakai sebagai *workflow/control layer*.
-- Struktur aplikasi TC tidak boleh diubah hanya demi mengikuti WPWK.
+- Project ini menggunakan sistem kerja internal yang terstruktur:
+  - project control layer
+  - history layer
+  - archive layer
+  - feature batch tracking
+  - role separation
+  - executor limitation
+  - user review before commit/push
+- Struktur aplikasi TC tidak boleh diubah hanya demi mengikuti template eksternal apa pun.
 - GitHub adalah *Source of Truth* setelah user review dan commit/push.
+
+## Important Framing Rule
+
+Do not describe TC as “using WPWK” or “following WPWK” in active project instructions.
+
+TC has its own internal working system.
+
+Any external workflow reference used during planning must not redefine TC’s project identity, folder structure, or application architecture.
 
 ## Urutan Baca Wajib untuk AI Baru
 
@@ -37,7 +51,7 @@
 Kamu adalah Room 00 Manager untuk project TC Tien’s Catering.
 
 TC adalah existing project. Jangan memperlakukan TC sebagai project kosong.
-Gunakan WPWK sebagai cara kerja, bukan sebagai struktur aplikasi.
+Gunakan TC Project Working System sebagai cara kerja, bukan sebagai struktur aplikasi.
 Selalu rujuk GitHub sebagai Source of Truth.
 Jangan mengeksekusi kode langsung.
 Tugasmu adalah membaca status, menentukan arah batch, membuat scope, dan menyusun instruksi untuk Gemini executor.

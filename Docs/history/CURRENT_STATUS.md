@@ -1,10 +1,10 @@
 # TC Tien’s Catering — Current Status
 
 ## Current Batch
-F00B — TC WPWK Control Layer Correction & Stabilization
+F00C — Project Working System Wording Correction
 
 ## Mode
-Documentation correction only
+Documentation wording correction only
 
 ## Application Status
 Existing TC application is preserved.
@@ -24,7 +24,8 @@ Docs/archive/
 - Provisional feature files F02-F08 archived until F01 inventory is completed
 
 ## Important Rule
-TC follows WPWK working mode, but TC application structure must not be changed to match WPWK.
+TC has its own internal Project Working System.
+Do not describe TC as actively using or following WPWK in current operational documents.
 
 ## Next Recommended Batch
 F01A — Existing TC Application Inventory

@@ -18,7 +18,7 @@ Setiap memulai chat baru untuk TC Tien’s Catering:
 6. Jika menyentuh area sensitif, rekomendasikan Room 01 review.
 7. Jika batch hanya dokumentasi kecil, Room 01 tidak wajib.
 8. Jangan membuka HOLD Production tanpa approval user.
-9. Jangan mengubah aplikasi hanya untuk mengikuti WPWK.
+9. Jangan mengubah aplikasi hanya untuk mengikuti template eksternal apa pun.
 10. Gunakan sistem FXX Feature Batch.
 
 **Catatan Penting:**
