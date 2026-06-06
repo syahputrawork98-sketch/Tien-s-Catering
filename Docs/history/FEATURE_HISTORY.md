@@ -2,12 +2,23 @@
 
 | Feature Batch | Feature Name | Area | Status | Reason / HOLD Notes | Next Step | Detail File |
 |---|---|---|---|---|---|---|
-| F00 | TC WPWK Workflow Adoption | docs/project + docs/history | In Progress | Migrasi cara kerja TC ke WPWK-style control layer tanpa mengubah aplikasi | F00A — Control Layer Migration | features/F00_TC_WPWK_WORKFLOW_ADOPTION.md |
-| F01 | Existing TC Application Inventory | app/docs | Existing / Needs Review | Aplikasi sudah berjalan, perlu inventory ulang sebelum status final | F01A — Inventory Audit | features/F01_EXISTING_TC_APPLICATION_INVENTORY.md |
-| F02 | Public Menu & Ordering | public/customer | Existing / Needs Review | Fitur publik perlu divalidasi ulang berdasarkan repo terbaru | F02A — Public Flow Audit | features/F02_PUBLIC_MENU_AND_ORDERING.md |
-| F03 | Cart, Checkout & Order Flow | customer/order | Existing / Needs Review | Flow order perlu dicek ulang sebelum diberi status Completed | F03A — Order Flow Audit | features/F03_CART_CHECKOUT_AND_ORDER_FLOW.md |
-| F04 | Admin Order Management | admin/order | Existing / Needs Review | Fitur admin perlu divalidasi berdasarkan role dan action aktual | F04A — Admin Flow Audit | features/F04_ADMIN_ORDER_MANAGEMENT.md |
-| F05 | Payment Verification System | payment/admin | Existing / Needs Review | Payment manual ada, payment gateway production tetap HOLD | F05A — Payment Audit | features/F05_PAYMENT_VERIFICATION_SYSTEM.md |
-| F06 | Reporting, Invoice & Export | admin/reporting | Existing / Needs Review | Reporting/export perlu validasi output dan data source | F06A — Reporting Audit | features/F06_REPORTING_INVOICE_AND_EXPORT.md |
-| F07 | Role, Permission & Security | security/auth | Partial / HOLD | Auth production dan RBAC final adalah area sensitif | F07A — Security Gap Map | features/F07_ROLE_PERMISSION_AND_SECURITY.md |
-| F08 | Production Readiness | deployment/production | HOLD | Deployment final, domain, SSL, cloud storage, gateway, dan legal/tax belum dibuka | F08A — Production Gap Map | features/F08_PRODUCTION_READINESS.md |
+| F00 | TC WPWK Workflow Adoption | docs/project + docs/history | In Progress | Migrasi cara kerja TC ke WPWK-style control layer tanpa mengubah aplikasi | F00B — Correction & Stabilization | features/F00_TC_WPWK_WORKFLOW_ADOPTION.md |
+| F01 | Existing TC Application Inventory | app/docs | Planned | Inventory aplikasi existing harus dilakukan sebelum feature files F02-F08 diaktifkan | F01A — Existing Application Inventory | features/F01_EXISTING_TC_APPLICATION_INVENTORY.md |
+
+## Provisional / Archived Feature Candidates
+
+Feature candidates berikut belum aktif sebagai tracker resmi sampai F01 Existing TC Application Inventory selesai:
+
+| Candidate | Previous File | Current Location | Reason |
+|---|---|---|---|
+| F02 | F02_PUBLIC_MENU_AND_ORDERING.md | Docs/archive/provisional-feature-files/ | Awaiting F01 inventory |
+| F03 | F03_CART_CHECKOUT_AND_ORDER_FLOW.md | Docs/archive/provisional-feature-files/ | Awaiting F01 inventory |
+| F04 | F04_ADMIN_ORDER_MANAGEMENT.md | Docs/archive/provisional-feature-files/ | Awaiting F01 inventory |
+| F05 | F05_PAYMENT_VERIFICATION_SYSTEM.md | Docs/archive/provisional-feature-files/ | Awaiting F01 inventory |
+| F06 | F06_REPORTING_INVOICE_AND_EXPORT.md | Docs/archive/provisional-feature-files/ | Awaiting F01 inventory |
+| F07 | F07_ROLE_PERMISSION_AND_SECURITY.md | Docs/archive/provisional-feature-files/ | Awaiting F01 inventory |
+| F08 | F08_PRODUCTION_READINESS.md | Docs/archive/provisional-feature-files/ | Awaiting F01 inventory |
+
+**Note:**
+Do not mark existing features as Completed before validation.
+Feature detail files after F01 must be created or reactivated only after inventory approval.

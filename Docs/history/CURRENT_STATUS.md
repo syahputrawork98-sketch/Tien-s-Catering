@@ -1,25 +1,30 @@
-# TC Tien's Catering — Current Status
+# TC Tien’s Catering — Current Status
 
-**Status:**
-F00A — WPWK-style control layer migration
+## Current Batch
+F00B — TC WPWK Control Layer Correction & Stabilization
 
-**Mode:**
-Documentation-only migration
+## Mode
+Documentation correction only
 
-**Application:**
+## Application Status
 Existing TC application is preserved.
 
-**Active Control Layer:**
-`Docs/project/`
+## Active Control Layer
+Docs/project/
 
-**Active History Layer:**
-`Docs/history/`
+## Active History Layer
+Docs/history/
 
-**Legacy Control Layer:**
-`Docs/archive/project-control-legacy/`
+## Archive Layer
+Docs/archive/
 
-## Important Notes:
-- No application code changed in this batch.
-- `apps/` must remain untouched.
-- Existing batch history is being migrated into FXX-style feature tracking.
-- Production-related features remain HOLD unless opened by a dedicated approved batch.
+## Legacy Docs
+- Old `Docs/project-control/` archived in `Docs/archive/project-control-legacy/`
+- Old root Docs files archived in `Docs/archive/legacy-root-docs/`
+- Provisional feature files F02-F08 archived until F01 inventory is completed
+
+## Important Rule
+TC follows WPWK working mode, but TC application structure must not be changed to match WPWK.
+
+## Next Recommended Batch
+F01A — Existing TC Application Inventory

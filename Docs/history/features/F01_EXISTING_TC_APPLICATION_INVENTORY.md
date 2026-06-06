@@ -1,23 +1,39 @@
 # F01 — Existing TC Application Inventory
 
+## Feature Summary
+Inventory aplikasi TC yang sudah berjalan sebelum feature tracker F02 dan seterusnya diaktifkan.
+
 ## Status
-Existing / Needs Review
+Planned
 
-## Area
-app/docs
+## Story
+TC adalah existing project. Sebelum fitur public, customer, admin, payment, reporting, security, dan production readiness dikunci dalam tracker resmi, kondisi aplikasi harus diaudit berdasarkan repo.
 
-## Purpose
-Melakukan audit dan inventory dari fitur serta komponen aplikasi yang saat ini sudah berjalan.
+## Current State
+Pending inventory.
 
-## Current Understanding
-TC adalah aplikasi existing. Kita perlu memetakan apa saja dependensi, fitur aktif, dan struktur folder saat ini agar selaras dengan dokumen history tanpa merusak yang sudah berjalan.
+## Sub-Batch Roadmap
+- F01A — Root and Docs Inventory
+- F01B — Apps Structure Inventory
+- F01C — Public/Customer Flow Inventory
+- F01D — Admin Flow Inventory
+- F01E — Backend/API/Database Presence Inventory
+- F01F — Risk and HOLD Classification
 
-## HOLD / Risk Notes
-- Jangan merombak struktur folder aplikasi.
-- Jangan menjalankan refactor besar tanpa review.
+## HOLD / Blocked Notes
+No application change is allowed during inventory.
 
 ## Next Step
-F01A — Inventory Audit
+Run F01A — Existing TC Application Inventory.
 
-## Validation Needed
-- Pengecekan keselarasan README aplikasi dengan kondisi repository terkini.
+## Validation Checklist
+- [ ] Root structure checked
+- [ ] Docs structure checked
+- [ ] apps/ structure checked without modification
+- [ ] package scripts checked
+- [ ] feature evidence listed
+- [ ] risk areas classified
+- [ ] no application code changed
+
+## Notes
+Do not create or reactivate F02-F08 detail feature files before F01 inventory is reviewed and accepted.
