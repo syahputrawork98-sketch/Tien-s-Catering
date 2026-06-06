@@ -63,6 +63,12 @@ Referensi eksternal yang pernah dipakai selama perencanaan hanya berfungsi sebag
 - did not recreate deprecated onboarding files
 - did not touch application code
 
+### F00G — Repair Add Instructions File After Truncated Update
+- repaired truncated `ADD_INSTRUCTIONS_CHATGPT_COM.md`
+- restored active onboarding and workflow references
+- kept only 3 onboarding files and 3 workflow files active
+- did not touch application code
+
 ## Important Notes
 - File name may still contain old planning reference for continuity.
 - Active project identity is TC Tien’s Catering.
@@ -81,4 +87,5 @@ F01A — Existing TC Application Inventory
 - [ ] F00D correction log added
 - [ ] F00E correction log added
 - [ ] F00F correction log added
+- [ ] F00G repair log added
 - [ ] apps/ untouched

@@ -1,10 +1,13 @@
 # TC Tien’s Catering — Current Status
 
 ## Current Batch
-F00F — Restore Core Room Prompts
+F00G — Repair Add Instructions File After Truncated Update
 
 ## Mode
-Documentation correction only
+Emergency documentation repair only
+
+## Current Priority
+Review and accept F00G, then continue to F01A — Existing TC Application Inventory.
 
 ## Application Status
 Existing TC application is preserved.
@@ -35,6 +38,3 @@ Only one ChatGPT instruction file is active.
 Do not recreate deleted onboarding or workflow reference files unless explicitly requested by the user.
 TC has its own internal Project Working System.
 Do not describe TC as actively using or following WPWK in current operational documents.
-
-## Next Recommended Batch
-F01A — Existing TC Application Inventory
