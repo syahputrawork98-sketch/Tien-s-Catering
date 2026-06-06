@@ -1,19 +1,21 @@
 # TC Tien’s Catering — Current Status
 
 ## Current Batch
-F00D — Onboarding Hardening & Add Instructions Finalization
+F00E — Simplify Project Control Docs & Remove Redundant Instruction Files
 
 ## Mode
-Documentation onboarding hardening only
+Documentation cleanup only
 
 ## Application Status
 Existing TC application is preserved.
 
-## Active Control Layer
-Docs/project/
+## Active Instruction File
+Docs/project/onboarding/ADD_INSTRUCTIONS_CHATGPT_COM.md
 
-## Active History Layer
-Docs/history/
+## Active Workflow Files
+- Docs/project/workflow/WORKING_SYSTEM.md
+- Docs/project/workflow/BATCH_GATE.md
+- Docs/project/workflow/SCOPE_GUARD.md
 
 ## Archive Layer
 Docs/archive/
@@ -24,8 +26,8 @@ Docs/archive/
 - Provisional feature files F02-F08 archived until F01 inventory is completed
 
 ## Important Rule
-TC has its own internal Project Working System.
-Do not describe TC as actively using or following WPWK in current operational documents.
+Only one ChatGPT instruction file is active.
+Do not recreate deleted onboarding or workflow reference files unless explicitly requested by the user.
 
 ## Next Recommended Batch
 F01A — Existing TC Application Inventory

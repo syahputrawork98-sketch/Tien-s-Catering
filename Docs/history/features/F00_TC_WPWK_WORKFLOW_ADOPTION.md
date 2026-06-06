@@ -47,6 +47,14 @@ Referensi eksternal yang pernah dipakai selama perencanaan hanya berfungsi sebag
 - added final ChatGPT.com Add Instructions file
 - did not touch application code
 
+### F00E — Simplify Project Control Docs & Remove Redundant Instruction Files
+- removed redundant onboarding files
+- removed redundant workflow reference files
+- kept only one active ChatGPT instruction file
+- kept only three active workflow files
+- reduced risk of AI reading conflicting instructions
+- did not touch application code
+
 ## Important Notes
 - File name may still contain old planning reference for continuity.
 - Active project identity is TC Tien’s Catering.
@@ -63,4 +71,5 @@ F01A — Existing TC Application Inventory
 - [ ] F00B work log preserved
 - [ ] F00C correction log added
 - [ ] F00D correction log added
+- [ ] F00E correction log added
 - [ ] apps/ untouched
