@@ -1,26 +1,13 @@
 # TC Existing Project Mode
 
 ## Purpose
-TC (Tien's Catering) is an existing project currently in the *Production Readiness* phase. To maintain safety, code hygiene, and strict project tracking, TC adopts a workflow system inspired by **WK-Web-Existing**. This document defines the rules, boundaries, and working flows required to perform any documentation, status tracking, or development tasks under the **TC Existing Project Mode**.
+TC (Tien's Catering) is an existing codebase currently in the *Production Readiness* phase. To maintain safety, code hygiene, and strict project tracking, TC operates under **Existing Project Mode**. This document defines the rules, boundaries, and working flows required to perform any documentation, status tracking, or development tasks inside the project.
 
 ## Adopted Principle: Discovery-First Documentation
-Before making any technical changes, refactoring, or additions to the codebase, the system must follow the **Discovery-First Documentation** principle. 
+Before making any technical changes, refactoring, or additions to the codebase, we must follow the **Discovery-First Documentation** principle. 
 - Do not assume the project is empty or needs to be built from scratch.
 - Do not immediately refactor or redesign application elements.
 - Discover, document, and map existing systems first to establish a clear audit trail.
-
-## What TC Adopts from WK-Web-Existing
-TC adopts **only** the project workflow, documentation flow, and status tracking principles of WK-Web-Existing.
-- **Workflow Model Only**: We adopt the discipline of structured batch execution, documentation checkpoints, and discovery steps.
-- **No Code/UI Sharing**: TC does **not** adopt the UI templates, style sheets, code templates, or folder structure of WK-Web-Existing.
-- **Independence**: TC remains a separate application with its own identity, codebase, and domain logic.
-
-### Local Reference Copy
-TC keeps a local reference copy of the WK-Web-Existing documentation within this workspace:
-- **Reference Folder**: [Docs/references/WK-Web-Existing/](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/Docs/references/WK-Web-Existing/)
-- **Index File**: [REFERENCE_INDEX.md](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/Docs/references/WK-Web-Existing/REFERENCE_INDEX.md)
-- **Guidance Only**: The reference copy is strictly for workflow methodology guidance. TC must still follow its own native project scope, SvelteKit application boundaries, feature status rules, and HOLD boundaries.
-
 
 ## TC Project Boundary
 TC keeps its own established stack and project structure:
@@ -32,7 +19,7 @@ TC keeps its own established stack and project structure:
 - **Authentication**: SvelteKit session guards and roles/permission validation.
 
 ## Required Working Flow
-Every feature task or code assessment must strictly follow the flow:
+Every feature task, code assessment, or bug fix must strictly follow this flow:
 
 $$\text{temukan} \longrightarrow \text{catat} \longrightarrow \text{petakan} \longrightarrow \text{update status} \longrightarrow \text{baru perbaiki}$$
 
@@ -65,5 +52,5 @@ The following areas are locked in this mode and must not be touched or modified:
 
 ## Executor Rules
 - **Scope**: Docs-only. No app code or database files may be altered.
-- **Integrity**: Maintain the existing SvelteKit structure without trying to align it to WK-Web-Existing's layout.
+- **Integrity**: Maintain the existing SvelteKit structure without introducing external templates.
 - **Traceability**: All updates to files must be documented in the Executor Report.
