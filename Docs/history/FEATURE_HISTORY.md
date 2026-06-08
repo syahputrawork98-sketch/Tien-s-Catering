@@ -15,7 +15,7 @@ Daftar riwayat fitur/fondasi yang pernah, sedang, dan akan dikerjakan dalam **Ti
 | **F08** | Package Request | Customer | Found / Needs Functional Validation | [F08_package_request.md](Docs/history/features/F08_package_request.md) |
 | **F09** | Customer Dashboard Home | Customer | Found / Needs Functional Validation | [F09_customer_dashboard_home.md](Docs/history/features/F09_customer_dashboard_home.md) |
 | **F10** | Customer Orders | Customer | Found / Needs Functional Validation | [F10_customer_orders.md](Docs/history/features/F10_customer_orders.md) |
-| **F11** | Customer Payment Status & Reupload Guidance | Customer | Discovered / Needs Audit | [F11_customer_payment_status___reupload_guidance.md](Docs/history/features/F11_customer_payment_status___reupload_guidance.md) |
+| **F11** | Customer Payment Status & Reupload Guidance | Customer | Found / Needs Functional Validation | [F11_customer_payment_status___reupload_guidance.md](Docs/history/features/F11_customer_payment_status___reupload_guidance.md) |
 | **F12** | Customer Package Request History | Customer | Discovered / Needs Audit | [F12_customer_package_request_history.md](Docs/history/features/F12_customer_package_request_history.md) |
 | **F13** | Customer Address Management | Customer | Discovered / Needs Audit | [F13_customer_address_management.md](Docs/history/features/F13_customer_address_management.md) |
 | **F14** | Customer Profile / Account | Customer | Discovered / Needs Audit | [F14_customer_profile___account.md](Docs/history/features/F14_customer_profile___account.md) |
