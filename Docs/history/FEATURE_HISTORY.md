@@ -17,7 +17,7 @@ Daftar riwayat fitur/fondasi yang pernah, sedang, dan akan dikerjakan dalam **Ti
 | **F10** | Customer Orders | Customer | Found / Needs Functional Validation | [F10_customer_orders.md](Docs/history/features/F10_customer_orders.md) |
 | **F11** | Customer Payment Status & Reupload Guidance | Customer | Found / Needs Functional Validation | [F11_customer_payment_status___reupload_guidance.md](Docs/history/features/F11_customer_payment_status___reupload_guidance.md) |
 | **F12** | Customer Package Request History | Customer | Found / Needs Functional Validation | [F12_customer_package_request_history.md](Docs/history/features/F12_customer_package_request_history.md) |
-| **F13** | Customer Address Management | Customer | Discovered / Needs Audit | [F13_customer_address_management.md](Docs/history/features/F13_customer_address_management.md) |
+| **F13** | Customer Address Management | Customer | Found / Needs Functional Validation | [F13_customer_address_management.md](Docs/history/features/F13_customer_address_management.md) |
 | **F14** | Customer Profile / Account | Customer | Discovered / Needs Audit | [F14_customer_profile___account.md](Docs/history/features/F14_customer_profile___account.md) |
 | **F15** | CS Overview | CS | Discovered / Needs Audit | [F15_cs_overview.md](Docs/history/features/F15_cs_overview.md) |
 | **F16** | CS Incoming Orders Handling | CS | Discovered / Needs Audit | [F16_cs_incoming_orders_handling.md](Docs/history/features/F16_cs_incoming_orders_handling.md) |
@@ -53,3 +53,15 @@ Daftar riwayat fitur/fondasi yang pernah, sedang, dan akan dikerjakan dalam **Ti
   - Database: Tabel `package_requests`
 - **Status Akhir**: Found / Needs Functional Validation
 - **Catatan**: No functional runtime validation was performed.
+
+### F13 — Customer Address Management
+- **Tanggal Pengerjaan**: 2026-06-09
+- **Area yang Diaudit**: Frontend, Navigation, API, Database, Integration
+- **Path Utama yang Ditemukan**:
+  - Frontend: `apps/src/routes/dashboard/addresses/`
+  - Navigation: `apps/src/lib/config/navigation.ts`
+  - Mock Data: `apps/src/lib/mock/user.ts`
+  - API: None (Frontend Simulation Only)
+  - Database: None (Frontend Simulation Only)
+- **Status Akhir**: Found / Needs Functional Validation
+- **Catatan**: No functional runtime validation was performed. Data dikelola sepenuhnya di sisi frontend (no persistence).
