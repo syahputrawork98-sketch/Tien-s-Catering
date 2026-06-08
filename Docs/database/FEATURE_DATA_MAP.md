@@ -17,5 +17,7 @@ File ini memetakan fitur FXX ke database/table/model.
 | **F12** | Customer Package Request History | Found | `package_requests`, `orders`, `order_items` | `Docs/history/features/F12_customer_package_request_history.md` | Menampilkan riwayat request paket katering dari package_requests dan menghubungkan ID order terkonversi |
 | **F13** | Customer Address Management | None | None (Related existing table: `delivery_info`) | `Docs/history/features/F13_customer_address_management.md` | Tidak ada tabel khusus alamat customer (seperti user_addresses). Checkout katering menggunakan input manual per transaksi dan disimpan di delivery_info. |
 | **F14** | Customer Profile / Account | Found | `users` | `Docs/history/features/F14_customer_profile___account.md` | Menyimpan data identitas user dan metadata kontak (name, email, password_hash, role, phone, address). Pembaruan profil memutasi baris data customer yang relevan di tabel `users`. |
+| **F15** | CS Overview | None | None | `Docs/history/features/F15_cs_overview.md` | Tidak ada interaksi database SQLite langsung karena data statistik operasional dan note masih berupa data statis/hardcoded di frontend |
+
 
 

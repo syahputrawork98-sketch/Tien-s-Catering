@@ -19,5 +19,7 @@ File ini memetakan fitur FXX ke UI/frontend.
 | **F12** | Customer Package Request History | Found | `apps/src/routes/dashboard/package-requests/+page.svelte` | `Docs/history/features/F12_customer_package_request_history.md` | Halaman riwayat request paket katering dalam bentuk kartu grid dengan indikasi status/timeline |
 | **F13** | Customer Address Management | Found | `apps/src/routes/dashboard/addresses/+page.svelte`, `apps/src/lib/config/navigation.ts`, `apps/src/lib/mock/user.ts` | `Docs/history/features/F13_customer_address_management.md` | CRUD berjalan simulasi lokal (Svelte local state), data hilang jika refresh penuh, ada banner warning demo, tanpa persistensi backend |
 | **F14** | Customer Profile / Account | Found | `apps/src/routes/dashboard/profile/+page.svelte`, `apps/src/routes/dashboard/+layout.svelte` | `Docs/history/features/F14_customer_profile___account.md` | Form edit profil (Nama, WhatsApp, Alamat) dengan banner simulasi (padahal menyimpan ke SQLite jika login produksi) dan modal simulasi ubah password/hapus akun |
+| **F15** | CS Overview | Found | `apps/src/routes/dashboard/cs/+page.svelte`, `apps/src/lib/config/navigation.ts` | `Docs/history/features/F15_cs_overview.md` | Halaman beranda dashboard CS. Semua data widget statistik operasional bersifat statis/hardcoded di frontend. Dilengkapi link shortcut dan validasi role CS |
+
 
 

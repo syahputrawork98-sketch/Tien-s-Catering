@@ -17,5 +17,7 @@ File ini memetakan fitur FXX ke backend/API.
 | **F12** | Customer Package Request History | Found | `/api/package-requests`, `/api/package-requests/[id]/convert`, `/api/package-requests/[id]/status`, `apps/src/lib/server/services/packageRequestService.ts`, `apps/src/lib/server/repositories/packageRequestRepository.ts` | `Docs/history/features/F12_customer_package_request_history.md` | GET list request katering user, POST submit request, PATCH status review admin, dan POST konversi request ke order katering aktif |
 | **F13** | Customer Address Management | None / Not implemented | None | `Docs/history/features/F13_customer_address_management.md` | F13 saat ini tidak memiliki endpoint CRUD alamat katering di backend. Tidak ada API contract. Jika nanti dikembangkan, perlu ownership isolation per customer. |
 | **F14** | Customer Profile / Account | Found | `GET /api/auth/me`, `PATCH /api/auth/me`, `apps/src/lib/server/services/authService.ts`, `apps/src/lib/server/repositories/userRepository.ts` | `Docs/history/features/F14_customer_profile___account.md` | Endpoint GET memuat profil aktif dan PATCH memutasi profile data (name, phone, address) dengan validasi sesi & ownership isolation via session token. |
+| **F15** | CS Overview | None / Not implemented | None | `Docs/history/features/F15_cs_overview.md` | Halaman overview tidak melakukan pemanggilan API backend karena data statistik operasional dan note sepenuhnya statis |
+
 
 
