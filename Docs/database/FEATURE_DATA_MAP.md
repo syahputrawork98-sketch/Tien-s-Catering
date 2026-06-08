@@ -18,6 +18,8 @@ File ini memetakan fitur FXX ke database/table/model.
 | **F13** | Customer Address Management | None | None (Related existing table: `delivery_info`) | `Docs/history/features/F13_customer_address_management.md` | Tidak ada tabel khusus alamat customer (seperti user_addresses). Checkout katering menggunakan input manual per transaksi dan disimpan di delivery_info. |
 | **F14** | Customer Profile / Account | Found | `users` | `Docs/history/features/F14_customer_profile___account.md` | Menyimpan data identitas user dan metadata kontak (name, email, password_hash, role, phone, address). Pembaruan profil memutasi baris data customer yang relevan di tabel `users`. |
 | **F15** | CS Overview | None | None | `Docs/history/features/F15_cs_overview.md` | Tidak ada interaksi database SQLite langsung karena data statistik operasional dan note masih berupa data statis/hardcoded di frontend |
+| **F16** | CS Incoming Orders Handling | Found | `orders`, `order_items`, `delivery_info`, `payment_info`, `order_payment_proofs`, `menu_daily_stock` | `Docs/history/features/F16_cs_incoming_orders_handling.md` | Membaca & memutasi data order utama, detail belanjaan, alamat dinas, dan info tagihan. Transisi status confirmed/cancelled memotong/memulihkan stok di tabel menu_daily_stock |
+
 
 
 

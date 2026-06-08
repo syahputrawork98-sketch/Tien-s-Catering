@@ -8,21 +8,22 @@
 - **Default Executor Model**: Gemini 3.5 Flash
 
 ## Active Audit Checkpoint
-F15 — CS Overview
+F16 — CS Incoming Orders Handling
 
 ## Last Accepted Feature
-F14 — Customer Profile / Account
+F15 — CS Overview
 
 ## Current Phase
 Feature Discovery / Existing Project Audit
 
 ## Next Planned Feature
-F16 — CS Incoming Orders Handling
+F17 — CS Menu Management
 
 ## Checkpoint Notes
-- **Important**: F02-F15 are Found / Needs Functional Validation.
-- F16-F34 remain Discovered / Needs Audit.
+- **Important**: F02-F16 are Found / Needs Functional Validation.
+- F17-F34 remain Discovered / Needs Audit.
 - No feature is Completed except F00-F01 foundation items.
+
 
 
 ## Active Feature Tracker
@@ -47,7 +48,7 @@ All discovered application and database capabilities have been indexed into the 
 | **F13** | Customer Address Management | Customer | Found / Needs Functional Validation | Technical relations mapped (Simulated Frontend, Navigation) | Audit other features | [F13_customer_address_management.md](Docs/history/features/F13_customer_address_management.md) |
 | **F14** | Customer Profile / Account | Customer | Found / Needs Functional Validation | Technical relations mapped (Frontend, API, DB) | Audit other features | [F14_customer_profile___account.md](Docs/history/features/F14_customer_profile___account.md) |
 | **F15** | CS Overview | CS | Found / Needs Functional Validation | Technical relations mapped (Frontend, Navigation) | Audit other features | [F15_cs_overview.md](Docs/history/features/F15_cs_overview.md) |
-| **F16** | CS Incoming Orders Handling | CS | Discovered / Needs Audit | Order list views exist | Verify routing actions | [F16_cs_incoming_orders_handling.md](Docs/history/features/F16_cs_incoming_orders_handling.md) |
+| **F16** | CS Incoming Orders Handling | CS | Found / Needs Functional Validation | Technical relations mapped (Frontend, API, DB) | Audit other features | [F16_cs_incoming_orders_handling.md](Docs/history/features/F16_cs_incoming_orders_handling.md) |
 | **F17** | CS Menu Management | CS | Discovered / Needs Audit | Menu switcher found | Verify toggles | [F17_cs_menu_management.md](Docs/history/features/F17_cs_menu_management.md) |
 | **F18** | CS Package Management | CS | Discovered / Needs Audit | Packages list exists | Verify authorization | [F18_cs_package_management.md](Docs/history/features/F18_cs_package_management.md) |
 | **F19** | CS Customer Data Management | CS | Discovered / Needs Audit | Customer logs exist | Verify layout details | [F19_cs_customer_data_management.md](Docs/history/features/F19_cs_customer_data_management.md) |

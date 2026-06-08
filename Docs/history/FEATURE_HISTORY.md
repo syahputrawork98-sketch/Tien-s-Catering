@@ -20,7 +20,7 @@ Daftar riwayat fitur/fondasi yang pernah, sedang, dan akan dikerjakan dalam **Ti
 | **F13** | Customer Address Management | Customer | Found / Needs Functional Validation | [F13_customer_address_management.md](Docs/history/features/F13_customer_address_management.md) |
 | **F14** | Customer Profile / Account | Customer | Found / Needs Functional Validation | [F14_customer_profile___account.md](Docs/history/features/F14_customer_profile___account.md) |
 | **F15** | CS Overview | CS | Found / Needs Functional Validation | [F15_cs_overview.md](Docs/history/features/F15_cs_overview.md) |
-| **F16** | CS Incoming Orders Handling | CS | Discovered / Needs Audit | [F16_cs_incoming_orders_handling.md](Docs/history/features/F16_cs_incoming_orders_handling.md) |
+| **F16** | CS Incoming Orders Handling | CS | Found / Needs Functional Validation | [F16_cs_incoming_orders_handling.md](Docs/history/features/F16_cs_incoming_orders_handling.md) |
 | **F17** | CS Menu Management | CS | Discovered / Needs Audit | [F17_cs_menu_management.md](Docs/history/features/F17_cs_menu_management.md) |
 | **F18** | CS Package Management | CS | Discovered / Needs Audit | [F18_cs_package_management.md](Docs/history/features/F18_cs_package_management.md) |
 | **F19** | CS Customer Data Management | CS | Discovered / Needs Audit | [F19_cs_customer_data_management.md](Docs/history/features/F19_cs_customer_data_management.md) |
@@ -87,3 +87,16 @@ Daftar riwayat fitur/fondasi yang pernah, sedang, dan akan dikerjakan dalam **Ti
   - Navigation: `apps/src/lib/config/navigation.ts`
 - **Status Akhir**: Found / Needs Functional Validation
 - **Catatan**: No functional runtime validation was performed. Data statistik (New Orders, Jobs, Bills, Users) dan status sistem di dashboard CS Overview ini sepenuhnya hardcoded/statis di frontend, belum terintegrasi ke SQLite database ataupun API endpoint agregasi.
+
+### F16 — CS Incoming Orders Handling
+- **Tanggal Pengerjaan**: 2026-06-09
+- **Area yang Diaudit**: Frontend, Navigation, API, Service, Repository, Database, Status Transition, Integration
+- **Path Utama yang Ditemukan**:
+  - Frontend: `apps/src/routes/dashboard/cs/orders/+page.svelte`
+  - Navigation: `apps/src/lib/config/navigation.ts`
+  - API: `GET /api/orders`, `PATCH /api/orders/[id]/status`, `PATCH /api/orders/[id]/payment-status`, `POST /api/orders/[id]/verify-payment`
+  - Service: `apps/src/lib/server/services/orderService.ts`
+  - Repository: `apps/src/lib/server/repositories/orderRepository.ts`
+  - Database: Tabel `orders`, `order_items`, `delivery_info`, `payment_info`, `order_payment_proofs` di `apps/src/lib/server/db/schema.ts`
+- **Status Akhir**: Found / Needs Functional Validation
+- **Catatan**: No functional runtime validation was performed. Transisi status confirmed mengurangi stok harian secara real-time dan cancelled merestore stok. Verifikasi bukti pembayaran sukses memanggil API status bayar manual (paid), sementara penolakan bukti bayar dan konfirmasi penyelesaian (CS/User/Admin) masih berupa simulasi frontend murni.
