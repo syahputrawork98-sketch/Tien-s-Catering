@@ -6,7 +6,7 @@ Daftar riwayat fitur/fondasi yang pernah, sedang, dan akan dikerjakan dalam **Ti
 | --- | --- | --- | --- | --- |
 | **F00** | Existing Project Zero Point | Adopted Workflow | Completed | [F00_PROJECT_WORKFLOW_FOUNDATION.md](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/Docs/history/features/F00_PROJECT_WORKFLOW_FOUNDATION.md) |
 | **F01** | Area Documentation Structure | Documentation | Completed | [F01_AREA_DOCUMENTATION_STRUCTURE.md](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/Docs/history/features/F01_AREA_DOCUMENTATION_STRUCTURE.md) |
-| **F02** | Public Menu Catalog | Public / Customer | Found | [F02_public_menu_catalog.md](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/Docs/history/features/F02_public_menu_catalog.md) |
+| **F02** | Public Menu Catalog | Public / Customer | Found / Needs Functional Validation | [F02_public_menu_catalog.md](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/Docs/history/features/F02_public_menu_catalog.md) |
 | **F03** | Menu Daily Stock / Stock-Aware Cart | Foundation / Frontend | Discovered / Needs Audit | [F03_menu_daily_stock___stock_aware_cart.md](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/Docs/history/features/F03_menu_daily_stock___stock_aware_cart.md) |
 | **F04** | Cart | Customer / Public | Discovered / Needs Audit | [F04_cart.md](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/Docs/history/features/F04_cart.md) |
 | **F05** | Checkout Order | Customer | Discovered / Needs Audit | [F05_checkout_order.md](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/Docs/history/features/F05_checkout_order.md) |

@@ -11,7 +11,7 @@ Public / Customer
 - **Database Tables**: `menus` and `menu_daily_stock` tables in [apps/src/lib/server/db/schema.ts](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/lib/server/db/schema.ts)
 
 ## Current Status
-Discovered / Needs Audit (Relasi Teknis Ditemukan)
+Found / Needs Functional Validation
 
 ## What Exists
 1. **Frontend Catalog**:
