@@ -4,18 +4,18 @@
 Customer / Admin
 
 ## Discovery Source
-- **Components**: [PackageDetailModal.svelte](file:///apps/src/lib/components/PackageDetailModal.svelte) *(Form submission)*
+- **Components**: [PackageDetailModal.svelte](apps/src/lib/components/PackageDetailModal.svelte) *(Form submission)*
 - **Dashboard Routes**: 
-  - [+page.svelte](file:///apps/src/routes/dashboard/package-requests/+page.svelte) *(Customer tracking)*
-  - [+page.svelte](file:///apps/src/routes/dashboard/admin/package-requests/+page.svelte) *(Admin review & conversion)*
+  - [+page.svelte](apps/src/routes/dashboard/package-requests/+page.svelte) *(Customer tracking)*
+  - [+page.svelte](apps/src/routes/dashboard/admin/package-requests/+page.svelte) *(Admin review & conversion)*
 - **API Endpoints**: 
-  - [+server.ts](file:///apps/src/routes/api/package-requests/+server.ts) *(GET/POST)*
-  - [+server.ts](file:///apps/src/routes/api/package-requests/[id]/status/+server.ts) *(PATCH status review)*
-  - [+server.ts](file:///apps/src/routes/api/package-requests/[id]/convert/+server.ts) *(POST order conversion)*
+  - [+server.ts](apps/src/routes/api/package-requests/+server.ts) *(GET/POST)*
+  - [+server.ts](apps/src/routes/api/package-requests/[id]/status/+server.ts) *(PATCH status review)*
+  - [+server.ts](apps/src/routes/api/package-requests/[id]/convert/+server.ts) *(POST order conversion)*
 - **Service & Repository**: 
-  - [packageRequestService.ts](file:///apps/src/lib/server/services/packageRequestService.ts)
-  - [packageRequestRepository.ts](file:///apps/src/lib/server/repositories/packageRequestRepository.ts)
-- **Database Tables**: `package_requests` in [schema.ts](file:///apps/src/lib/server/db/schema.ts)
+  - [packageRequestService.ts](apps/src/lib/server/services/packageRequestService.ts)
+  - [packageRequestRepository.ts](apps/src/lib/server/repositories/packageRequestRepository.ts)
+- **Database Tables**: `package_requests` in [schema.ts](apps/src/lib/server/db/schema.ts)
 
 ## Current Status
 Found / Needs Functional Validation
@@ -23,7 +23,7 @@ Found / Needs Functional Validation
 ## Technical Findings & Audit Summary
 
 ### 1. Request Entry Point
-- **Entry Point**: Form pengajuan request paket catering (F08) ditanam (*embedded*) langsung di dalam modal detail paket katering [PackageDetailModal.svelte](file:///apps/src/lib/components/PackageDetailModal.svelte) yang dipicu dari katalog paket katering [+page.svelte](file:///apps/src/routes/paket-catering/+page.svelte) (F07).
+- **Entry Point**: Form pengajuan request paket catering (F08) ditanam (*embedded*) langsung di dalam modal detail paket katering [PackageDetailModal.svelte](apps/src/lib/components/PackageDetailModal.svelte) yang dipicu dari katalog paket katering [+page.svelte](apps/src/routes/paket-catering/+page.svelte) (F07).
 - **Context Injection**: Modal membawa parameter konteks `packageId` dan `packageName` secara otomatis dari objek katering terpilih (`pkg.id` dan `pkg.name`).
 - **Independent Route**: Tidak ada rute pengajuan request mandiri (harus memilih paket katering terlebih dahulu).
 
@@ -79,7 +79,7 @@ Found / Needs Functional Validation
 - **Throttling/Spam Protection**: Tidak ada rate-limit, captcha, atau pengaman spam submission pada endpoint POST publik.
 
 ### 6. Service Validation
-- **Payload Parsing**: Validasi dasar struktur payload dilakukan di [packageRequestService.ts](file:///apps/src/lib/server/services/packageRequestService.ts) menggunakan helper `parseCreatePackageRequestPayload`.
+- **Payload Parsing**: Validasi dasar struktur payload dilakukan di [packageRequestService.ts](apps/src/lib/server/services/packageRequestService.ts) menggunakan helper `parseCreatePackageRequestPayload`.
 - **Database Cross-Check Validation Absence**:
   - **No PackageId Verification**: Server tidak mengecek ke tabel `packages` apakah `packageId` valid atau aktif.
   - **No Min Pax Validation**: Server memercayai jumlah `pax` dari client payload tanpa melakukan pengecekan batas minimum pax paket di database.
@@ -88,14 +88,14 @@ Found / Needs Functional Validation
   - **Package Name Tampering Risk**: Backend langsung menggunakan properti `packageName` / `packageNameSnapshot` yang dikirim dari frontend tanpa mencocokkannya ke database, berpotensi dimanipulasi dengan nama kustom ilegal.
 
 ### 7. Repository & Database Behavior
-- **SQLite Database Table**: Data disimpan di tabel `package_requests` di dalam berkas [schema.ts](file:///apps/src/lib/server/db/schema.ts).
+- **SQLite Database Table**: Data disimpan di tabel `package_requests` di dalam berkas [schema.ts](apps/src/lib/server/db/schema.ts).
 - **Dynamic Schema Checks**: Menggunakan helper `ensurePackageRequestReviewColumns` untuk secara dinamis menambahkan kolom `admin_note`, `estimated_price`, `reviewed_at`, dan `converted_order_id` jika belum terdefinisi di database SQLite.
 - **Request Number Generation**: Nomor request dibuat dinamis di repositori menggunakan generator `formatRequestNumberTimestamp(now)` berformat `TPR-YYYYMMDD-HHMMSSmmmXXXX` (di mana XXXX adalah potongan acak dari UUID).
 - **Data Integrity / Foreign Key Gaps**: Tidak ada deklarasi constraint `FOREIGN KEY` formal untuk `package_id` ke tabel `packages` dan `user_id` ke tabel `users` pada schema database `package_requests`.
 - **Transaction Usage**: Insert data dijalankan langsung menggunakan SQLite statement run biasa tanpa dibungkus transaction (`db.transaction`).
 
 ### 8. Admin/CS Integration
-- **Admin Dashboard**: Tampil di [+page.svelte](file:///apps/src/routes/dashboard/admin/package-requests/+page.svelte). Admin/CS dapat mencari, memfilter berdasarkan status, serta melakukan aksi review.
+- **Admin Dashboard**: Tampil di [+page.svelte](apps/src/routes/dashboard/admin/package-requests/+page.svelte). Admin/CS dapat mencari, memfilter berdasarkan status, serta melakukan aksi review.
 - **Actions**: Admin dapat merubah status, memasukkan `adminNote`, dan menetapkan `estimatedPrice`.
 - **Conversion Flow**: Bila status diubah menjadi `'quoted'` dan estimasi harga diset > 0, admin dapat menekan tombol "Convert ke Order". Ini memicu POST `/convert` yang memanggil `createOrder()` di `orderService.ts` untuk menyisipkan data ke tabel `orders` & `order_items` dengan `sourceType = 'package_request'`. Status request kemudian di-update menjadi `'converted_to_order'`.
 - **Notification Gap**: Perubahan status review atau konversi tidak memicu notifikasi WhatsApp/email otomatis ke pelanggan (pelanggan harus memantau secara manual di dashboard mereka).

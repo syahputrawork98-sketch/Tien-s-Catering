@@ -11,3 +11,4 @@ File ini memetakan fitur FXX ke database/table/model.
 | **F06** | Order Success | Found | `N/A` | `features/F06_order_success.md` | Halaman ini bersifat local-frontend murni menggunakan sessionStorage dan tidak berinteraksi langsung ke tabel/database |
 | **F07** | Public Package Catering | Found | `packages` | `features/F07_public_package_catering.md` | Struktur tabel data master paket katering (termasuk penyimpanan stringified JSON arrays) |
 | **F08** | Package Request | Found | `package_requests`, `orders`, `order_items` | `features/F08_package_request.md` | Struktur tabel request paket katering, relasi data review admin, serta pembuatan data order & items setelah dikonversi |
+| **F09** | Customer Dashboard Home | Found | `orders`, `order_items`, `package_requests`, `users` | `features/F09_customer_dashboard_home.md` | Membaca data order, detail item pesanan, pengajuan request paket katering, dan detail metadata nama user pemesan untuk dashboard summary |
