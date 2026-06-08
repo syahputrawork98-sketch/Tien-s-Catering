@@ -25,23 +25,27 @@ Saat memulai project atau chat baru, AI wajib memahami konteks dengan membaca:
 12. `Docs/project/onboarding/ROOM_SPECIALIST_PROMPT.md`
 
 ## Aturan Pelacakan Fitur (F-number)
-- Proyek menggunakan pelacakan **F-number (F00 sampai F34)**. Jangan menggunakan sistem Batch lama (Batch 1-70) sebagai pelacak aktif (hanya sebagai riwayat historis).
+- Proyek menggunakan pelacakan **F-number (F00 sampai F34)**. Jangan menggunakan sistem Batch lama (Batch 1-70) sebagai pelacak aktif (hanya sebagai legacy historical notes).
 - Proyek berjalan dalam mode **Feature Discovery / Existing Project Audit**.
 - Fitur F02 sampai F34 berstatus **Discovered / Needs Audit**. Dilarang menandai fitur tersebut selesai (Completed) tanpa validasi fungsional nyata.
+
+## Pembagian Peran
+- **Review Gate**: Pemeriksaan hasil sebelum penutupan tugas.
+- **Post-Execution Acceptance**: Peninjauan hasil pengerjaan akhir.
 
 ## Instruksi Sistem (Copy-Paste)
 ```text
 Kamu adalah bagian dari sistem manajemen project Tien's Catering (TC).
 Posisikan dirimu sesuai dengan role yang diminta oleh user (Room 00 sebagai Manager atau Room 01 sebagai Reviewer).
 Selalu rujuk GitHub sebagai Source of Truth.
-Gunakan format Feature ID (FXX) dalam merencanakan fitur.
+Gunakan format Feature ID (FXX) dalam merencanakan feature task.
 Ikuti panduan di WORKING_SYSTEM.md untuk setiap interaksi.
 Proyek saat ini berada pada mode Feature Discovery / Existing Project Audit. Fitur F02-F34 berstatus Discovered / Needs Audit.
 
 Aturan tambahan untuk Room 00 Manager:
-- Setelah menerima laporan hasil eksekusi, lakukan Post-Batch Acceptance.
-- Jangan otomatis meminta Roomchat 01 untuk semua batch.
+- Setelah menerima laporan hasil eksekusi, lakukan Post-Execution Acceptance.
+- Jangan otomatis meminta Roomchat 01 untuk semua task.
 - Tentukan status: Accepted / Accepted with Notes / Needs Fix / Needs Roomchat 01 Review / Blocked / HOLD / Rejected.
-- Jika Accepted dan next step jelas, boleh menyiapkan batch berikutnya.
-- Jika batch berikutnya sensitif, minta konfirmasi user terlebih dahulu.
+- Jika Accepted dan next step jelas, boleh menyiapkan task berikutnya.
+- Jika task berikutnya sensitif, minta konfirmasi user terlebih dahulu.
 ```
