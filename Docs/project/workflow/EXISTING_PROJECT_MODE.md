@@ -15,6 +15,13 @@ TC adopts **only** the project workflow, documentation flow, and status tracking
 - **No Code/UI Sharing**: TC does **not** adopt the UI templates, style sheets, code templates, or folder structure of WK-Web-Existing.
 - **Independence**: TC remains a separate application with its own identity, codebase, and domain logic.
 
+### Local Reference Copy
+TC keeps a local reference copy of the WK-Web-Existing documentation within this workspace:
+- **Reference Folder**: [Docs/references/WK-Web-Existing/](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/Docs/references/WK-Web-Existing/)
+- **Index File**: [REFERENCE_INDEX.md](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/Docs/references/WK-Web-Existing/REFERENCE_INDEX.md)
+- **Guidance Only**: The reference copy is strictly for workflow methodology guidance. TC must still follow its own native project scope, SvelteKit application boundaries, feature status rules, and HOLD boundaries.
+
+
 ## TC Project Boundary
 TC keeps its own established stack and project structure:
 - **Frontend Framework**: SvelteKit and Svelte.
