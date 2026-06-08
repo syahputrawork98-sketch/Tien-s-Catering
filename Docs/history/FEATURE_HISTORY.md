@@ -18,7 +18,7 @@ Daftar riwayat fitur/fondasi yang pernah, sedang, dan akan dikerjakan dalam **Ti
 | **F11** | Customer Payment Status & Reupload Guidance | Customer | Found / Needs Functional Validation | [F11_customer_payment_status___reupload_guidance.md](Docs/history/features/F11_customer_payment_status___reupload_guidance.md) |
 | **F12** | Customer Package Request History | Customer | Found / Needs Functional Validation | [F12_customer_package_request_history.md](Docs/history/features/F12_customer_package_request_history.md) |
 | **F13** | Customer Address Management | Customer | Found / Needs Functional Validation | [F13_customer_address_management.md](Docs/history/features/F13_customer_address_management.md) |
-| **F14** | Customer Profile / Account | Customer | Discovered / Needs Audit | [F14_customer_profile___account.md](Docs/history/features/F14_customer_profile___account.md) |
+| **F14** | Customer Profile / Account | Customer | Found / Needs Functional Validation | [F14_customer_profile___account.md](Docs/history/features/F14_customer_profile___account.md) |
 | **F15** | CS Overview | CS | Discovered / Needs Audit | [F15_cs_overview.md](Docs/history/features/F15_cs_overview.md) |
 | **F16** | CS Incoming Orders Handling | CS | Discovered / Needs Audit | [F16_cs_incoming_orders_handling.md](Docs/history/features/F16_cs_incoming_orders_handling.md) |
 | **F17** | CS Menu Management | CS | Discovered / Needs Audit | [F17_cs_menu_management.md](Docs/history/features/F17_cs_menu_management.md) |
@@ -65,3 +65,16 @@ Daftar riwayat fitur/fondasi yang pernah, sedang, dan akan dikerjakan dalam **Ti
   - Database: None (Frontend Simulation Only)
 - **Status Akhir**: Found / Needs Functional Validation
 - **Catatan**: No functional runtime validation was performed. Data dikelola sepenuhnya di sisi frontend (no persistence).
+
+### F14 — Customer Profile / Account
+- **Tanggal Pengerjaan**: 2026-06-09
+- **Area yang Diaudit**: Frontend, Navigation, API, Service, Repository, Database, Auth/Session, Integration
+- **Path Utama yang Ditemukan**:
+  - Frontend: `apps/src/routes/dashboard/profile/`
+  - Navigation: `apps/src/lib/config/navigation.ts`
+  - API: `apps/src/routes/api/auth/me`
+  - Service: `apps/src/lib/server/services/authService.ts`
+  - Repository: `apps/src/lib/server/repositories/userRepository.ts`
+  - Database: Tabel `users` di `apps/src/lib/server/db/schema.ts`
+- **Status Akhir**: Found / Needs Functional Validation
+- **Catatan**: No functional runtime validation was performed. Ditemukan gap visual berupa label "Mode demo/simulasi" pada UI profile sementara di backend ia memiliki persistensi permanen ke SQLite untuk akun produksi. Ubah password dan hapus akun bersifat simulasi murni.
