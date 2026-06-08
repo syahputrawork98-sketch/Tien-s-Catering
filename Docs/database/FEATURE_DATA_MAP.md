@@ -9,3 +9,4 @@ File ini memetakan fitur FXX ke database/table/model.
 | **F04** | Cart | Found | `order_items` | `features/F04_cart.md` | Pemetaan detail item keranjang belanja menjadi baris data item pesanan di database |
 | **F05** | Checkout Order | Found | `orders`, `order_items`, `delivery_info`, `payment_info` | `features/F05_checkout_order.md` | Struktur tabel data pemesanan, detail barang pesanan, data pengiriman dinas, dan status pembayaran pesanan |
 | **F06** | Order Success | Found | `N/A` | `features/F06_order_success.md` | Halaman ini bersifat local-frontend murni menggunakan sessionStorage dan tidak berinteraksi langsung ke tabel/database |
+| **F07** | Public Package Catering | Found | `packages` | `features/F07_public_package_catering.md` | Struktur tabel data master paket katering (termasuk penyimpanan stringified JSON arrays) |
