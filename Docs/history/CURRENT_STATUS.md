@@ -8,7 +8,7 @@
 - **Default Executor Model**: Gemini 3.5 Flash
 
 ## Active Audit Checkpoint
-F10 — Customer Orders
+F12 — Customer Package Request History
 
 ## Last Accepted Feature
 F10 — Customer Orders
@@ -17,11 +17,11 @@ F10 — Customer Orders
 Feature Discovery / Existing Project Audit
 
 ## Next Planned Feature
-F11 — Customer Payment Status & Reupload Guidance
+F13 — Customer Address Management
 
 ## Checkpoint Notes
-- **Important**: F02-F11 are Found / Needs Functional Validation.
-- F12-F34 remain Discovered / Needs Audit.
+- **Important**: F02-F12 are Found / Needs Functional Validation.
+- F13-F34 remain Discovered / Needs Audit.
 - No feature is Completed except F00-F01 foundation items.
 ## Active Feature Tracker
 
@@ -41,7 +41,7 @@ All discovered application and database capabilities have been indexed into the 
 | **F09** | Customer Dashboard Home | Customer | Found / Needs Functional Validation | Technical relations mapped (Layout, Stats, API) | Audit other features | [F09_customer_dashboard_home.md](Docs/history/features/F09_customer_dashboard_home.md) |
 | **F10** | Customer Orders | Customer | Found / Needs Functional Validation | Technical relations mapped (Listing, Modal, API, DB) | Audit other features | [F10_customer_orders.md](Docs/history/features/F10_customer_orders.md) |
 | **F11** | Customer Payment Status & Reupload | Customer | Found / Needs Functional Validation | Technical relations mapped (Detail Modal, API, DB) | Audit other features | [F11_customer_payment_status___reupload_guidance.md](Docs/history/features/F11_customer_payment_status___reupload_guidance.md) |
-| **F12** | Customer Package Request History | Customer | Discovered / Needs Audit | Requests table exists | Verify popups | [F12_customer_package_request_history.md](Docs/history/features/F12_customer_package_request_history.md) |
+| **F12** | Customer Package Request History | Customer | Found / Needs Functional Validation | Technical relations mapped (Listing Card, API, DB) | Audit other features | [F12_customer_package_request_history.md](Docs/history/features/F12_customer_package_request_history.md) |
 | **F13** | Customer Address Management | Customer | Discovered / Needs Audit | Address inputs exist | Verify CRUD | [F13_customer_address_management.md](Docs/history/features/F13_customer_address_management.md) |
 | **F14** | Customer Profile / Account | Customer | Discovered / Needs Audit | Profile forms exist | Verify edits saving | [F14_customer_profile___account.md](Docs/history/features/F14_customer_profile___account.md) |
 | **F15** | CS Overview | CS | Discovered / Needs Audit | Stats views exist | Verify layout styling | [F15_cs_overview.md](Docs/history/features/F15_cs_overview.md) |
