@@ -1,23 +1,17 @@
-# F01 — Area Documentation Structure Standardization
+# F01 — Area Documentation Structure
 
 ## Feature Summary
-Batch ini menstandarkan struktur docs area (frontend, backend, database, development) menjadi pola overview + map + feature-specific detail.
+Batch ini menstandarkan struktur area dokumentasi (frontend, backend, database, development) di TC dengan pola overview + map + feature-specific detail.
 
 ## Status
 Completed
 
 ## Story
-Memastikan docs area berfungsi sebagai peta navigasi yang fungsional, tidak menyalin ulang source code, dan secara tegas membedakan Discovery-First Documentation sesuai mode Existing.
+Memastikan dokumentasi teknis di TC berfungsi sebagai peta navigasi kode sumber (navigation map) yang memudahkan pemetaan relasi file ke fitur bisnis nyata.
 
 ## Current State
-Struktur folder dan file template (`README.md`, `OVERVIEW.md`, `*_MAP.md`) telah dibuat.
-Tidak menyentuh kode aplikasi.
+- Struktur file navigasi dasar di bawah folder `Docs/` siap digunakan.
+- Folder mapping untuk area `frontend`, `backend`, `database`, `development`, dan `deployment` terpisah secara teratur.
 
-## Sub-Batch Roadmap
-- Standarisasi docs/frontend (Selesai)
-- Standarisasi docs/backend (Selesai)
-- Standarisasi docs/database (Selesai)
-- Standarisasi docs/development (Selesai)
-
-## Notes
-Mulai sekarang, ketika ada penambahan fitur (Greenfield) atau penemuan fitur (Existing), docs area terkait cukup diperbarui melalui file Map dan jika butuh detail ditambahkan di folder `features/`.
+## Next Step
+Mengisi detail peta relasi file untuk seluruh fitur F02 hingga F34.
