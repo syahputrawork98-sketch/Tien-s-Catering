@@ -10,12 +10,6 @@
 ## Current Phase
 F01 — Area Documentation Structure & Feature Discovery
 
-## Historical/Raw Evidence (Old Batches)
-The previous development system utilized a batch numbering scheme. The historical records of those batches are summarized below for legacy reference only and do not represent the active tracking model:
-- **Batch 1–33**: Initial implementation.
-- **Batch 34–45**: Payment uploading integration and local SQLite dashboards setup.
-- **Batch 46–60**: Persona account selector logic, server role access guards, and basic session controls.
-- **Batch 61–70**: Invoicing print layouts, operational dashboard modules, manual payment verify guards, payment guides reuploads.
 
 ## Active Feature Tracker
 
