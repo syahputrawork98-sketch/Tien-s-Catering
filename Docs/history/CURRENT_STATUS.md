@@ -7,10 +7,22 @@
 - **Primary Workspace**: Anti-Gravity IDE
 - **Default Executor Model**: Gemini 3.5 Flash
 
+## Active Audit Checkpoint
+F10 — Customer Orders
+
+## Last Accepted Feature
+F10 — Customer Orders
+
 ## Current Phase
-F01 — Area Documentation Structure & Feature Discovery
+Feature Discovery / Existing Project Audit
 
+## Next Planned Feature
+F11 — Customer Payment Status & Reupload Guidance
 
+## Checkpoint Notes
+- **Important**: F02-F10 are Found / Needs Functional Validation.
+- F11-F34 remain Discovered / Needs Audit.
+- No feature is Completed except F00-F01 foundation items.
 ## Active Feature Tracker
 
 All discovered application and database capabilities have been indexed into the F-number system below:

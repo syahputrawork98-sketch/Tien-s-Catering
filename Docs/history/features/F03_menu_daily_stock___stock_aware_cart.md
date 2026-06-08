@@ -4,12 +4,12 @@
 Foundation / Frontend
 
 ## Discovery Source
-- **Frontend Page**: [apps/src/routes/katalog/](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/routes/katalog/), [apps/src/routes/checkout/](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/routes/checkout/)
-- **Components**: [apps/src/lib/components/MenuCard.svelte](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/lib/components/MenuCard.svelte), [apps/src/lib/components/ModalMenuDetail.svelte](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/lib/components/ModalMenuDetail.svelte)
-- **State Store**: [apps/src/lib/stores/cartStore.svelte.ts](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/lib/stores/cartStore.svelte.ts)
-- **API Endpoint**: [apps/src/routes/api/menus/+server.ts](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/routes/api/menus/+server.ts), [apps/src/routes/api/orders/](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/routes/api/orders/)
-- **Service & Repository**: [apps/src/lib/server/services/orderService.ts](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/lib/server/services/orderService.ts), [apps/src/lib/server/repositories/orderRepository.ts](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/lib/server/repositories/orderRepository.ts)
-- **Database Tables**: `menu_daily_stock` and `orders` (stock-aware fields) in [apps/src/lib/server/db/schema.ts](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/lib/server/db/schema.ts)
+- **Frontend Page**: [apps/src/routes/katalog/](apps/src/routes/katalog/), [apps/src/routes/checkout/](apps/src/routes/checkout/)
+- **Components**: [apps/src/lib/components/MenuCard.svelte](apps/src/lib/components/MenuCard.svelte), [apps/src/lib/components/ModalMenuDetail.svelte](apps/src/lib/components/ModalMenuDetail.svelte)
+- **State Store**: [apps/src/lib/stores/cartStore.svelte.ts](apps/src/lib/stores/cartStore.svelte.ts)
+- **API Endpoint**: [apps/src/routes/api/menus/+server.ts](apps/src/routes/api/menus/+server.ts), [apps/src/routes/api/orders/](apps/src/routes/api/orders/)
+- **Service & Repository**: [apps/src/lib/server/services/orderService.ts](apps/src/lib/server/services/orderService.ts), [apps/src/lib/server/repositories/orderRepository.ts](apps/src/lib/server/repositories/orderRepository.ts)
+- **Database Tables**: `menu_daily_stock` and `orders` (stock-aware fields) in [apps/src/lib/server/db/schema.ts](apps/src/lib/server/db/schema.ts)
 
 ## Current Status
 Found / Needs Functional Validation

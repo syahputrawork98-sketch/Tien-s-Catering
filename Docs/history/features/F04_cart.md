@@ -4,11 +4,11 @@
 Customer / Public
 
 ## Discovery Source
-- **Frontend Page**: [apps/src/routes/checkout/](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/routes/checkout/)
-- **Components**: [apps/src/lib/components/CartDrawer.svelte](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/lib/components/CartDrawer.svelte), [apps/src/lib/components/MenuCard.svelte](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/lib/components/MenuCard.svelte), [apps/src/lib/components/ModalMenuDetail.svelte](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/lib/components/ModalMenuDetail.svelte), [apps/src/lib/components/PublicNavbar.svelte](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/lib/components/PublicNavbar.svelte)
-- **State Store**: [apps/src/lib/stores/cartStore.svelte.ts](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/lib/stores/cartStore.svelte.ts)
-- **API Endpoint**: [apps/src/routes/api/orders/](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/routes/api/orders/)
-- **Service & Repository**: [apps/src/lib/server/services/orderService.ts](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/lib/server/services/orderService.ts), [apps/src/lib/server/repositories/orderRepository.ts](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/lib/server/repositories/orderRepository.ts)
+- **Frontend Page**: [apps/src/routes/checkout/](apps/src/routes/checkout/)
+- **Components**: [apps/src/lib/components/CartDrawer.svelte](apps/src/lib/components/CartDrawer.svelte), [apps/src/lib/components/MenuCard.svelte](apps/src/lib/components/MenuCard.svelte), [apps/src/lib/components/ModalMenuDetail.svelte](apps/src/lib/components/ModalMenuDetail.svelte), [apps/src/lib/components/PublicNavbar.svelte](apps/src/lib/components/PublicNavbar.svelte)
+- **State Store**: [apps/src/lib/stores/cartStore.svelte.ts](apps/src/lib/stores/cartStore.svelte.ts)
+- **API Endpoint**: [apps/src/routes/api/orders/](apps/src/routes/api/orders/)
+- **Service & Repository**: [apps/src/lib/server/services/orderService.ts](apps/src/lib/server/services/orderService.ts), [apps/src/lib/server/repositories/orderRepository.ts](apps/src/lib/server/repositories/orderRepository.ts)
 
 ## Current Status
 Found / Needs Functional Validation

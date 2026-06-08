@@ -4,12 +4,12 @@
 Public
 
 ## Discovery Source
-- **Frontend Page**: [apps/src/routes/paket-catering/](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/routes/paket-catering/)
-- **Components**: [apps/src/lib/components/PackageDetailModal.svelte](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/lib/components/PackageDetailModal.svelte), [apps/src/lib/components/PublicNavbar.svelte](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/lib/components/PublicNavbar.svelte)
-- **API Endpoint**: [apps/src/routes/api/packages/](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/routes/api/packages/)
-- **Service & Repository**: [apps/src/lib/server/services/packageService.ts](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/lib/server/services/packageService.ts), [apps/src/lib/server/repositories/packageRepository.ts](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/lib/server/repositories/packageRepository.ts)
-- **Database Tables**: `packages` in [apps/src/lib/server/db/schema.ts](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/lib/server/db/schema.ts)
-- **Mock Data**: [apps/src/lib/mock/catalog.ts](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/lib/mock/catalog.ts), [apps/src/lib/server/dev-data/packages.ts](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/lib/server/dev-data/packages.ts)
+- **Frontend Page**: [apps/src/routes/paket-catering/](apps/src/routes/paket-catering/)
+- **Components**: [apps/src/lib/components/PackageDetailModal.svelte](apps/src/lib/components/PackageDetailModal.svelte), [apps/src/lib/components/PublicNavbar.svelte](apps/src/lib/components/PublicNavbar.svelte)
+- **API Endpoint**: [apps/src/routes/api/packages/](apps/src/routes/api/packages/)
+- **Service & Repository**: [apps/src/lib/server/services/packageService.ts](apps/src/lib/server/services/packageService.ts), [apps/src/lib/server/repositories/packageRepository.ts](apps/src/lib/server/repositories/packageRepository.ts)
+- **Database Tables**: `packages` in [apps/src/lib/server/db/schema.ts](apps/src/lib/server/db/schema.ts)
+- **Mock Data**: [apps/src/lib/mock/catalog.ts](apps/src/lib/mock/catalog.ts), [apps/src/lib/server/dev-data/packages.ts](apps/src/lib/server/dev-data/packages.ts)
 
 ## Current Status
 Found / Needs Functional Validation

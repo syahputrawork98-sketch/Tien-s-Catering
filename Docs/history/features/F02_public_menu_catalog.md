@@ -4,11 +4,11 @@
 Public / Customer
 
 ## Discovery Source
-- **Frontend Page**: [apps/src/routes/katalog/](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/routes/katalog/)
-- **Components**: [apps/src/lib/components/MenuCard.svelte](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/lib/components/MenuCard.svelte), [apps/src/lib/components/ModalMenuDetail.svelte](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/lib/components/ModalMenuDetail.svelte)
-- **API Endpoint**: [apps/src/routes/api/menus/+server.ts](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/routes/api/menus/+server.ts)
-- **Service & Repository**: [apps/src/lib/server/services/menuService.ts](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/lib/server/services/menuService.ts), [apps/src/lib/server/repositories/menuRepository.ts](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/lib/server/repositories/menuRepository.ts)
-- **Database Tables**: `menus` and `menu_daily_stock` tables in [apps/src/lib/server/db/schema.ts](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/lib/server/db/schema.ts)
+- **Frontend Page**: [apps/src/routes/katalog/](apps/src/routes/katalog/)
+- **Components**: [apps/src/lib/components/MenuCard.svelte](apps/src/lib/components/MenuCard.svelte), [apps/src/lib/components/ModalMenuDetail.svelte](apps/src/lib/components/ModalMenuDetail.svelte)
+- **API Endpoint**: [apps/src/routes/api/menus/+server.ts](apps/src/routes/api/menus/+server.ts)
+- **Service & Repository**: [apps/src/lib/server/services/menuService.ts](apps/src/lib/server/services/menuService.ts), [apps/src/lib/server/repositories/menuRepository.ts](apps/src/lib/server/repositories/menuRepository.ts)
+- **Database Tables**: `menus` and `menu_daily_stock` tables in [apps/src/lib/server/db/schema.ts](apps/src/lib/server/db/schema.ts)
 
 ## Current Status
 Found / Needs Functional Validation

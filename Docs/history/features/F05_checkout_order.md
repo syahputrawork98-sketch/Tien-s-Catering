@@ -4,11 +4,11 @@
 Customer
 
 ## Discovery Source
-- **Frontend Page**: [apps/src/routes/checkout/](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/routes/checkout/), [apps/src/routes/order-success/](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/routes/order-success/)
-- **Components**: [apps/src/lib/components/PublicNavbar.svelte](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/lib/components/PublicNavbar.svelte)
-- **API Endpoint**: [apps/src/routes/api/orders/](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/routes/api/orders/)
-- **Service & Repository**: [apps/src/lib/server/services/orderService.ts](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/lib/server/services/orderService.ts), [apps/src/lib/server/repositories/orderRepository.ts](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/lib/server/repositories/orderRepository.ts)
-- **Database Tables**: `orders`, `order_items`, `delivery_info`, and `payment_info` in [apps/src/lib/server/db/schema.ts](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/lib/server/db/schema.ts)
+- **Frontend Page**: [apps/src/routes/checkout/](apps/src/routes/checkout/), [apps/src/routes/order-success/](apps/src/routes/order-success/)
+- **Components**: [apps/src/lib/components/PublicNavbar.svelte](apps/src/lib/components/PublicNavbar.svelte)
+- **API Endpoint**: [apps/src/routes/api/orders/](apps/src/routes/api/orders/)
+- **Service & Repository**: [apps/src/lib/server/services/orderService.ts](apps/src/lib/server/services/orderService.ts), [apps/src/lib/server/repositories/orderRepository.ts](apps/src/lib/server/repositories/orderRepository.ts)
+- **Database Tables**: `orders`, `order_items`, `delivery_info`, and `payment_info` in [apps/src/lib/server/db/schema.ts](apps/src/lib/server/db/schema.ts)
 
 ## Current Status
 Found / Needs Functional Validation

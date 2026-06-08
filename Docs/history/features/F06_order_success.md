@@ -4,10 +4,10 @@
 Customer
 
 ## Discovery Source
-- **Frontend Page**: [apps/src/routes/order-success/](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/routes/order-success/)
-- **Checkout Page**: [apps/src/routes/checkout/](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/routes/checkout/)
-- **API Endpoint**: [apps/src/routes/api/orders/[id]/](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/routes/api/orders/[id]/)
-- **Database Tables**: `orders` and `order_items` in [apps/src/lib/server/db/schema.ts](file:///i:/Workspace/Workspace-Syahputrawork/TC-Tien-s-Catering/apps/src/lib/server/db/schema.ts)
+- **Frontend Page**: [apps/src/routes/order-success/](apps/src/routes/order-success/)
+- **Checkout Page**: [apps/src/routes/checkout/](apps/src/routes/checkout/)
+- **API Endpoint**: [apps/src/routes/api/orders/[id]/](apps/src/routes/api/orders/[id]/)
+- **Database Tables**: `orders` and `order_items` in [apps/src/lib/server/db/schema.ts](apps/src/lib/server/db/schema.ts)
 
 ## Current Status
 Found / Needs Functional Validation
