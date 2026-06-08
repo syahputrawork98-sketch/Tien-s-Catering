@@ -6,3 +6,4 @@ File ini memetakan fitur FXX ke backend/API.
 | --- | --- | --- | --- | --- | --- |
 | **F02** | Public Menu Catalog | Found | `/api/menus`, `apps/src/lib/server/services/menuService.ts`, `apps/src/lib/server/repositories/menuRepository.ts` | `features/F02_public_menu_catalog.md` | API read-only data menu harian |
 | **F03** | Menu Daily Stock / Stock-Aware Cart | Found | `/api/menus`, `/api/orders`, `apps/src/lib/server/services/orderService.ts`, `apps/src/lib/server/repositories/orderRepository.ts` | `features/F03_menu_daily_stock___stock_aware_cart.md` | Logic pembacaan stok harian & pemotongan/pemulihan stok pesanan tingkat database |
+| **F04** | Cart | Found | `/api/orders`, `apps/src/lib/server/services/orderService.ts`, `apps/src/lib/server/repositories/orderRepository.ts` | `features/F04_cart.md` | Pengiriman data keranjang belanja (items payload) untuk diproses menjadi order items di backend |
