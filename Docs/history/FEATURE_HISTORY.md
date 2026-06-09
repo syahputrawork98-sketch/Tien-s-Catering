@@ -24,7 +24,7 @@ Daftar riwayat fitur/fondasi yang pernah, sedang, dan akan dikerjakan dalam **Ti
 | **F17** | CS Menu Management | CS | Partially Found / Needs Follow-up Audit | [F17_cs_menu_management.md](Docs/history/features/F17_cs_menu_management.md) |
 | **F18** | CS Package Management | CS | Partially Found / Needs Follow-up Audit | [F18_cs_package_management.md](Docs/history/features/F18_cs_package_management.md) |
 | **F19** | CS Customer Data Management | CS | Partially Found / Needs Follow-up Audit | [F19_cs_customer_data_management.md](Docs/history/features/F19_cs_customer_data_management.md) |
-| **F20** | Admin Overview / Operational Monitor | Admin | Discovered / Needs Audit | [F20_admin_overview___operational_monitor.md](Docs/history/features/F20_admin_overview___operational_monitor.md) |
+| **F20** | Audit Progress & App Normalization Planning | Admin | Audit Checkpoint / HOLD for Normalization | [F20_admin_overview___operational_monitor.md](Docs/history/features/F20_admin_overview___operational_monitor.md) |
 | **F21** | Admin Order Management | Admin | Discovered / Needs Audit | [F21_admin_order_management.md](Docs/history/features/F21_admin_order_management.md) |
 | **F22** | Admin Manual Payment Verification | Admin | Discovered / Needs Audit | [F22_admin_manual_payment_verification.md](Docs/history/features/F22_admin_manual_payment_verification.md) |
 | **F23** | Admin Menu Management | Admin | Discovered / Needs Audit | [F23_admin_menu_management.md](Docs/history/features/F23_admin_menu_management.md) |
@@ -143,3 +143,10 @@ Daftar riwayat fitur/fondasi yang pernah, sedang, dan akan dikerjakan dalam **Ti
 - **Status Akhir**: Partially Found / Needs Follow-up Audit
 - **Summary**: CS Customer Data Management ditemukan sebagian. Route /dashboard/cs/customers, navigation CS, dan UI data customer tersedia. UI memiliki customer table/grid, search, tabs, statistik, detail/approval modal, add manual account modal, WhatsApp quick link, dan handoff ke CS orders. Namun data masih berasal dari mockCsCustomers/mockAccounts, action approve/reject/tambah akun manual hanya local state, belum ada endpoint customer management khusus CS, belum ada persistence ke SQLite untuk approval/customer type/internal notes, dan audit log masih simulation.
 - **Notes**: Jangan tandai Completed sebelum data customer berasal dari API/SQLite, endpoint customer list/detail/update untuk CS tersedia, role guard backend ADMIN/CS jelas, action approve/reject/add manual account persist ke database, WhatsApp number dinormalisasi/divalidasi, akses data sensitif customer dibatasi, audit log nyata tersedia, dan validasi fungsional end-to-end dilakukan.
+
+### F20 — Audit Progress & App Normalization Planning
+- **Original Label**: Admin Overview / Operational Monitor
+- **Tanggal Pengerjaan**: 2026-06-09
+- **Status Akhir**: Audit Checkpoint / HOLD for Normalization
+- **Summary**: F20 digunakan sebagai checkpoint strategi setelah audit F02–F19. Audit sampai F19 sudah cukup menunjukkan pola besar: banyak UI/route/navigation ditemukan, namun mock/local state masih dominan, integrasi UI ke API/SQLite belum merata, role guard backend belum konsisten, audit log masih simulation, dan functional validation belum dilakukan. Karena itu, audit detail F21–F34 ditahan sementara untuk menyiapkan transisi ke Feature Discovery Checkpoint / Pre-Normalization Planning.
+- **Notes**: F20 bukan status Completed untuk fitur aplikasi. F21–F34 tetap Discovered / Needs Audit atau HOLD. Fokus berikutnya adalah menyusun Application Normalization Roadmap sebelum lanjut implementasi atau audit lanjutan.
