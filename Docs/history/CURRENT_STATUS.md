@@ -8,20 +8,20 @@
 - **Default Executor Model**: Gemini 3.5 Flash
 
 ## Active Audit Checkpoint
-F18 — CS Package Management
+F19 — CS Customer Data Management
 
 ## Last Accepted Feature
-F18 — CS Package Management
+F19 — CS Customer Data Management
 
 ## Current Phase
 Feature Discovery / Existing Project Audit
 
 ## Next Planned Feature
-F19 — CS Customer Data Management
+F20 — Admin Overview / Operational Monitor
 
 ## Checkpoint Notes
-- **Important**: F02-F16 are Found / Needs Functional Validation. F17-F18 are Partially Found / Needs Follow-up Audit.
-- F19-F34 remain Discovered / Needs Audit.
+- **Important**: F02-F16 are Found / Needs Functional Validation. F17-F19 are Partially Found / Needs Follow-up Audit.
+- F20-F34 remain Discovered / Needs Audit.
 - No feature is Completed except F00-F01 foundation items.
 
 
@@ -51,7 +51,7 @@ All discovered application and database capabilities have been indexed into the 
 | **F16** | CS Incoming Orders Handling | CS | Found / Needs Functional Validation | Technical relations mapped (Frontend, API, DB) | Audit other features | [F16_cs_incoming_orders_handling.md](Docs/history/features/F16_cs_incoming_orders_handling.md) |
 | **F17** | CS Menu Management | CS | Partially Found / Needs Follow-up Audit | UI components exists but frontend-only/mock-driven | Implement write APIs & SQLite persistence | [F17_cs_menu_management.md](Docs/history/features/F17_cs_menu_management.md) |
 | **F18** | CS Package Management | CS | Partially Found / Needs Follow-up Audit | UI components exists but frontend-only/mock-driven | Connect CS UI to package backend APIs | [F18_cs_package_management.md](Docs/history/features/F18_cs_package_management.md) |
-| **F19** | CS Customer Data Management | CS | Discovered / Needs Audit | Customer logs exist | Verify layout details | [F19_cs_customer_data_management.md](Docs/history/features/F19_cs_customer_data_management.md) |
+| **F19** | CS Customer Data Management | CS | Partially Found / Needs Follow-up Audit | UI components exists but frontend-only/mock-driven | Implement CRM backend & customer APIs | [F19_cs_customer_data_management.md](Docs/history/features/F19_cs_customer_data_management.md) |
 | **F20** | Admin Overview / Operational Monitor | Admin | Discovered / Needs Audit | Stats counters exist | Verify layouts | [F20_admin_overview___operational_monitor.md](Docs/history/features/F20_admin_overview___operational_monitor.md) |
 | **F21** | Admin Order Management | Admin | Discovered / Needs Audit | Order tracker views exist | Verify filters | [F21_admin_order_management.md](Docs/history/features/F21_admin_order_management.md) |
 | **F22** | Admin Manual Payment Verification | Admin | Discovered / Needs Audit | Verifications dialog exists | Verify write-backs | [F22_admin_manual_payment_verification.md](Docs/history/features/F22_admin_manual_payment_verification.md) |

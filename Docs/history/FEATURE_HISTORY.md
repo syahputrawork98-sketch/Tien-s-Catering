@@ -23,7 +23,7 @@ Daftar riwayat fitur/fondasi yang pernah, sedang, dan akan dikerjakan dalam **Ti
 | **F16** | CS Incoming Orders Handling | CS | Found / Needs Functional Validation | [F16_cs_incoming_orders_handling.md](Docs/history/features/F16_cs_incoming_orders_handling.md) |
 | **F17** | CS Menu Management | CS | Partially Found / Needs Follow-up Audit | [F17_cs_menu_management.md](Docs/history/features/F17_cs_menu_management.md) |
 | **F18** | CS Package Management | CS | Partially Found / Needs Follow-up Audit | [F18_cs_package_management.md](Docs/history/features/F18_cs_package_management.md) |
-| **F19** | CS Customer Data Management | CS | Discovered / Needs Audit | [F19_cs_customer_data_management.md](Docs/history/features/F19_cs_customer_data_management.md) |
+| **F19** | CS Customer Data Management | CS | Partially Found / Needs Follow-up Audit | [F19_cs_customer_data_management.md](Docs/history/features/F19_cs_customer_data_management.md) |
 | **F20** | Admin Overview / Operational Monitor | Admin | Discovered / Needs Audit | [F20_admin_overview___operational_monitor.md](Docs/history/features/F20_admin_overview___operational_monitor.md) |
 | **F21** | Admin Order Management | Admin | Discovered / Needs Audit | [F21_admin_order_management.md](Docs/history/features/F21_admin_order_management.md) |
 | **F22** | Admin Manual Payment Verification | Admin | Discovered / Needs Audit | [F22_admin_manual_payment_verification.md](Docs/history/features/F22_admin_manual_payment_verification.md) |
@@ -129,3 +129,17 @@ Daftar riwayat fitur/fondasi yang pernah, sedang, dan akan dikerjakan dalam **Ti
 - **Status Akhir**: Partially Found / Needs Follow-up Audit
 - **Summary**: CS Package Management ditemukan sebagian. Route /dashboard/cs/packages, navigation CS, dan UI kelola paket tersedia. UI memiliki daftar paket, statistik, tab kategori, detail modal, add/edit modal, dan toggle status. Backend package API, service, repository, SQLite schema, dan role guard ADMIN/CS sudah ditemukan. Namun halaman CS package masih memakai mock/local state dan belum memakai /api/packages untuk GET/POST/PATCH/status update. Dengan demikian backend foundation sudah tersedia, tetapi CS UI belum terintegrasi end-to-end.
 - **Notes**: Jangan tandai Completed sebelum CS UI benar-benar memakai backend package API, action tambah/edit/toggle persist ke SQLite, permission CS vs Admin jelas, audit log nyata tersedia, dan validasi fungsional end-to-end dilakukan.
+
+### F19 — CS Customer Data Management
+- **Tanggal Pengerjaan**: 2026-06-09
+- **Area yang Diaudit**: Frontend, Navigation, API, Service, Repository, Database, Otorisasi, WhatsApp/Contact, Audit Log, Layout/Responsiveness
+- **Path Utama yang Ditemukan**:
+  - Frontend: `apps/src/routes/dashboard/cs/customers/+page.svelte`
+  - Navigation: `apps/src/lib/config/navigation.ts`
+  - API: Halaman profile user `/api/auth/me` (Tidak ditemukan API khusus CS customer management)
+  - Service: `apps/src/lib/server/services/authService.ts`
+  - Repository: `apps/src/lib/server/repositories/userRepository.ts`
+  - Database: Tabel `users` di `apps/src/lib/server/db/schema.ts`
+- **Status Akhir**: Partially Found / Needs Follow-up Audit
+- **Summary**: CS Customer Data Management ditemukan sebagian. Route /dashboard/cs/customers, navigation CS, dan UI data customer tersedia. UI memiliki customer table/grid, search, tabs, statistik, detail/approval modal, add manual account modal, WhatsApp quick link, dan handoff ke CS orders. Namun data masih berasal dari mockCsCustomers/mockAccounts, action approve/reject/tambah akun manual hanya local state, belum ada endpoint customer management khusus CS, belum ada persistence ke SQLite untuk approval/customer type/internal notes, dan audit log masih simulation.
+- **Notes**: Jangan tandai Completed sebelum data customer berasal dari API/SQLite, endpoint customer list/detail/update untuk CS tersedia, role guard backend ADMIN/CS jelas, action approve/reject/add manual account persist ke database, WhatsApp number dinormalisasi/divalidasi, akses data sensitif customer dibatasi, audit log nyata tersedia, dan validasi fungsional end-to-end dilakukan.
