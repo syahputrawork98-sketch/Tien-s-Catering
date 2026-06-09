@@ -22,7 +22,7 @@ Daftar riwayat fitur/fondasi yang pernah, sedang, dan akan dikerjakan dalam **Ti
 | **F15** | CS Overview | CS | Found / Needs Functional Validation | [F15_cs_overview.md](Docs/history/features/F15_cs_overview.md) |
 | **F16** | CS Incoming Orders Handling | CS | Found / Needs Functional Validation | [F16_cs_incoming_orders_handling.md](Docs/history/features/F16_cs_incoming_orders_handling.md) |
 | **F17** | CS Menu Management | CS | Partially Found / Needs Follow-up Audit | [F17_cs_menu_management.md](Docs/history/features/F17_cs_menu_management.md) |
-| **F18** | CS Package Management | CS | Discovered / Needs Audit | [F18_cs_package_management.md](Docs/history/features/F18_cs_package_management.md) |
+| **F18** | CS Package Management | CS | Partially Found / Needs Follow-up Audit | [F18_cs_package_management.md](Docs/history/features/F18_cs_package_management.md) |
 | **F19** | CS Customer Data Management | CS | Discovered / Needs Audit | [F19_cs_customer_data_management.md](Docs/history/features/F19_cs_customer_data_management.md) |
 | **F20** | Admin Overview / Operational Monitor | Admin | Discovered / Needs Audit | [F20_admin_overview___operational_monitor.md](Docs/history/features/F20_admin_overview___operational_monitor.md) |
 | **F21** | Admin Order Management | Admin | Discovered / Needs Audit | [F21_admin_order_management.md](Docs/history/features/F21_admin_order_management.md) |
@@ -115,3 +115,17 @@ Daftar riwayat fitur/fondasi yang pernah, sedang, dan akan dikerjakan dalam **Ti
 - **Status Akhir**: Partially Found / Needs Follow-up Audit
 - **Summary**: CS Menu Management ditemukan sebagian. Route /dashboard/cs/menu, navigation CS, dan UI kelola menu harian tersedia. UI sudah memiliki daftar menu, toggle availability, add/edit modal, detail modal, history filter, dan summary availability. Namun data masih berasal dari mock/local state. Action toggle/add/edit belum memanggil API, belum persist ke SQLite, dan belum memiliki endpoint write khusus. Backend/database foundation untuk menu dan daily stock sudah ada melalui GET /api/menus, tetapi masih read-only. Audit log yang ditemukan masih mock UI-only simulation.
 - **Notes**: Jangan tandai Completed sebelum tersedia validasi fungsional end-to-end, termasuk API write, role guard backend, persist SQLite, validasi stok/status, dan audit log nyata.
+
+### F18 — CS Package Management
+- **Tanggal Pengerjaan**: 2026-06-09
+- **Area yang Diaudit**: Frontend, Navigation, API, Service, Repository, Database, Otorisasi, Audit Log, Layout/Responsiveness
+- **Path Utama yang Ditemukan**:
+  - Frontend: `apps/src/routes/dashboard/cs/packages/+page.svelte`
+  - Navigation: `apps/src/lib/config/navigation.ts`
+  - API: `GET /api/packages`, `POST /api/packages`, `PATCH /api/packages/[id]`, `PATCH /api/packages/[id]/status`
+  - Service: `apps/src/lib/server/services/packageService.ts`
+  - Repository: `apps/src/lib/server/repositories/packageRepository.ts`
+  - Database: Tabel `packages` di `apps/src/lib/server/db/schema.ts`
+- **Status Akhir**: Partially Found / Needs Follow-up Audit
+- **Summary**: CS Package Management ditemukan sebagian. Route /dashboard/cs/packages, navigation CS, dan UI kelola paket tersedia. UI memiliki daftar paket, statistik, tab kategori, detail modal, add/edit modal, dan toggle status. Backend package API, service, repository, SQLite schema, dan role guard ADMIN/CS sudah ditemukan. Namun halaman CS package masih memakai mock/local state dan belum memakai /api/packages untuk GET/POST/PATCH/status update. Dengan demikian backend foundation sudah tersedia, tetapi CS UI belum terintegrasi end-to-end.
+- **Notes**: Jangan tandai Completed sebelum CS UI benar-benar memakai backend package API, action tambah/edit/toggle persist ke SQLite, permission CS vs Admin jelas, audit log nyata tersedia, dan validasi fungsional end-to-end dilakukan.
