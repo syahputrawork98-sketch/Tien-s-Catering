@@ -99,4 +99,5 @@ Daftar riwayat fitur/fondasi yang pernah, sedang, dan akan dikerjakan dalam **Ti
   - Repository: `apps/src/lib/server/repositories/orderRepository.ts`
   - Database: Tabel `orders`, `order_items`, `delivery_info`, `payment_info`, `order_payment_proofs` di `apps/src/lib/server/db/schema.ts`
 - **Status Akhir**: Found / Needs Functional Validation
-- **Catatan**: No functional runtime validation was performed. Transisi status confirmed mengurangi stok harian secara real-time dan cancelled merestore stok. Verifikasi bukti pembayaran sukses memanggil API status bayar manual (paid), sementara penolakan bukti bayar dan konfirmasi penyelesaian (CS/User/Admin) masih berupa simulasi frontend murni.
+- **Summary**: CS incoming orders handling ditemukan. UI CS order list/modal tersedia di dashboard CS. Data order utama diambil dari /api/orders dan terhubung ke SQLite melalui service/repository. API update status order dan payment status tersedia dengan role guard ADMIN/CS. Namun payment proof review/reject, completion confirmation, cancel reason, dan beberapa action UI masih partial/simulation atau belum persist penuh.
+- **Notes**: Jangan tandai Completed sebelum functional validation end-to-end.

@@ -1,94 +1,91 @@
 # F16 — CS Incoming Orders Handling
 
-## Feature Type
-CS (Customer Service)
+## Feature ID
+F16
 
-## Feature Summary
-Fitur **F16 — CS Incoming Orders Handling** menyediakan halaman pengelolaan pesanan masuk bagi Customer Service (CS). Melalui antarmuka ini, CS dapat memantau seluruh pesanan pelanggan, memeriksa rincian item pesanan, alamat dinas pengantaran, mengonfirmasi status pengerjaan pesanan (baru, konfirmasi, proses, siap kirim, terkirim, selesai, batal), serta memverifikasi status pembayaran transaksi.
+## Feature Name
+CS Incoming Orders Handling
 
-## Current Status
+## Status
 Found / Needs Functional Validation
 
-## Confirmed Source Paths
+## Scope
+- Manajemen pesanan masuk oleh Customer Service (CS) di dashboard.
+- Pemantauan status pesanan (NEW, VERIFIKASI, PROSES, LUNAS, BELUM_BAYAR, SELESAI, BATAL, HISTORY).
+- Konfirmasi, pembatalan, dan verifikasi status pembayaran pesanan secara backend-driven maupun melalui simulasi frontend.
+- Pengamanan akses halaman dan API berdasarkan role (CS/ADMIN).
 
-### 1. Frontend & UI Paths
-* **CS Orders Page**: `apps/src/routes/dashboard/cs/orders/+page.svelte`
-* **Navigation Config**: `apps/src/lib/config/navigation.ts`
+## Files Inspected
+- `apps/src/routes/dashboard/cs/orders/+page.svelte` (UI Halaman Pesanan Masuk)
+- `apps/src/lib/config/navigation.ts` (Registrasi Menu Sidebar)
+- `apps/src/routes/api/orders/+server.ts` (API List Orders)
+- `apps/src/routes/api/orders/[id]/status/+server.ts` (API Update Status Order)
+- `apps/src/routes/api/orders/[id]/payment-status/+server.ts` (API Update Status Pembayaran Manual)
+- `apps/src/routes/api/orders/[id]/verify-payment/+server.ts` (API Verifikasi Bukti Pembayaran)
+- `apps/src/lib/server/services/orderService.ts` (Service Logika Bisnis Order)
+- `apps/src/lib/server/repositories/orderRepository.ts` (Repository SQLite Order)
+- `apps/src/lib/server/db/schema.ts` (Skema Tabel SQLite)
+- `apps/src/lib/server/utils/authGuard.ts` (Backend Role Guard Check)
 
-### 2. Backend & API Paths
-* **GET Orders List API**: `apps/src/routes/api/orders/+server.ts`
-* **PATCH Order Status API**: `apps/src/routes/api/orders/[id]/status/+server.ts`
-* **PATCH Payment Status API**: `apps/src/routes/api/orders/[id]/payment-status/+server.ts`
-* **POST Verify Payment API**: `apps/src/routes/api/orders/[id]/verify-payment/+server.ts`
-* **Auth Guard Middleware**: `apps/src/lib/server/utils/authGuard.ts`
+## Feature Evidence Found
 
-### 3. Service & Repository Layer
-* **Order Service**: `apps/src/lib/server/services/orderService.ts`
-* **Order Repository**: `apps/src/lib/server/repositories/orderRepository.ts`
+### UI Evidence
+- Halaman utama CS Orders terletak di `apps/src/routes/dashboard/cs/orders/+page.svelte` dengan judul halaman **"Pesanan Masuk"**.
+- Antarmuka memiliki tab filter status pesanan: `NEW`, `VERIFIKASI`, `PROSES`, `LUNAS`, `BELUM_BAYAR`, `SELESAI`, `BATAL`, dan `HISTORY`.
+- Pengambilan data menggunakan pemanggilan `fetch('/api/orders')` secara client-side.
+- Memiliki fungsi `mapApiOrderToCsOrder` untuk melakukan transformasi data dari API agar kompatibel dengan UI.
+- Layout tabel dan daftar (list) pesanan yang interaktif beserta tombol detail untuk membuka modal order.
+- Menyediakan tombol aksi operasional seperti konfirmasi pesanan, batalkan pesanan, konfirmasi COD, dan verifikasi manual.
 
-### 4. Database & Data Model
-* **Database Schema File**: `apps/src/lib/server/db/schema.ts` (Tabel `orders`, `order_items`, `delivery_info`, `payment_info`, dan `order_payment_proofs`)
+### Route Evidence
+- Menu navigasi sidebar pada `apps/src/lib/config/navigation.ts` mencantumkan rute CS orders dengan nama **"Pesanan Masuk"** dan rute `href` menuju `/dashboard/cs/orders`.
 
-## Confirmed Database Schema
-Informasi pesanan dikelola secara relasional pada database SQLite melalui tabel-tabel berikut:
-* **Tabel `orders`**: Menyimpan data order utama (`id`, `order_number`, `customer_name`, `whatsapp`, `delivery_date`, `notes`, `status`, `payment_status`, `total_amount`, `user_id`, `stock_status`, `stock_deducted_at`, `stock_released_at`, `created_at`, `updated_at`).
-* **Tabel `order_items`**: Menyimpan detail barang belanjaan per transaksi (`id`, `order_id`, `menu_id`, `name`, `quantity`, `price`, `subtotal`).
-* **Tabel `delivery_info`**: Menyimpan rincian lokasi pengantaran dinas Pemkot (`order_id`, `department_or_unit`, `floor`, `location_note`, `address_summary`).
-* **Tabel `payment_info`**: Menyimpan detail tagihan dan metode bayar (`order_id`, `payment_method`, `payment_status`, `total_amount`, `paid_amount`, `remaining_amount`).
-* **Tabel `order_payment_proofs`**: Menyimpan berkas bukti pembayaran Base64 terunggah (`id`, `order_id`, `file_name`, `file_path`, `mime_type`, `file_size`, `uploaded_at`, `status`, `verification_note`, `verified_at`, `verified_by`).
+### Server/API Evidence
+- Endpoint API pendukung di sisi backend:
+  - `GET /api/orders` untuk mengambil seluruh daftar pesanan (tanpa parameter `userId` jika diakses oleh role CS/ADMIN).
+  - `PATCH /api/orders/[id]/status` untuk mengubah status operasional order.
+  - `PATCH /api/orders/[id]/payment-status` untuk mengubah status pembayaran secara manual.
+  - `POST /api/orders/[id]/verify-payment` untuk verifikasi bukti pembayaran formal.
 
-## Main CS Incoming Orders Flow
-1. **Pemuatan Daftar Pesanan**:
-   $$\text{Akses /dashboard/cs/orders} \longrightarrow \text{GET /api/orders} \longrightarrow \text{Kueri listOrderRecords() tanpa filter userId} \longrightarrow \text{Tampilkan Tabel/List Order}$$
-2. **Pembaruan Status Pesanan**:
-   $$\text{Klik Konfirmasi / Batalkan} \longrightarrow \text{PATCH /api/orders/[id]/status} \longrightarrow \text{updateOrderStatusRecord() di SQLite} \longrightarrow \text{Mutasi stok menu\_daily\_stock jika status 'confirmed' atau 'cancelled'}$$
-3. **Verifikasi Bukti Pembayaran**:
-   $$\text{Klik Verifikasi Pembayaran (Approve)} \longrightarrow \text{PATCH /api/orders/[id]/payment-status (Lunas)} \longrightarrow \text{updateOrderPaymentStatusRecord() di SQLite} \longrightarrow \text{Tandai paid\_amount penuh}$$
+### Database Evidence
+- Logika query SQLite terimplementasi di service dan repository:
+  - `orderService.ts` menyediakan metode `getOrders()` yang memanggil `orderRepository.listOrderRecords()`.
+  - `listOrderRecords()` menggunakan SQLite query Builder dengan join relasional lengkap yang menghubungkan tabel `orders`, `delivery_info`, `payment_info`, `order_items`, dan `order_payment_proofs`.
+  - Update status pesanan melakukan operasi `UPDATE` terhadap tabel `orders`.
+  - Update payment status melakukan operasi `UPDATE` terhadap tabel `payment_info`.
 
-## UI States & Action Notes
-* **Tab Navigation & Counters**:
-  * Halaman orders memiliki tab navigasi filter: *Baru (NEW), Verifikasi Bayar (VERIFIKASI), Proses (PROSES), Lunas (LUNAS), Belum Bayar (BELUM_BAYAR), Selesai (SELESAI), Batal (BATAL), dan History*.
-  * Setiap tab memiliki badge counter numerik dinamis yang berasal dari state `orders` lokal hasil query API.
-* **Order Search & Date Filter**:
-  * Filter pencarian reaktif client-side yang mencocokkan kata kunci terhadap ID order, nama customer, nomor WhatsApp, alamat, catatan, atau nama item menu.
-  * Pada tab *History*, tersedia input date picker untuk memfilter riwayat pengiriman berdasarkan tanggal tertentu (`historyDateFilter`).
-* **Detail Order Modal**:
-  * Menampilkan informasi terperinci mengenai item belanjaan, detail alamat pengantaran, catatan tambahan, riwayat bukti bayar yang diunggah customer, serta tombol-tombol aksi operasional CS.
-* **Action Buttons & Simulation Guards**:
-  * **Tombol Konfirmasi**: Mengubah status pesanan baru menjadi `confirmed` dan memicu pengurangan stok menu harian.
-  * **Tombol Batalkan Pesanan**: Membuka dropdown pilihan alasan pembatalan katering, lalu mengubah status menjadi `cancelled`.
-  * **Tombol Verifikasi Pembayaran**: Memaksa status pembayaran pesanan menjadi `paid` (Lunas) melalui pemanggilan endpoint `/api/orders/[id]/payment-status`.
-  * **Simulasi Penolakan Bukti Pembayaran**: Tombol penolakan bukti bayar hanya memicu `alert` simulasi tiruan di sisi client, tanpa memanggil endpoint backend real.
-  * **Simulasi Konfirmasi Penyelesaian**: Tombol penyelesaian CS, User, dan Admin hanya memutasi array state lokal `orders` untuk kebutuhan demo alur penyelesaian katering.
+### Auth/Role Evidence
+- File backend `apps/src/lib/server/utils/authGuard.ts` melindungi rute write-action di API via pemanggilan `requireRole(cookies, ['ADMIN', 'CS'])`.
+- Role pengguna yang didukung oleh backend secara formal mencakup `CUSTOMER`, `ADMIN`, dan `CS`.
+- Terdapat mekanisme redirect di level client-side dashboard layout untuk membatasi akses role. Namun, aplikasi masih menyediakan Dev Persona Switcher (persona mode) untuk simulasi peran secara lokal di client-side.
 
-## Status Transition & Stock Aware Cart
-Peralihan status order memicu aturan khusus (rules/effects) di database SQLite:
-* **Transisi Status $\rightarrow$ `confirmed`**:
-  * Membaca daftar item belanjaan dari tabel `order_items`.
-  * Melakukan kueri pengecekan stok di tabel `menu_daily_stock` untuk menu terkait di tanggal pengantaran (`delivery_date`).
-  * Jika stok memadai, mengurangi `remaining_stock` di database, memperbarui label stok harian, dan mengubah status stok pesanan menjadi `deducted`.
-  * Jika stok tidak cukup, proses diabaikan dan server mengembalikan pesan error (mencegah double booking).
-* **Transisi Status $\rightarrow$ `cancelled`** (jika status sebelumnya sudah ter-deduct/confirmed):
-  * Melakukan restore/pengembalian kuantitas pesanan ke sisa stok menu di database `menu_daily_stock`.
-  * Mengubah status stok pesanan menjadi `released`.
+## Current Implementation Summary
+Secara keseluruhan, fitur F16 telah terimplementasi di codebase dengan integrasi database dan API. Pemuatan daftar pesanan serta aksi konfirmasi status pesanan dan update payment status manual sudah terhubung secara real ke SQLite dan dilindungi dengan middleware otorisasi yang valid. Namun, beberapa fitur pendukung visual seperti validasi/penolakan bukti transfer pembayaran, alasan detail pembatalan, konfirmasi penyelesaian akhir (completion), serta fungsi filter lanjutan dan ekspor laporan masih berupa simulasi client-side murni atau belum tersinkronisasi sepenuhnya dengan API backend.
 
-## Authorization & Role Guards
-* **Dashboard Access Guard**:
-  * File layout dashboard (`+layout.svelte`) memblokir pengguna dengan role selain `CUSTOMER_SERVICE` dan `ADMIN` (seperti `CUSTOMER`) agar tidak dapat mengakses rute `/dashboard/cs/orders`.
-* **API Endpoint Guards**:
-  * Endpoint PATCH `/api/orders/[id]/status`, `/api/orders/[id]/payment-status`, dan POST `/api/orders/[id]/verify-payment` dilindungi secara ketat di backend melalui utilitas `requireRole(cookies, ['ADMIN', 'CS'])` untuk mencegah bypass modifikasi status dari client-side katering biasa.
-* **GET Orders Sharing Endpoint**:
-  * Endpoint `GET /api/orders` dishare bersama antara customer dan CS. Otorisasi membedakan respons: jika peran adalah `CUSTOMER`, mereka wajib menyertakan filter query `userId` (hanya bisa melihat ordernya sendiri), sedangkan `ADMIN`/`CS` diperbolehkan melakukan kueri seluruh data pesanan untuk kebutuhan manajemen operasional.
+## Functional Flow Observed
+1. **Memuat Pesanan**: CS mengakses halaman `/dashboard/cs/orders` $\rightarrow$ frontend memanggil `GET /api/orders` $\rightarrow$ `orderService.getOrders()` mengeksekusi `listOrderRecords()` di database $\rightarrow$ mengembalikan data pesanan dengan detail item, alamat instansi, dan riwayat bayar $\rightarrow$ dirender di tabel pesanan.
+2. **Pembaruan Status (Confirm/Cancel)**: CS mengklik "Konfirmasi" $\rightarrow$ PATCH request dikirim ke `/api/orders/[id]/status` $\rightarrow$ status order diubah di SQLite menjadi `confirmed` $\rightarrow$ memicu efek samping berupa pengurangan stok menu di tabel `menu_daily_stock`. Jika dibatalkan, status berubah menjadi `cancelled` dan stok direstore.
+3. **Verifikasi Pembayaran Manual**: CS memverifikasi pembayaran $\rightarrow$ PATCH request dikirim ke `/api/orders/[id]/payment-status` $\rightarrow$ status pembayaran di SQLite diperbarui menjadi `paid`.
 
-## Integration Notes
-* **F10 — Customer Orders**: Perubahan status oleh CS langsung memutasi tabel SQLite, sehingga customer dapat memantau status terbaru pesanan mereka secara real-time.
-* **F11 — Customer Payment Status & Reupload**: Konfirmasi pembayaran oleh CS langsung mengubah `payment_status` di orders menjadi `paid` (Lunas), yang secara otomatis menonaktifkan form upload bukti bayar milik customer di F11.
-* **F15 — CS Overview**: Data order di database memengaruhi status antarmuka CS, meskipun saat ini CS Overview masih menggunakan counter tiruan (statis).
-* **F12 — Customer Package Request History**: Jika order di F16 ini berasal dari konversi request paket (properti `sourceType === 'package_request'`), badge katering *"🍱 Paket Katering"* akan muncul di tabel pesanan F16 untuk membedakan pesanan menu reguler dengan pesanan hasil konversi katering.
+## Gaps / Missing Parts
+1. **Sinkronisasi Bukti Pembayaran (Payment Proof Review)**: Tinjauan bukti pembayaran (approve/reject proof) belum tersinkronisasi penuh dengan backend. Meskipun endpoint `verify-payment` sudah ada, UI CS orders belum menggunakannya secara penuh untuk aksi approve/reject proof secara dinamis.
+2. **Simulasi Reject Payment**: Fungsi `handleRejectPayment()` di frontend masih berupa *simulation-only* (hanya menampilkan notifikasi alert tanpa mutasi state ke backend).
+3. **Mapping Bukti Pembayaran Kosong**: Data bukti pembayaran dari API belum dimapping dengan benar ke UI CS karena mapping frontend saat ini mengosongkan field (`paymentProofs: []` dan `paymentProof: undefined`).
+4. **Simulasi Konfirmasi Penyelesaian**: Konfirmasi penyelesaian pesanan (`completion confirmation`) oleh CS/user/admin masih berupa simulasi state lokal di frontend dan belum melakukan persistensi perubahan status akhir ke API/database SQLite.
+5. **Alasan Pembatalan Tidak Tersimpan**: Ketika membatalkan order, UI meminta input `cancellationReason` dari CS, namun payload request PATCH yang dikirimkan ke server hanya berisi `{ status: 'cancelled' }`, sehingga alasan pembatalan tidak disimpan ke database SQLite.
+6. **Filter & Export Report Statis**: Fitur penyaringan data tingkat lanjut dan ekspor laporan pesanan (Export Report) belum fungsional sepenuhnya.
+7. **Limitasi Client-side Guard**: Proteksi halaman di client-side masih terbatas karena mode persona dev dapat mengabaikan validasi session client-side untuk kebutuhan demo, walaupun endpoint API backend (write actions) tetap memvalidasi token sesi secara aman menggunakan `requireRole`.
 
-## Gaps / Needs Functional Validation
-* **Simulated Rejection API Call**: Tombol penolakan bukti pembayaran di halaman CS Orders memicu alert simulasi tiruan tanpa memanggil endpoint backend `/api/orders/[id]/verify-payment` (POST) yang sebenarnya sudah diimplementasikan di backend.
-* **Simulated Order Completion Confirmation**: Tombol konfirmasi penyelesaian CS, User, dan Admin hanya memutasi array state lokal `orders` di halaman ini tanpa melakukan persistensi SQL status order menjadi `completed`. Status order riil di SQLite masih tertahan pada status operasional aktif.
+## Risk Notes
+- **Kesalahpahaman Status Order**: CS dapat menganggap pesanan telah selesai secara sistem karena di frontend tombol penyelesaian sukses mengubah state lokal, padahal di database status order yang bersangkutan masih aktif.
+- **Kebocoran Stok Akibat Pembatalan Tanpa Alasan**: Alasan pembatalan yang tidak tercatat membuat audit log menjadi sulit dilakukan apabila terjadi pembatalan massal.
 
-## Do Not Touch Yet
-* No implementation, modification, or refactoring in this audit-only task.
+## Suggested Status
+**Found / Needs Functional Validation** (Tidak boleh ditandai sebagai Completed karena terdapat gap fungsional yang signifikan antara UI client-side dan persistensi API backend).
+
+## Recommendation / Next Step
+1. Hubungkan tombol Approve/Reject bukti transfer di modal detail pesanan ke endpoint `POST /api/orders/[id]/verify-payment`.
+2. Perbaiki fungsi mapping `mapApiOrderToCsOrder` di frontend agar memetakan `payment_proofs` dari API ke state UI secara benar.
+3. Implementasikan fungsionalitas pengiriman alasan pembatalan (`cancellationReason`) pada payload PATCH status pesanan dan simpan ke database SQLite.
+4. Hubungkan tombol konfirmasi penyelesaian pesanan (CS/User/Admin) ke API agar status order ter-update secara permanen di database.
+5. Jalankan *Functional Validation* secara end-to-end setelah gap fungsional di atas diperbaiki.
